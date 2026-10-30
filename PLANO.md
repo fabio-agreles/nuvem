@@ -169,7 +169,7 @@ Alternativas descartadas por ora:
   `rclone-sources.json` (273 zips do `proxy.golang.org`) e `modules.txt` (1743
   linhas, do próprio `go mod vendor`). Manifesto com `GOFLAGS=-mod=vendor`,
   `CARGO_NET_OFFLINE`, `npm ci --offline` e `cargo --offline build`, sem
-  `--share=network`. Commit `9932a13` instalado e verificado: app abre com as
+  `--share=network`. Commit `ed74456` instalado e verificado: app abre com as
   contas reais, `rclone v1.75.2` (84 MB) compilado do fonte e painel RC devolvendo
   `401` sem credencial / `200` com HTTP Basic. Armadilhas documentadas: JSON de
   fontes tem de ser **string** na lista `sources`, `modules.txt` do

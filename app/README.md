@@ -359,7 +359,7 @@ publicar o app (verificação do escopo `drive`) evita reautorizar toda semana.
   instalado em `--user`; app abre, `rclone v1.75.2` responde em `core/version`
   dentro do sandbox e a bandeja registra no `StatusNotifierWatcher`.
 - **Build Flatpak vendorizado (offline)**: crates, npm e módulos Go como fontes;
-  nenhuma etapa com `--share=network`. Commit `9932a13` (90,7 MB de conteúdo)
+  nenhuma etapa com `--share=network`. Commit `ed74456` (90,7 MB de conteúdo)
   instalado e executado: interface real (contas e pastas do usuário), `rclone` de
   84 MB compilado do fonte e painel RC respondendo `401` sem credencial e `200`
   com HTTP Basic.

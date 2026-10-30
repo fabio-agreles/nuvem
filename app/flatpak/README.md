@@ -183,7 +183,7 @@ explicit in vendor/modules.txt`. Use o `modules.txt` do próprio `go mod vendor`
 
 | Item | Resultado |
 | --- | --- |
-| Build + export para `flatpak-repo` (offline) | ✅ commit `9932a13`, 90,7 MB de conteúdo |
+| Build + export para `flatpak-repo` (offline) | ✅ commit `ed74456`, 90,7 MB de conteúdo |
 | Instalação local (`flatpak install --user`) | ✅ 91,5 MB |
 | App abre (GTK + WebKitGTK 2.54 no runtime) | ✅ interface renderizada (após o ajuste de `custom-protocol`) |
 | `rclone` embutido | ✅ `rclone v1.75.2` em `/app/bin/rclone` (84 MB, compilado do fonte) |
@@ -253,6 +253,7 @@ normalmente.
 | `.desktop` válido, uma categoria principal | ✅ `desktop-file-validate` sem avisos |
 | Capturas de tela 4:3 em 2x | ✅ 2480×1800, geradas por `app/scripts/capture-previews.mjs` |
 | Lint automático no CI | ✅ `app/scripts/check-flatpak.sh` em `.github/workflows/flatpak-lint.yml` |
+| Ícones | ✅ 32, 64, 128 e 256 px em `hicolor`, com o nome igual ao app-id |
 | Licença | ✅ MIT no `project_license`, `LICENSE` instalada em `/app/share/licenses` |
 | `--filesystem=home` justificado | ⚠️ ver abaixo |
 | `aarch64` | ⚠️ não testado (sem máquina ARM aqui) |

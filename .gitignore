@@ -15,3 +15,6 @@
 
 *.log
 .DS_Store
+
+# Estado do flatpak-builder (cache de módulos, ~1 GB)
+/.flatpak-builder/

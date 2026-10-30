@@ -35,19 +35,16 @@
       "buildsystem": "simple",
       "build-options": {
         "append-path": "/usr/lib/sdk/golang/bin",
-        "build-args": [
-          "--share=network"
-        ],
         "env": {
           "GOBIN": "/app/bin",
           "GOPATH": "/run/build/rclone/go",
-          "GOFLAGS": "-modcacherw",
+          "GOFLAGS": "-mod=vendor",
           "CGO_ENABLED": "0"
         }
       },
       "build-commands": [
         "mkdir -p /app/bin",
-        "go build -trimpath -ldflags '-s -w' -o rclone .",
+        "go build -mod=vendor -trimpath -ldflags '-s -w -X github.com/rclone/rclone/fs.Version=v1.75.2' -o rclone .",
         "install -Dm755 rclone /app/bin/rclone",
         "rclone version | head -1"
       ],
@@ -56,7 +53,8 @@
           "type": "archive",
           "url": "https://downloads.rclone.org/v1.75.2/rclone-v1.75.2.tar.gz",
           "sha256": "fa64537e7276196310dbb0bcea6330f03b40e5790197b88f14cce6a19f40eb67"
-        }
+        },
+        "rclone-sources.json"
       ]
     },
     {
@@ -64,23 +62,22 @@
       "buildsystem": "simple",
       "build-options": {
         "append-path": "/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node22/bin",
-        "build-args": [
-          "--share=network"
-        ],
         "env": {
           "CARGO_HOME": "/run/build/nuvem/cargo",
-          "NPM_CONFIG_CACHE": "/run/build/nuvem/npm-cache"
+          "CARGO_NET_OFFLINE": "true",
+          "npm_config_cache": "/run/build/nuvem/flatpak-node/npm-cache",
+          "npm_config_offline": "true"
         }
       },
       "cleanup": [
         "/cargo",
-        "/npm-cache"
+        "/flatpak-node"
       ],
       "build-commands": [
         "mkdir -p src-tauri/resources && touch src-tauri/resources/rclone",
-        "npm ci --no-audit --no-fund",
+        "npm ci --offline --no-audit --no-fund",
         "npm run build",
-        "cargo build --release --features custom-protocol --manifest-path src-tauri/Cargo.toml",
+        "cargo --offline build --release --features custom-protocol --manifest-path src-tauri/Cargo.toml",
         "install -Dm755 src-tauri/target/release/nuvem /app/bin/nuvem",
         "install -Dm644 flatpak/app.nuvem.Nuvem.desktop /app/share/applications/app.nuvem.Nuvem.desktop",
         "install -Dm644 flatpak/app.nuvem.Nuvem.metainfo.xml /app/share/metainfo/app.nuvem.Nuvem.metainfo.xml",
@@ -106,7 +103,9 @@
         {
           "type": "file",
           "path": "../../LICENSE"
-        }
+        },
+        "cargo-sources.json",
+        "node-sources.json"
       ]
     }
   ]

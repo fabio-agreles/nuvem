@@ -17,7 +17,8 @@ ajustes, bandeja com status e autostart. Pendências e limitações estão na se
 "Limitações atuais" do [README do app](app/README.md).
 
 Distribuição: **Flatpak construído e instalado** (`app.nuvem.Nuvem`, GNOME 50,
-90,5 MB, com rclone e `libayatana-appindicator` embutidos). Repositório local em
+91,5 MB, com rclone e `libayatana-appindicator` embutidos, build **offline** com
+dependências vendorizadas). Repositório local em
 `flatpak-repo/`; instruções de build e pendências em
 [`app/flatpak/README.md`](app/flatpak/README.md).
 
@@ -162,6 +163,17 @@ Alternativas descartadas por ora:
   `xdg-open`, `autostart_outro.rs` (registro em vez de portal D-Bus) e `zbus` só
   no Unix. Falta o instalador NSIS, que exige `makensis.exe` (workflow de CI
   pronto) e o teste em máquina Windows.
+- ✅ Vendorização para o Flathub: o build deixou de ter rede. Quatro fontes geradas
+  em `app/flatpak/` — `cargo-sources.json` (963 crates de `Cargo.lock`),
+  `node-sources.json` (128 tarballs npm do `package-lock.json`),
+  `rclone-sources.json` (273 zips do `proxy.golang.org`) e `modules.txt` (1743
+  linhas, do próprio `go mod vendor`). Manifesto com `GOFLAGS=-mod=vendor`,
+  `CARGO_NET_OFFLINE`, `npm ci --offline` e `cargo --offline build`, sem
+  `--share=network`. Commit `9932a13` instalado e verificado: app abre com as
+  contas reais, `rclone v1.75.2` (84 MB) compilado do fonte e painel RC devolvendo
+  `401` sem credencial / `200` com HTTP Basic. Armadilhas documentadas: JSON de
+  fontes tem de ser **string** na lista `sources`, `modules.txt` do
+  `flatpak-go-mod` sai incompleto e `go mod vendor` exige `CGO_ENABLED=0`.
 - Command palette completa, atalhos, onboarding animado, estados vazios.
 - Regras de ignore com validação, limites de banda, proxy, conversão de docs Google.
 - Diagnóstico (“doctor”) com explicação em linguagem simples.

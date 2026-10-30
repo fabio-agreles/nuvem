@@ -35,7 +35,7 @@ o rclone embutido.
 | Nova tentativa automática em falhas de rede (15 s / 60 s / 180 s) | ✅ |
 | Enviar e baixar arquivos avulsos na aba Arquivos | ✅ |
 | Tamanho e contagem de itens da pasta aberta (`operations/size`) | ✅ |
-| Flatpak (GNOME 50, rclone + bandeja embutidos) | ✅ construído e instalado localmente |
+| Flatpak (GNOME 50, rclone + bandeja embutidos, build **offline** com crates/npm/Go vendorizados) | ✅ construído e instalado localmente |
 | Pacotes `.deb` e AppImage com rclone embutido | ✅ gerados e testados |
 | Versão Windows (`Nuvem.exe` x64 + `rclone.exe`), compilada a partir do Linux | ✅ pacote portátil gerado; instalação e teste em máquina Windows pendentes |
 | Sincronização real (Google Drive, duas vias) | ✅ verificada: 1 pasta, ida e volta |
@@ -107,7 +107,7 @@ usa o backend Rust (`src-tauri/`). A UI escolhe automaticamente.
 | --- | --- | --- | --- |
 | `.deb` | `src-tauri/target/release/bundle/deb/Nuvem_0.1.0_amd64.deb` | 31,1 MB | embutido em `/usr/lib/Nuvem/rclone` |
 | AppImage | `src-tauri/target/release/bundle/appimage/Nuvem_0.1.0_amd64.AppImage` | 124,7 MB | embutido em `usr/lib/Nuvem/rclone` |
-| Flatpak | repositório local em `../flatpak-repo` | 91,1 MB instalado | compilado em `/app/bin/rclone` |
+| Flatpak | repositório local em `flatpak-repo/` | 91,5 MB instalado | compilado em `/app/bin/rclone` |
 | Windows (portátil) | `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-0.1.0-windows-x64.zip` | 30 MB | `rclone.exe` ao lado do `Nuvem.exe` |
 
 A busca do motor (`Rclone::find_binary`) tenta, em ordem: `NUVEM_RCLONE`, a cópia
@@ -205,8 +205,13 @@ flatpak install --user --reinstall -y \
 flatpak run app.nuvem.Nuvem
 ```
 
-Para construir do zero e as pendências (`$HOME` apenas, `vendor` para o
-Flathub), veja [`flatpak/README.md`](flatpak/README.md).
+O build é **offline**: crates (`cargo-sources.json`), pacotes npm
+(`node-sources.json`) e módulos Go do rclone (`rclone-sources.json` +
+`modules.txt`) viajam como fontes no manifesto, e as etapas rodam com
+`cargo --offline`, `npm ci --offline` e `go build -mod=vendor` — é o que o Flathub
+exige. Para construir do zero, regenerar os arquivos vendorizados e ver as
+pendências (`$HOME` apenas, `aarch64`, metainfo), veja
+[`flatpak/README.md`](flatpak/README.md).
 
 ## Como usar
 
@@ -341,8 +346,13 @@ publicar o app (verificação do escopo `drive`) evita reautorizar toda semana.
 - UI renderizada em navegador headless (modo demonstração) sem erros de layout.
 - `cargo build` com os plugins de notificação e diálogo — OK.
 - Build Flatpak completo (`org.flatpak.Builder`, GNOME 50) — OK, exportado e
-  instalado em `--user`; app abre, `rclone v1.75.2-DEV` responde em `core/version`
+  instalado em `--user`; app abre, `rclone v1.75.2` responde em `core/version`
   dentro do sandbox e a bandeja registra no `StatusNotifierWatcher`.
+- **Build Flatpak vendorizado (offline)**: crates, npm e módulos Go como fontes;
+  nenhuma etapa com `--share=network`. Commit `9932a13` (90,7 MB de conteúdo)
+  instalado e executado: interface real (contas e pastas do usuário), `rclone` de
+  84 MB compilado do fonte e painel RC respondendo `401` sem credencial e `200`
+  com HTTP Basic.
 - `npx tauri build` — OK: `.deb` (31,1 MB) e AppImage (124,7 MB) com rclone embutido.
   Verificado extraindo o `.deb` e o AppDir do AppImage e rodando com `PATH` sem
   rclone: em ambos o app chamou o binário embutido (`version`, `config dump`).
@@ -458,7 +468,16 @@ publicar o app (verificação do escopo `drive`) evita reautorizar toda semana.
   funciona, o rclone responde, só a interface não aparece.
 - **`Operation not permitted` ao limpar `.flatpak-builder`**: o cache de módulos Go
   nasce sem permissão de escrita. Use `chmod -R u+w` antes do `rm -rf` (ou
-  `GOFLAGS=-modcacherw`, já no manifesto).
+  `GOFLAGS=-modcacherw`; o build vendorizado não cria esse cache).
+- **JSON de fontes como objeto no manifesto Flatpak**: `{"type": "file", "path":
+  "cargo-sources.json"}` só **copia** o arquivo para o build — as fontes de dentro
+  dele nunca são aplicadas e o `cargo` sai tentando o crates.io. O correto é o nome
+  do JSON como **string** na lista `sources` (`"cargo-sources.json"`).
+- **`modules.txt` do `flatpak-go-mod` sai incompleto**: no rclone 1.75.2 ele gerou
+  800 linhas em vez de 1743 e o `go build -mod=vendor` parou em
+  `is explicitly required in go.mod, but not marked as explicit in
+  vendor/modules.txt`. Use o `vendor/modules.txt` produzido pelo próprio
+  `CGO_ENABLED=0 go mod vendor`.
 - **Bisync pela API RC não devolve estatísticas**: `sync/bisync` responde com
   `basePath/listing1/listing2/output/session/workDir` — sem `bytes`, `deletes` nem
   `renames`. Para saber se a verificação automática moveu algo é preciso ler o log
@@ -579,8 +598,9 @@ O código-fonte está versionado em git na raiz do projeto; `app/` é o aplicati
 
 ## Próximos passos
 
-1. **Flathub**: `go mod vendor` + `cargo vendor` (hoje o build usa rede), build para
-   `aarch64` e metainfo com URL/licença reais (hoje `example.invalid`).
+1. **Flathub**: a vendorização está feita (build offline; falta rodar num `aarch64`
+   real), mais metainfo com URL/dados reais (hoje `example.invalid`), screenshots e
+   `<releases>`, e um `.desktop` com três categorias principais.
 2. **Validações que faltam**: conta OneDrive real, conflito real (edição simultânea
    nos dois lados), login de verdade para conferir o item de autostart, e instalar o
    `.deb` com `dpkg` numa máquina limpa.

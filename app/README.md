@@ -645,7 +645,8 @@ NSIS do Windows (`pacotes.yml`).
 4. **Windows de verdade**: o `-setup.exe` já sai no CI a cada tag (23,1 MB, com
    `rclone.exe` dentro). Falta rodar o app numa máquina Windows (bandeja, WebView2,
    autostart pela chave `Run`, desinstalação) e assinar o binário — hoje o
-   SmartScreen avisa. O portátil também está pronto para esse teste.
+   SmartScreen avisa. O portátil também está pronto para esse teste — o passo a passo
+   está em [`docs/roteiro-teste-windows.md`](docs/roteiro-teste-windows.md).
 5. **Atualização automática**: o app **avisa** quando há versão nova (Ajustes →
    Sobre → Verificar, consultando a última Release), mas não se atualiza sozinho —
    instalar por cima continua manual (`tauri-plugin-updater` exigiria chaves de

@@ -184,6 +184,15 @@ Alternativas descartadas por ora:
   o Flathub cobra. O repositório está em `github.com/fabio-agreles/nuvem` (hoje
   **privado**: as URLs e capturas do metainfo só resolvem quando ele voltar a ser
   público), com lint verde no CI; falta um build `aarch64` de verdade.
+- ✅ P2 de distribuição (versão **1.1.0**): relatório de diagnóstico em um clique
+  (`save_diagnostics` → `diagnostico-AAAA-MM-DD-HHMMSS.txt`, escrita atômica com
+  permissão 0600; o conteúdo é montado por uma função pura, `montar_relatorio`, com
+  teste que garante a ausência de `client_secret` e de tokens) e aviso de nova versão
+  (`check_update` consulta `api.github.com/.../releases/latest` e o botão "Baixar"
+  abre a Release em `open_url`, que só aceita http/https). Fica em Ajustes → Sobre.
+  Decisão: **não** usar `tauri-plugin-updater`, que exigiria assinar os pacotes.
+  Roteiro de validação do `.exe` em Windows real em
+  [`docs/roteiro-teste-windows.md`](docs/roteiro-teste-windows.md).
 - Command palette completa, atalhos, onboarding animado, estados vazios.
 - Regras de ignore com validação, limites de banda, proxy, conversão de docs Google.
 - Diagnóstico (“doctor”) com explicação em linguagem simples.

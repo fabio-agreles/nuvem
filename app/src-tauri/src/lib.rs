@@ -114,6 +114,9 @@ pub fn run() {
             commands::autostart_enabled,
             commands::reveal_path,
             commands::open_config_folder,
+            commands::save_diagnostics,
+            commands::check_update,
+            commands::open_url,
             commands::quit_app,
         ])
         .build(tauri::generate_context!())

@@ -12,6 +12,7 @@ import type {
   RemoteEntry,
   Settings,
   Snapshot,
+  UpdateInfo,
 } from "./types";
 import { demoBackend } from "./demo";
 
@@ -50,6 +51,9 @@ export type Backend = {
   accountUsage(): Promise<AccountUsage[]>;
   revealPath(path: string): Promise<void>;
   openConfigFolder(): Promise<string>;
+  saveDiagnostics(): Promise<string>;
+  checkUpdate(): Promise<UpdateInfo | null>;
+  openUrl(url: string): Promise<void>;
   quitApp(): Promise<void>;
 };
 
@@ -92,6 +96,9 @@ const desktop: Backend = {
   accountUsage: () => invoke("account_usage"),
   revealPath: (path) => invoke("reveal_path", { path }),
   openConfigFolder: () => invoke("open_config_folder"),
+  saveDiagnostics: () => invoke("save_diagnostics"),
+  checkUpdate: () => invoke("check_update"),
+  openUrl: (url) => invoke("open_url", { url }),
   quitApp: () => invoke("quit_app"),
 };
 
@@ -126,6 +133,9 @@ const demo: Backend = {
   accountUsage: () => demoBackend.accountUsage(),
   revealPath: () => demoBackend.revealPath(),
   openConfigFolder: () => demoBackend.openConfigFolder(),
+  saveDiagnostics: () => demoBackend.saveDiagnostics(),
+  checkUpdate: () => demoBackend.checkUpdate(),
+  openUrl: () => demoBackend.openUrl(),
   quitApp: () => demoBackend.quitApp(),
 };
 

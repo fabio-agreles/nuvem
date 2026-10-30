@@ -338,6 +338,62 @@ pub fn write_json<T: Serialize + ?Sized>(path: &Path, value: &T) {
     let _ = std::fs::rename(&temporary, path);
 }
 
+/// Grava texto com a mesma garantia dos JSONs: temporário, `0600` e `rename`.
+/// Usado pelo relatório de diagnóstico, que não é JSON.
+pub fn write_text(path: &Path, texto: &str) -> std::io::Result<()> {
+    let temporary = path.with_extension("txt.tmp");
+    std::fs::write(&temporary, texto)?;
+    restringir(&temporary);
+    std::fs::rename(&temporary, path)
+}
+
+/// Data/hora local em `AAAA-MM-DD-HHMMSS`, para nome de arquivo.
+pub fn agora_legivel() -> String {
+    match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
+        Ok(tempo) => {
+            let segundos = tempo.as_secs();
+            let (dias, resto) = (segundos / 86_400, segundos % 86_400);
+            let (ano, mes, dia) = data_de_dias(dias as i64);
+            format!(
+                "{ano:04}-{mes:02}-{dia:02}-{:02}{:02}{:02}",
+                resto / 3600,
+                (resto % 3600) / 60,
+                resto % 60
+            )
+        }
+        Err(_) => "sem-data".to_string(),
+    }
+}
+
+/// Carimbo de uma entrada de atividade, no mesmo formato (sem segundos).
+pub fn formatar_quando(carimbo_ms: u64) -> Option<String> {
+    if carimbo_ms == 0 {
+        return None;
+    }
+    let segundos = carimbo_ms / 1000;
+    let (dias, resto) = (segundos / 86_400, segundos % 86_400);
+    let (ano, mes, dia) = data_de_dias(dias as i64);
+    Some(format!(
+        "{ano:04}-{mes:02}-{dia:02} {:02}:{:02}",
+        resto / 3600,
+        (resto % 3600) / 60
+    ))
+}
+
+/// Dias desde 1970 → (ano, mês, dia), pelo algoritmo civil (Howard Hinnant).
+fn data_de_dias(dias: i64) -> (i64, u32, u32) {
+    let z = dias + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let ano = yoe + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let dia = (doy - (153 * mp + 2) / 5 + 1) as u32;
+    let mes = if mp < 10 { mp + 3 } else { mp - 9 } as u32;
+    (if mes <= 2 { ano + 1 } else { ano }, mes, dia)
+}
+
 #[cfg(test)]
 mod tests {
     use super::{read_json, write_json, AppState};
@@ -384,8 +440,13 @@ mod tests {
         let dir = pasta_temporaria("json-backup");
         let path = dir.join("settings.json");
 
-        let mut bom = Settings::default();
-        bom.sync_interval_min = 15;
+        let bom = Settings {
+
+            sync_interval_min: 15,
+
+            ..Settings::default()
+
+        };
         write_json(&path, &bom);
         // Segunda gravação: a versão anterior passa a existir como `.bak`.
         write_json(&path, &bom);

@@ -436,6 +436,20 @@ class DemoBackend {
     return "~/.config/nuvem";
   }
 
+  async saveDiagnostics() {
+    await delay(120);
+    return "~/Documentos/nuvem-diagnostico-2026-10-30-1830.txt";
+  }
+
+  async checkUpdate() {
+    await delay(300);
+    return null;
+  }
+
+  async openUrl() {
+    await delay(40);
+  }
+
   async quitApp() {
     await delay(40);
   }

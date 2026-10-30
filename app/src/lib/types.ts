@@ -132,3 +132,10 @@ export type ViewId =
   | "activity"
   | "conflicts"
   | "settings";
+
+export type UpdateInfo = {
+  /** Versão publicada, sem o `v` do tag. */
+  version: string;
+  /** Página da release, para abrir no navegador. */
+  url: string;
+};

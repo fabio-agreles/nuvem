@@ -52,6 +52,8 @@ o rclone embutido.
 | Licença MIT (`LICENSE`) e repositório git versionado | ✅ |
 | Build Flatpak offline com crates, npm e módulos Go vendorizados | ✅ |
 | Metainfo AppStream completo (`developer`, URLs, 6 capturas 2x, `releases`) e `.desktop` sem avisos | ✅ |
+| Relatório de diagnóstico em um clique (sem senhas nem tokens) | ✅ |
+| Aviso de nova versão publicada (consulta a última Release) | ✅ |
 
 ## Prévia
 
@@ -115,11 +117,11 @@ usa o backend Rust (`src-tauri/`). A UI escolhe automaticamente.
 
 | Pacote | Arquivo | Tamanho | rclone |
 | --- | --- | --- | --- |
-| `.deb` | `src-tauri/target/release/bundle/deb/Nuvem_1.0.0_amd64.deb` | 31,1 MB | embutido em `/usr/lib/Nuvem/rclone` |
-| AppImage | `src-tauri/target/release/bundle/appimage/Nuvem_1.0.0_amd64.AppImage` | 124,7 MB local · 102,8 MB no CI | embutido em `usr/lib/Nuvem/rclone` |
+| `.deb` | `src-tauri/target/release/bundle/deb/Nuvem_1.1.0_amd64.deb` | 31,1 MB | embutido em `/usr/lib/Nuvem/rclone` |
+| AppImage | `src-tauri/target/release/bundle/appimage/Nuvem_1.1.0_amd64.AppImage` | 124,7 MB local · 102,8 MB no CI | embutido em `usr/lib/Nuvem/rclone` |
 | Flatpak | repositório local em `flatpak-repo/` | 91,5 MB instalado | compilado em `/app/bin/rclone` |
-| Windows (portátil) | `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-1.0.0-windows-x64.zip` | 30 MB | `rclone.exe` ao lado do `Nuvem.exe` |
-| Windows (instalador) | Release `v1.0.0`, `Nuvem_1.0.0_x64-setup.exe` (gerado no CI) | 23,2 MB | `resources/rclone.exe` dentro do NSIS |
+| Windows (portátil) | `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-1.1.0-windows-x64.zip` | 30 MB | `rclone.exe` ao lado do `Nuvem.exe` |
+| Windows (instalador) | Release `v1.1.0`, `Nuvem_1.1.0_x64-setup.exe` (gerado no CI) | 23,2 MB | `resources/rclone.exe` dentro do NSIS |
 
 Os pacotes do Linux também saem no CI, na página de Releases do repositório — o
 `.deb` de lá passa por `scripts/fix-deb.sh` e leva `LICENSE` em
@@ -158,7 +160,7 @@ aplica só a correção, sem reconstruir).
 Instalar o pacote:
 
 ```bash
-sudo dpkg -i src-tauri/target/release/bundle/deb/Nuvem_1.0.0_amd64.deb
+sudo dpkg -i src-tauri/target/release/bundle/deb/Nuvem_1.1.0_amd64.deb
 # se faltar alguma dependência:
 sudo apt -f install
 ```
@@ -644,8 +646,10 @@ NSIS do Windows (`pacotes.yml`).
    `rclone.exe` dentro). Falta rodar o app numa máquina Windows (bandeja, WebView2,
    autostart pela chave `Run`, desinstalação) e assinar o binário — hoje o
    SmartScreen avisa. O portátil também está pronto para esse teste.
-5. **Atualização automática**: não há `tauri-plugin-updater` nem aviso de nova
-   versão; quem instala pelo `.deb`/AppImage/Windows precisa baixar de novo à mão.
+5. **Atualização automática**: o app **avisa** quando há versão nova (Ajustes →
+   Sobre → Verificar, consultando a última Release), mas não se atualiza sozinho —
+   instalar por cima continua manual (`tauri-plugin-updater` exigiria chaves de
+   assinatura dos pacotes).
 6. **AppImage com WebKit embutido**: hoje ele usa o WebKitGTK do sistema (como todo
    AppImage de Tauri). Embutir é possível com `linuxdeploy-plugin-gtk`, ao custo de
    ~80 MB e de depender do mesmo runtime do sistema de qualquer jeito.

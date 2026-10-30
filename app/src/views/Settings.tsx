@@ -34,6 +34,10 @@ export function Settings({
   const [clientId, setClientId] = useState(settings.driveClientId);
   const [clientSecret, setClientSecret] = useState(settings.driveClientSecret);
   const [mostrarSegredo, setMostrarSegredo] = useState(false);
+  const [procurandoAtualizacao, setProcurandoAtualizacao] = useState(false);
+  const [atualizacao, setAtualizacao] = useState<{ version: string; url: string } | null>(
+    null,
+  );
 
   const credenciaisProprias = Boolean(settings.driveClientId.trim());
   const driveConectado = accounts.some((account) => account.provider === "drive");
@@ -514,11 +518,82 @@ export function Settings({
         <div className="card-body" style={{ paddingTop: 8 }}>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Nuvem 1.0.0</div>
+              <div className="row-title">Nuvem 1.1.0</div>
               <div className="row-desc">Tauri · React · rclone</div>
             </div>
             <div className="row-control">
               <span className="badge muted">app.nuvem.Nuvem</span>
+            </div>
+          </div>
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Atualizações</div>
+              <div className="row-desc">
+                {atualizacao
+                  ? `A versão ${atualizacao.version} já está publicada.`
+                  : "Consulta a última versão publicada no repositório do projeto."}
+              </div>
+            </div>
+            <div className="row-control">
+              {atualizacao ? (
+                <button
+                  className="btn sm primary"
+                  onClick={() => {
+                    void api
+                      .openUrl(atualizacao.url)
+                      .catch((cause) => notify(errorMessage(cause), "error"));
+                  }}
+                >
+                  <Icon name="download" size={14} />
+                  Baixar
+                </button>
+              ) : null}
+              <button
+                className="btn sm ghost"
+                disabled={procurandoAtualizacao}
+                onClick={() => {
+                  setProcurandoAtualizacao(true);
+                  void api
+                    .checkUpdate()
+                    .then((info) => {
+                      setAtualizacao(info);
+                      notify(
+                        info
+                          ? `A versão ${info.version} está disponível.`
+                          : "Você está na versão mais nova.",
+                        info ? "info" : "ok",
+                      );
+                    })
+                    .catch((cause) => notify(errorMessage(cause), "error"))
+                    .finally(() => setProcurandoAtualizacao(false));
+                }}
+              >
+                <Icon name="refresh" size={14} />
+                {procurandoAtualizacao ? "Procurando…" : "Verificar"}
+              </button>
+            </div>
+          </div>
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Relatório de diagnóstico</div>
+              <div className="row-desc">
+                Contas, pastas, ajustes e os últimos erros num arquivo de texto — sem
+                senhas nem tokens. Útil ao abrir um problema no projeto.
+              </div>
+            </div>
+            <div className="row-control">
+              <button
+                className="btn sm ghost"
+                onClick={() => {
+                  void api
+                    .saveDiagnostics()
+                    .then((path) => notify(`Relatório salvo em ${path}`, "ok"))
+                    .catch((cause) => notify(errorMessage(cause), "error"));
+                }}
+              >
+                <Icon name="file" size={14} />
+                Salvar
+              </button>
             </div>
           </div>
           <div className="row">

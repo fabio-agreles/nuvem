@@ -1618,10 +1618,346 @@ fn resposta_para(opcao: &Value) -> Option<String> {
         .map(str::to_string)
 }
 
+// ---------------------------------------------------------------------------
+// P2: relatório de diagnóstico e verificação de atualização
+// ---------------------------------------------------------------------------
+
+/// Compara duas versões "1.2.3" (aceita prefixo `v`). Qualquer parte não numérica
+/// vira 0, então `1.2` e `1.2.0` são iguais — suficiente para avisar de release.
+fn versao_mais_nova(atual: &str, remota: &str) -> bool {
+    fn partes(versao: &str) -> [u64; 3] {
+        let limpo = versao.trim().trim_start_matches('v');
+        let mut saida = [0u64; 3];
+        for (i, pedaco) in limpo.split(['.', '-', '+']).take(3).enumerate() {
+            saida[i] = pedaco
+                .chars()
+                .take_while(char::is_ascii_digit)
+                .collect::<String>()
+                .parse()
+                .unwrap_or(0);
+        }
+        saida
+    }
+    partes(remota) > partes(atual)
+}
+
+/// Monta o texto do relatório. Função pura (sem Tauri) para poder testar que
+/// nenhum segredo escapa — `client_secret` e tokens nunca entram aqui.
+struct ContextoRelatorio<'a> {
+    versao_app: &'a str,
+    sistema: &'a str,
+    /// Versão e caminho do rclone, quando encontrado.
+    rclone: Option<(&'a str, &'a str)>,
+    contas: &'a [Account],
+    profiles: &'a [Profile],
+    settings: &'a Settings,
+    atividade: &'a [ActivityEntry],
+    recuperacao: &'a [String],
+}
+
+fn montar_relatorio(ctx: &ContextoRelatorio<'_>) -> String {
+    let ContextoRelatorio {
+        versao_app,
+        sistema,
+        rclone,
+        contas,
+        profiles,
+        settings,
+        atividade,
+        recuperacao,
+    } = *ctx;
+    let mut texto = String::new();
+    texto.push_str(&format!("Nuvem {versao_app}\n"));
+    texto.push_str(&format!("Sistema: {sistema}\n"));
+    match rclone {
+        Some((versao, caminho)) => {
+            texto.push_str(&format!("rclone: {versao}\n"));
+            texto.push_str(&format!("Binário do rclone: {caminho}\n"));
+        }
+        None => texto.push_str("rclone: não encontrado\n"),
+    }
+    texto.push_str(&format!("\nContas ({})\n", contas.len()));
+    for conta in contas {
+        texto.push_str(&format!("- {} ({})\n", conta.name, provider_label(&conta.provider)));
+    }
+    texto.push_str(&format!("\nPastas ({})\n", profiles.len()));
+    for perfil in profiles {
+        let estado = if perfil.enabled { "ligada" } else { "desligada" };
+        texto.push_str(&format!(
+            "- {}:{} -> {} [{estado}]\n",
+            perfil.account, perfil.remote_path, perfil.local_path
+        ));
+        if let Some(erro) = &perfil.last_error {
+            texto.push_str(&format!("  último erro: {}\n", resumir(erro, 200)));
+        }
+    }
+    texto.push_str("\nAjustes\n");
+    texto.push_str(&format!("- tema: {}\n", settings.theme));
+    texto.push_str(&format!(
+        "- sincronização automática: {} (a cada {} min)\n",
+        if settings.auto_sync { "sim" } else { "não" },
+        settings.sync_interval_min
+    ));
+    texto.push_str(&format!(
+        "- tentar de novo sozinho: {}\n",
+        if settings.auto_retry { "sim" } else { "não" }
+    ));
+    texto.push_str(&format!(
+        "- notificações: {}\n",
+        if settings.notifications { "sim" } else { "não" }
+    ));
+    texto.push_str(&format!(
+        "- banda: subir '{}', descer '{}'\n",
+        settings.bandwidth_up, settings.bandwidth_down
+    ));
+    texto.push_str(&format!("- proxy: '{}'\n", settings.proxy));
+    texto.push_str(&format!("- regras de ignorar: {}\n", settings.ignore_rules.len()));
+    texto.push_str(&format!(
+        "- conversão de docs Google: {}, symlinks: {}\n",
+        if settings.docs_conversion { "sim" } else { "não" },
+        if settings.symlinks { "sim" } else { "não" }
+    ));
+    texto.push_str(&format!(
+        "- credenciais OAuth próprias: {}\n",
+        if settings.drive_client_id.trim().is_empty() {
+            "não (projeto do rclone)"
+        } else {
+            "sim"
+        }
+    ));
+
+    if !recuperacao.is_empty() {
+        texto.push_str("\nRecuperação na inicialização\n");
+        for aviso in recuperacao {
+            texto.push_str(&format!("- {}\n", resumir(aviso, 200)));
+        }
+    }
+
+    texto.push_str(&format!("\nAtividade recente ({})\n", atividade.len()));
+    for entrada in atividade.iter().take(20) {
+        let quando = crate::state::formatar_quando(entrada.at).unwrap_or_default();
+        texto.push_str(&format!(
+            "- [{}] {} — {} ({quando})\n",
+            entrada.kind,
+            entrada.title,
+            resumir(&entrada.detail, 200)
+        ));
+    }
+    texto
+}
+
+fn resumir(texto: &str, limite: usize) -> String {
+    let linha = texto.replace(['\r', '\n'], " ");
+    if linha.chars().count() <= limite {
+        return linha;
+    }
+    let cortado: String = linha.chars().take(limite).collect();
+    format!("{cortado}…")
+}
+
+/// Grava um relatório de diagnóstico ao lado dos arquivos de estado e devolve o
+/// caminho. A pasta abre no gerenciador: é o que a pessoa anexa ao abrir um
+/// problema, com contas, pastas e últimos erros já no lugar.
+#[tauri::command]
+pub async fn save_diagnostics(app: AppHandle, state: State<'_, AppState>) -> AppResult<String> {
+    let binary = Rclone::find_binary();
+    let versao_rclone = match &binary {
+        Some(path) => state.rclone.version(path).await,
+        None => None,
+    };
+    let contas = list_accounts_inner(&state).await.unwrap_or_default();
+    let profiles = state.profiles.lock().await.clone();
+    let settings = state.settings.lock().await.clone();
+    let atividade = state.activity.lock().await.clone();
+    let sistema = format!(
+        "{} {} · {}",
+        std::env::consts::OS,
+        std::env::consts::ARCH,
+        sistema_legivel()
+    );
+
+    let rclone = binary
+        .as_ref()
+        .zip(versao_rclone.as_ref())
+        .map(|(caminho, versao)| (versao.clone(), caminho.display().to_string()));
+    let texto = montar_relatorio(&ContextoRelatorio {
+        versao_app: env!("CARGO_PKG_VERSION"),
+        sistema: &sistema,
+        rclone: rclone
+            .as_ref()
+            .map(|(versao, caminho)| (versao.as_str(), caminho.as_str())),
+        contas: &contas,
+        profiles: &profiles,
+        settings: &settings,
+        atividade: &atividade,
+        recuperacao: &state.recuperacao,
+    });
+
+    let quando = crate::state::agora_legivel();
+    let arquivo = state.dir.join(format!("diagnostico-{quando}.txt"));
+    crate::state::write_text(&arquivo, &texto)?;
+    let caminho = arquivo.display().to_string();
+    let _ = abrir_no_sistema(&state.dir);
+    let _ = app.emit("sync://changed", ());
+    Ok(caminho)
+}
+
+/// Nome da distro, quando dá para ler (`PRETTY_NAME` do `/etc/os-release`).
+fn sistema_legivel() -> String {
+    std::fs::read_to_string("/etc/os-release")
+        .ok()
+        .and_then(|texto| {
+            texto.lines().find_map(|linha| {
+                linha
+                    .strip_prefix("PRETTY_NAME=")
+                    .map(|valor| valor.trim_matches('"').to_string())
+            })
+        })
+        .unwrap_or_else(|| "sistema desconhecido".to_string())
+}
+
+/// Consulta a última Release pública do repositório. Repositório privado (ou
+/// rede fora) devolve `None` em vez de erro: não é falha do app.
+#[tauri::command]
+pub async fn check_update() -> AppResult<Option<UpdateInfo>> {
+    const URL: &str = "https://api.github.com/repos/fabio-agreles/nuvem/releases/latest";
+    let cliente = reqwest::Client::builder()
+        .no_proxy()
+        .timeout(Duration::from_secs(12))
+        .build()
+        .map_err(|erro| AppError::new(erro.to_string()))?;
+    let resposta = cliente
+        .get(URL)
+        // A API do GitHub recusa requisição sem User-Agent.
+        .header("User-Agent", format!("Nuvem/{}", env!("CARGO_PKG_VERSION")))
+        .header("Accept", "application/vnd.github+json")
+        .send()
+        .await
+        .map_err(|erro| AppError::new(format!("não foi possível consultar a atualização: {erro}")))?;
+
+    if !resposta.status().is_success() {
+        return Ok(None);
+    }
+    let corpo: Value = resposta
+        .json()
+        .await
+        .map_err(|erro| AppError::new(erro.to_string()))?;
+    let remota = corpo
+        .get("tag_name")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    let url = corpo
+        .get("html_url")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    if url.is_empty() || !versao_mais_nova(env!("CARGO_PKG_VERSION"), remota) {
+        return Ok(None);
+    }
+    Ok(Some(UpdateInfo {
+        version: remota.trim_start_matches('v').to_string(),
+        url: url.to_string(),
+    }))
+}
+
+/// Abre um endereço no navegador (o `xdg-open` também serve para URLs).
+#[tauri::command]
+pub fn open_url(url: String) -> AppResult<()> {
+    if !(url.starts_with("https://") || url.starts_with("http://")) {
+        return Err(AppError::new("só abro endereços http(s)"));
+    }
+    abrir_no_sistema(&url)
+        .map_err(|erro| AppError::new(format!("não foi possível abrir {url}: {erro}")))?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::resposta_para;
+    use super::{montar_relatorio, resposta_para, versao_mais_nova, ContextoRelatorio};
+    use crate::models::{Account, ActivityEntry, Profile, Settings};
     use serde_json::json;
+
+    #[test]
+    fn comparacao_de_versao_ignora_prefixo_e_complemento() {
+        assert!(versao_mais_nova("1.0.0", "v1.0.1"));
+        assert!(versao_mais_nova("1.0.0", "1.1"));
+        assert!(versao_mais_nova("1.9.9", "2.0.0"));
+        // O quarto componente não conta (semver tem três).
+        assert!(!versao_mais_nova("1.0", "1.0.0.1"));
+        assert!(!versao_mais_nova("1.0.0", "1.0.0"));
+        assert!(!versao_mais_nova("2.0.0", "1.9.9"));
+    }
+
+    #[test]
+    fn relatorio_nao_leva_o_segredo_do_cliente_oauth() {
+        let settings = Settings {
+            drive_client_id: "1234-abc.apps.googleusercontent.com".to_string(),
+            drive_client_secret: "GOCSPX-nao-pode-vazar".to_string(),
+            ..Settings::default()
+        };
+
+        let contas = [Account {
+            name: "pessoal".to_string(),
+            provider: "drive".to_string(),
+            label: "Google Drive".to_string(),
+            custom_client: true,
+        }];
+        let texto = montar_relatorio(&ContextoRelatorio {
+            versao_app: "1.0.0",
+            sistema: "linux x86_64 · Teste",
+            rclone: Some(("v1.75.2", "/usr/bin/rclone")),
+            contas: &contas,
+            profiles: &[],
+            settings: &settings,
+            atividade: &[],
+            recuperacao: &[],
+        });
+
+        assert!(!texto.contains("GOCSPX-nao-pode-vazar"), "segredo no relatório");
+        assert!(texto.contains("credenciais OAuth próprias: sim"));
+        assert!(texto.contains("Nuvem 1.0.0"));
+        assert!(texto.contains("pessoal (Google Drive)"));
+    }
+
+    #[test]
+    fn relatorio_resume_erros_e_atividade() {
+        let perfil = Profile {
+            id: "p1".to_string(),
+            account: "pessoal".to_string(),
+            remote_path: "Documentos".to_string(),
+            local_path: "/home/alguem/Documentos".to_string(),
+            enabled: true,
+            resync_needed: false,
+            last_sync: None,
+            last_error: Some("x".repeat(500)),
+            last_bytes: 0,
+        };
+
+        let entrada = ActivityEntry {
+            id: "1".to_string(),
+            kind: "error".to_string(),
+            title: "Falha".to_string(),
+            detail: "y".repeat(500),
+            at: 1_700_000_000_000,
+            profile: None,
+            files: Vec::new(),
+        };
+
+        let texto = montar_relatorio(&ContextoRelatorio {
+            versao_app: "1.0.0",
+            sistema: "linux",
+            rclone: None,
+            contas: &[],
+            profiles: &[perfil],
+            settings: &Settings::default(),
+            atividade: &[entrada],
+            recuperacao: &["profiles.json estava ilegível".to_string()],
+        });
+
+        assert!(texto.contains("rclone: não encontrado"));
+        assert!(texto.contains("Recuperação na inicialização"));
+        // Nada de linha de 500 caracteres: cada detalhe é resumido.
+        assert!(texto.lines().all(|linha| linha.chars().count() < 260));
+    }
 
     #[test]
     fn nao_refaz_a_autorizacao_quando_ja_existe_token() {

@@ -1,0 +1,17 @@
+# Artefatos de build e repositórios locais do Flatpak
+/flatpak-repo/
+/builddir/
+
+# Binários do motor de sincronização (85 MB cada). O build baixa a versão fixada
+# — `app/scripts/build-windows.sh` e o workflow cuidam disso quando faltam.
+/app/src-tauri/resources/rclone
+/app/src-tauri/resources/rclone.exe
+
+# Node/Rust (repetidos do app/.gitignore, para quem roda `git status` na raiz)
+/app/node_modules/
+/app/dist/
+/app/src-tauri/target/
+/app/src-tauri/gen/
+
+*.log
+.DS_Store

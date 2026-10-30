@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Ícone simbólico da bandeja: só traço, sem cor própria.
+       O app escolhe preto (tema claro) ou branco (tema escuro) em tempo de execução. -->
+  <g transform="translate(512 520) scale(1.24) translate(-567 -519)" fill="none" stroke="#ffffff" stroke-width="70" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M318 660c-72 0-130-58-130-130s58-130 130-130c8 0 16 1 24 2 30-96 120-166 226-166 132 0 240 108 240 240v10c62 14 108 70 108 136 0 78-63 141-141 141H318z"/>
+    <path d="M404 566l82 82 156-156"/>
+  </g>
+</svg>

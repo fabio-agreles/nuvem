@@ -1,0 +1,537 @@
+import { useState } from "react";
+import { Icon } from "../components/Icons";
+import { api, errorMessage, isDesktop } from "../lib/bridge";
+import type { Account, EngineStatus, Settings as SettingsModel } from "../lib/types";
+
+export function Settings({
+  settings,
+  theme,
+  engine,
+  accounts,
+  autostart,
+  autostartBusy,
+  onUpdate,
+  onTheme,
+  onAutostart,
+  onAddAccount,
+  notify,
+}: {
+  settings: SettingsModel;
+  theme: "light" | "dark";
+  engine: EngineStatus | null;
+  accounts: Account[];
+  autostart: boolean;
+  autostartBusy: boolean;
+  onUpdate: (patch: Partial<SettingsModel>) => void;
+  onTheme: (theme: "light" | "dark") => void;
+  onAutostart: (enabled: boolean) => void;
+  onAddAccount: () => void;
+  notify: (message: string, kind?: "info" | "ok" | "error") => void;
+}) {
+  const [up, setUp] = useState(settings.bandwidthUp);
+  const [down, setDown] = useState(settings.bandwidthDown);
+  const [newRule, setNewRule] = useState("");
+  const [clientId, setClientId] = useState(settings.driveClientId);
+  const [clientSecret, setClientSecret] = useState(settings.driveClientSecret);
+  const [mostrarSegredo, setMostrarSegredo] = useState(false);
+
+  const credenciaisProprias = Boolean(settings.driveClientId.trim());
+  const driveConectado = accounts.some((account) => account.provider === "drive");
+
+  const salvarCredenciais = () => {
+    const id = clientId.trim();
+    const segredo = clientSecret.trim();
+    if (!id !== !segredo) {
+      notify(
+        "Preencha o client_id e o client_secret juntos — ou deixe os dois em branco.",
+        "error",
+      );
+      return;
+    }
+    if (id && !id.endsWith(".apps.googleusercontent.com")) {
+      notify("O client_id do Google termina em .apps.googleusercontent.com.", "error");
+      return;
+    }
+    onUpdate({ driveClientId: id, driveClientSecret: segredo });
+    notify(
+      id
+        ? "Credenciais salvas. As contas conectadas agora precisam ser autorizadas de novo."
+        : "Credenciais apagadas. O Google Drive volta a usar o projeto do rclone.",
+      "ok",
+    );
+  };
+
+  const addRule = () => {
+    const rule = newRule.trim();
+    if (!rule) return;
+    if (settings.ignoreRules.includes(rule)) {
+      notify("Essa regra já existe.", "info");
+      return;
+    }
+    onUpdate({ ignoreRules: [...settings.ignoreRules, rule] });
+    setNewRule("");
+  };
+
+  return (
+    <div className="settings-grid">
+      <section className="card">
+        <div className="card-head">
+          <h2>Contas</h2>
+          <span className="spacer" />
+          <button className="link" onClick={onAddAccount}>
+            Adicionar
+          </button>
+        </div>
+        <div className="card-body" style={{ paddingTop: 8 }}>
+          {accounts.length === 0 ? (
+            <p className="muted" style={{ fontSize: 12.5 }}>
+              Nenhuma conta conectada.
+            </p>
+          ) : (
+            accounts.map((account) => (
+              <div className="row" key={account.name}>
+                <div className={`provider ${account.provider}`} style={{ width: 32, height: 32 }}>
+                  <Icon name={account.provider === "drive" ? "drive" : "onedrive"} size={16} />
+                </div>
+                <div className="row-text">
+                  <div className="row-title">{account.name}</div>
+                  <div className="row-desc">{account.label}</div>
+                </div>
+                <div className="row-control">
+                  {account.provider === "drive" ? (
+                    account.customClient ? (
+                      <span className="badge ok" title="Autorizada com o seu projeto OAuth">
+                        cota própria
+                      </span>
+                    ) : (
+                      <span
+                        className="badge muted"
+                        title="Usa o projeto OAuth compartilhado do rclone: o Google limita as requisições por minuto e isso deixa a sincronização lenta em horários de pico."
+                      >
+                        projeto do rclone
+                      </span>
+                    )
+                  ) : (
+                    <span className="badge ok">conectada</span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="card-head">
+          <h2>Motor de sincronização</h2>
+        </div>
+        <div className="card-body" style={{ paddingTop: 8 }}>
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">rclone</div>
+              <div className="row-desc mono">{engine?.binary ?? "não encontrado"}</div>
+            </div>
+            <div className="row-control">
+              <span className={`badge ${engine?.available ? "ok" : "danger"}`}>
+                {engine?.version ?? "indisponível"}
+              </span>
+            </div>
+          </div>
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Modo bisync</div>
+              <div className="row-desc">
+                Duas vias, com ressincronização automática ao mudar caminhos.
+              </div>
+            </div>
+            <div className="row-control">
+              <span className="badge muted">ativo</span>
+            </div>
+          </div>
+          {!isDesktop ? (
+            <div className="banner info" style={{ marginTop: 8 }}>
+              <Icon name="info" size={16} />
+              Você está no modo demonstração (navegador).
+            </div>
+          ) : null}
+          {engine && !engine.available ? (
+            <div className="banner danger" style={{ marginTop: 8 }}>
+              <Icon name="alert" size={16} />
+              Instale o rclone ou defina NUVEM_RCLONE.
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="card-head">
+          <h2>Banda e regras</h2>
+        </div>
+        <div className="card-body" style={{ paddingTop: 8 }}>
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Limite de envio</div>
+              <div className="row-desc">Vazio = sem limite. Ex.: 5M, 800k.</div>
+            </div>
+            <div className="row-control">
+              <input
+                className="input sm"
+                value={up}
+                placeholder="∞"
+                onChange={(event) => setUp(event.target.value)}
+                aria-label="Limite de envio"
+              />
+            </div>
+          </div>
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Limite de download</div>
+              <div className="row-desc">Aplicado na próxima sincronização.</div>
+            </div>
+            <div className="row-control">
+              <input
+                className="input sm"
+                value={down}
+                placeholder="∞"
+                onChange={(event) => setDown(event.target.value)}
+                aria-label="Limite de download"
+              />
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 10 }}>
+            <button
+              className="btn sm ghost"
+              onClick={() => {
+                onUpdate({ bandwidthUp: up.trim(), bandwidthDown: down.trim() });
+                notify("Limites salvos.", "ok");
+              }}
+            >
+              Salvar limites
+            </button>
+          </div>
+
+          <div className="divider" />
+
+          <div className="row-title" style={{ fontSize: 12.5 }}>
+            Regras de ignorar
+          </div>
+          <div className="rules">
+            {settings.ignoreRules.map((rule) => (
+              <span className="rule" key={rule}>
+                {rule}
+                <button
+                  aria-label={`Remover regra ${rule}`}
+                  onClick={() =>
+                    onUpdate({
+                      ignoreRules: settings.ignoreRules.filter((item) => item !== rule),
+                    })
+                  }
+                >
+                  <Icon name="x" size={11} />
+                </button>
+              </span>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <input
+              className="input"
+              value={newRule}
+              placeholder="nova regra, ex.: *.iso"
+              onChange={(event) => setNewRule(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") addRule();
+              }}
+              aria-label="Nova regra de ignorar"
+            />
+            <button className="btn sm ghost" onClick={addRule}>
+              <Icon name="plus" size={14} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="card-head">
+          <h2>Sistema</h2>
+        </div>
+        <div className="card-body" style={{ paddingTop: 8 }}>
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Tema</div>
+              <div className="row-desc">Segue sua preferência neste computador.</div>
+            </div>
+            <div className="row-control">
+              <button
+                className={`chip ${theme === "light" ? "active" : ""}`}
+                onClick={() => onTheme("light")}
+              >
+                Claro
+              </button>
+              <button
+                className={`chip ${theme === "dark" ? "active" : ""}`}
+                onClick={() => onTheme("dark")}
+              >
+                Escuro
+              </button>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Notificações</div>
+              <div className="row-desc">Avisar sobre conflitos e falhas.</div>
+            </div>
+            <div className="row-control">
+              <button
+                className={`switch ${settings.notifications ? "on" : ""}`}
+                role="switch"
+                aria-checked={settings.notifications}
+                aria-label="Notificações"
+                onClick={() => onUpdate({ notifications: !settings.notifications })}
+              />
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Sincronizar sozinho</div>
+              <div className="row-desc">
+                Verifica as pastas e envia mudanças locais sem você pedir. Reage a
+                arquivos novos em segundos e confere a nuvem no intervalo escolhido.
+              </div>
+            </div>
+            <div className="row-control">
+              <button
+                className={`switch ${settings.autoSync ? "on" : ""}`}
+                role="switch"
+                aria-checked={settings.autoSync}
+                aria-label="Sincronizar automaticamente"
+                onClick={() => onUpdate({ autoSync: !settings.autoSync })}
+              />
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Conferir a nuvem a cada</div>
+              <div className="row-desc">
+                Mudanças locais entram na hora; este intervalo pega o que mudou do
+                outro lado.
+              </div>
+            </div>
+            <div className="row-control">
+              <select
+                className="select"
+                aria-label="Intervalo da sincronização automática"
+                value={settings.syncIntervalMin}
+                disabled={!settings.autoSync}
+                onChange={(event) =>
+                  onUpdate({ syncIntervalMin: Number(event.target.value) })
+                }
+              >
+                <option value={1}>1 minuto</option>
+                <option value={5}>5 minutos</option>
+                <option value={15}>15 minutos</option>
+                <option value={30}>30 minutos</option>
+                <option value={60}>1 hora</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Tentar de novo sozinho</div>
+              <div className="row-desc">
+                Repete a sincronização até 3 vezes (15 s, 60 s, 180 s) quando a falha
+                parece ser de rede ou de limite do provedor.
+              </div>
+            </div>
+            <div className="row-control">
+              <button
+                className={`switch ${settings.autoRetry ? "on" : ""}`}
+                role="switch"
+                aria-checked={settings.autoRetry}
+                aria-label="Repetir falhas transitórias"
+                onClick={() => onUpdate({ autoRetry: !settings.autoRetry })}
+              />
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Abrir com o sistema</div>
+              <div className="row-desc">
+                {autostartBusy ? "Aguardando o sistema confirmar…" : "Inicia minimizado na bandeja."}
+              </div>
+            </div>
+            <div className="row-control">
+              <button
+                className={`switch ${autostart ? "on" : ""}`}
+                role="switch"
+                aria-checked={autostart}
+                aria-label="Iniciar com o sistema"
+                aria-busy={autostartBusy}
+                disabled={autostartBusy}
+                onClick={() => onAutostart(!autostart)}
+              />
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Configuração</div>
+              <div className="row-desc">Perfis e histórico do Nuvem.</div>
+            </div>
+            <div className="row-control">
+              <button
+                className="btn sm ghost"
+                onClick={() => {
+                  void api
+                    .openConfigFolder()
+                    .then((path) => notify(`Abrindo ${path}`, "info"))
+                    .catch((cause) => notify(errorMessage(cause), "error"));
+                }}
+              >
+                <Icon name="folder-open" size={14} />
+                Abrir
+              </button>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Sair do Nuvem</div>
+              <div className="row-desc">Interrompe a sincronização até abrir de novo.</div>
+            </div>
+            <div className="row-control">
+              <button
+                className="btn sm danger"
+                onClick={() => {
+                  void api.quitApp();
+                }}
+              >
+                Sair
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="card" style={{ gridColumn: "1 / -1" }}>
+        <div className="card-head">
+          <h2>Avançado · Google Drive</h2>
+          <span className="spacer" />
+          <span className={`badge ${credenciaisProprias ? "ok" : "muted"}`}>
+            {credenciaisProprias ? "projeto próprio" : "projeto do rclone"}
+          </span>
+        </div>
+        <div className="card-body" style={{ paddingTop: 10 }}>
+          <div className="advanced">
+            <div>
+              <p className="muted" style={{ fontSize: 12.5 }}>
+                O rclone usa, por padrão, um projeto OAuth compartilhado por todos os
+                usuários dele. O Google cobra a cota de{" "}
+                <strong>requisições por minuto</strong> nesse projeto, que vive
+                estourada — daí a sincronização arrastar mesmo com banda sobrando. Com
+                um projeto seu, a fila passa a ser só sua.
+              </p>
+              <p className="muted" style={{ fontSize: 12.5, marginTop: 8 }}>
+                1. Crie um projeto no Google Cloud, ative a <em>Drive API</em> e
+                configure a tela de consentimento. 2. Em <em>Credenciais</em>, crie um
+                ID do cliente OAuth do tipo <em>app para computador</em>. 3. Cole aqui
+                os dois valores.
+              </p>
+
+              {driveConectado ? (
+                <div className="banner warn" style={{ marginTop: 12 }}>
+                  <Icon name="info" size={16} />
+                  {credenciaisProprias
+                    ? "As contas Google já conectadas continuam no projeto do rclone: remova as pastas que usam a conta, remova a conta em Visão geral → Contas e conecte de novo. O navegador pede a autorização uma vez."
+                    : "Contas conectadas antes desta mudança só passam a usar as credenciais novas depois de removidas e conectadas de novo."}
+                </div>
+              ) : null}
+
+              <p className="muted" style={{ fontSize: 11.5, marginTop: 10 }}>
+                Fica salvo em <span className="mono">settings.json</span>, neste
+                computador, do mesmo jeito que o rclone guarda os tokens. Projeto no
+                modo <em>Testing</em> do Google expira a autorização em 7 dias; publicar
+                o app evita reautorizar toda semana.
+              </p>
+            </div>
+
+            <div>
+              <div className="field">
+                <label htmlFor="drive-client-id">client_id</label>
+                <input
+                  id="drive-client-id"
+                  className="input mono"
+                  value={clientId}
+                  spellCheck={false}
+                  autoComplete="off"
+                  placeholder="123456789-abc.apps.googleusercontent.com"
+                  onChange={(event) => setClientId(event.target.value)}
+                />
+              </div>
+
+              <div className="field" style={{ marginTop: 10 }}>
+                <label htmlFor="drive-client-secret">client_secret</label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    id="drive-client-secret"
+                    className="input mono"
+                    type={mostrarSegredo ? "text" : "password"}
+                    value={clientSecret}
+                    spellCheck={false}
+                    autoComplete="off"
+                    placeholder="GOCSPX-…"
+                    onChange={(event) => setClientSecret(event.target.value)}
+                  />
+                  <button
+                    className="btn sm ghost"
+                    type="button"
+                    aria-label={mostrarSegredo ? "Ocultar segredo" : "Mostrar segredo"}
+                    onClick={() => setMostrarSegredo(!mostrarSegredo)}
+                  >
+                    {mostrarSegredo ? "Ocultar" : "Mostrar"}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 12 }}>
+                <button className="btn sm ghost" onClick={salvarCredenciais}>
+                  Salvar credenciais
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="card-head">
+          <h2>Sobre</h2>
+        </div>
+        <div className="card-body" style={{ paddingTop: 8 }}>
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Nuvem 0.1.0</div>
+              <div className="row-desc">Tauri · React · rclone</div>
+            </div>
+            <div className="row-control">
+              <span className="badge muted">app.nuvem.Nuvem</span>
+            </div>
+          </div>
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">Privacidade</div>
+              <div className="row-desc">
+                Credenciais ficam na configuração local do rclone. O Nuvem não envia
+                dados para servidores próprios.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

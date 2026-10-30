@@ -1,0 +1,91 @@
+name: Pacotes
+
+# Instalador do Windows (NSIS) e pacotes do Linux. O NSIS só roda no próprio
+# Windows, então este workflow é o caminho para gerar o `.exe` de instalação:
+# no Linux o build por cargo-xwin chega até o `.exe` portátil, não até o NSIS.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  linux:
+    name: Linux (.deb e AppImage)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependências do WebKitGTK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - name: rclone para Linux
+        # O binário não vai para o repositório (~82 MB); o script baixa a versão
+        # fixada e não faz nada se o arquivo já existir.
+        working-directory: app
+        run: scripts/fetch-rclone.sh 1.75.2 linux
+
+      - name: Build
+        working-directory: app
+        run: |
+          npm ci
+          npx tauri build --bundles deb appimage
+          bash scripts/fix-deb.sh || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nuvem-linux
+          path: |
+            app/src-tauri/target/release/bundle/deb/*.deb
+            app/src-tauri/target/release/bundle/appimage/*.AppImage
+
+  windows:
+    name: Windows (instalador NSIS)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - name: rclone para Windows
+        working-directory: app
+        shell: bash
+        run: scripts/fetch-rclone.sh 1.75.2 windows
+
+      - name: Build
+        working-directory: app
+        run: |
+          npm ci
+          npx tauri build --bundles nsis
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nuvem-windows
+          path: app/src-tauri/target/release/bundle/nsis/*.exe

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>app.nuvem.Nuvem</id>
+  <name>Nuvem</name>
+  <summary>Sincronize Google Drive e OneDrive com pastas locais</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>
+      Nuvem mantém pastas do Google Drive e do OneDrive iguais às pastas locais,
+      nos dois sentidos, com uma interface simples e clara.
+    </p>
+    <ul>
+      <li>Várias contas e pastas em um só lugar</li>
+      <li>Seleção de quais pastas sincronizar</li>
+      <li>Progresso, atividade e conflitos visíveis</li>
+      <li>Limites de banda e regras de ignorar</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">app.nuvem.Nuvem.desktop</launchable>
+  <url type="homepage">https://example.invalid/nuvem</url>
+  <categories>
+    <category>Network</category>
+    <category>FileTransfer</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+</component>

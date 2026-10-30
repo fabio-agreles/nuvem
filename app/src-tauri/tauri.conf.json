@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Nuvem",
+  "version": "0.1.0",
+  "identifier": "app.nuvem.Nuvem",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Nuvem",
+        "width": 1180,
+        "height": 788,
+        "minWidth": 940,
+        "minHeight": 620,
+        "center": true,
+        "backgroundColor": "#f5f6fa"
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "trayIcon": {
+      "id": "main",
+      "iconPath": "icons/32x32.png"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["deb", "appimage"],
+    "resources": {
+      "resources/rclone": "rclone"
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png"
+    ],
+    "category": "Utility",
+    "shortDescription": "Sincronize Google Drive e OneDrive",
+    "longDescription": "Nuvem sincroniza suas contas de nuvem com pastas locais usando bisync, com uma interface simples e clara.",
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"],
+        "recommends": ["libayatana-appindicator3-1"],
+        "section": "utils",
+        "priority": "optional"
+      }
+    }
+  }
+}

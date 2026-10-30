@@ -1,0 +1,124 @@
+# Projeto OAuth do Google (para distribuir o Nuvem)
+
+O Google cobra a cota de **requisições por minuto** no *projeto OAuth* usado na
+autorização, não na conta. O projeto que o rclone compartilha entre todos os
+usuários dele vive estourado — é o que faz a sincronização do Google Drive
+arrastar mesmo com banda sobrando (medido: 3 arquivos pequenos levando 22 s com
+12 eventos `Rate limited` no log).
+
+A saída é o Nuvem ter o **seu próprio** projeto. O código já suporta três
+origens, nesta ordem de precedência:
+
+| Origem | Quem usa | Como entra |
+| --- | --- | --- |
+| **Suas credenciais** | quem colou o par em Ajustes → Avançado | `settings.json` |
+| **Projeto do Nuvem** | o build publicado | variável de ambiente na compilação |
+| **Projeto do rclone** | fallback | nada configurado |
+
+Ajustes → Avançado mostra qual está em vigor ("seu projeto", "projeto do
+Nuvem", "projeto do rclone") e o `client_id` em uso. O segredo nunca sai do
+binário nem vai para o relatório de diagnóstico.
+
+## 1. Criar o projeto (só você pode fazer)
+
+Passo a passo guiado, com as URLs:
+
+```bash
+cd app && scripts/oauth-google.sh
+```
+
+Resumo: criar projeto → ativar **Drive API** → tela de consentimento (público
+**Externo**) → escopo `.../auth/drive` → criar cliente **App para computador** →
+**Publicar app** (Audience → Publish). Leva ~10 minutos.
+
+Detalhes que importam:
+
+- **Não precisa de URI de redirecionamento.** Aplicativo instalado usa o laço
+  local `http://127.0.0.1:53682/`, que o rclone abre sozinho durante a
+  autorização.
+- **Publicar é obrigatório.** Em *Testing*, a autorização e o refresh token
+  expiram em **7 dias** — a sincronização pararia toda semana. Em produção não
+  expira; em troca, aparece a tela "O Google não verificou este aplicativo"
+  até a verificação terminar, e o projeto tem um **teto de 100 usuários novos na
+  vida** (não dá para zerar).
+- **Escopo `drive` (restrito), não `drive.file`.** `drive.file` só enxerga
+  arquivos criados pelo próprio app; não sincroniza uma pasta que já existe. O
+  custo é que `drive` é escopo restrito e passa por revisão do Google.
+- A tela de consentimento exige uma **URL de política de privacidade** pública —
+  é o [`PRIVACIDADE.md`](../PRIVACIDADE.md) deste repositório. Enquanto o
+  repositório estiver privado esse link dá 404 e a verificação não anda.
+
+## 2. Embutir no build
+
+```bash
+cd app
+export NUVEM_GOOGLE_CLIENT_ID='000000000000-xxxxxxxx.apps.googleusercontent.com'
+export NUVEM_GOOGLE_CLIENT_SECRET='GOCSPX-...'
+scripts/oauth-google.sh --salvar    # grava .env.oauth (0600, fora do git)
+scripts/oauth-google.sh --build     # valida e roda `tauri build`
+```
+
+No CI, o par vai por **segredos do repositório** (`NUVEM_GOOGLE_CLIENT_ID` e
+`NUVEM_GOOGLE_CLIENT_SECRET`, em Settings → Secrets and variables → Actions):
+o workflow `Pacotes` já os injeta no ambiente dos builds de Linux e Windows, e o
+`option_env!` do Rust os embute no binário. Sem os segredos o build continua
+funcionando, apenas no projeto do rclone.
+
+Sem recompilar (útil para testar, e para o Flatpak):
+
+```bash
+NUVEM_GOOGLE_CLIENT_ID=... NUVEM_GOOGLE_CLIENT_SECRET=... ./nuvem
+flatpak override --user --env=NUVEM_GOOGLE_CLIENT_ID=... \
+                       --env=NUVEM_GOOGLE_CLIENT_SECRET=... app.nuvem.Nuvem
+```
+
+O `client_secret` de aplicativo instalado **não é segredo de verdade** (o
+próprio rclone publica o dele no código). Mesmo assim ele entra pelo ambiente,
+não pelo repositório: o binário carrega o par, o git não.
+
+## 3. Verificar o app no Google (para o público em geral)
+
+Ordem real do processo:
+
+1. **Marca (brand verification)** — 2 a 3 dias úteis. Nome, logotipo, e-mails de
+   suporte, domínio da política de privacidade.
+2. **Verificação de escopo restrito** — semanas. Enviar em
+   [Google Auth Platform → Verificação](https://console.cloud.google.com/auth/verification):
+   justificativa de cada escopo, por que `drive.file` não serve, vídeo
+   demonstrando o fluxo completo (conectar → escolher pasta → sincronizar →
+   desconectar) e a política de privacidade pública.
+3. **Avaliação de segurança (CASA)** — **não se aplica ao Nuvem** enquanto ele
+   não tiver servidor: o Google exige a avaliação anual de apps que acessam
+   dados restritos "a partir de ou através de um servidor de terceiros". Os
+   tokens e o conteúdo ficam na máquina do usuário; não existe backend do Nuvem.
+   Se algum dia houver um serviço intermediário, a avaliação passa a valer
+   (custa de milhares de dólares por ano).
+4. **Re-verificação anual** — o Google cobra a cada 12 meses.
+
+Enquanto isso não termina, o caminho honesto é o que o app já faz: distribuir
+com o projeto do Nuvem, avisar na documentação que a tela de app não verificado
+aparece, e usar o override de Ajustes para quem preferir o próprio projeto (o
+teto de 100 usuários é do projeto do app, mas cada usuário com projeto próprio
+sai dessa conta).
+
+## 4. O que já está pronto no código
+
+- `src-tauri/src/oauth.rs` — resolve a origem (usuário > Nuvem > rclone),
+  valida o formato do `client_id`, nunca expõe o segredo. 6 testes.
+- `parametros_do_provedor` — manda o par efetivo no `config/create` do rclone na
+  hora de conectar a conta Google.
+- `oauth_info` — comando para a interface (origem + `client_id` em uso).
+- Relatório de diagnóstico — diz a origem e o `client_id` (público), nunca o
+  segredo.
+- Selo por conta — "credenciais próprias" só quando a conta foi autorizada com o
+  projeto do usuário, não com o do Nuvem.
+
+## 5. Pendências
+
+- [ ] Criar o projeto e colar o par nos segredos do repositório (você).
+- [ ] Tornar o repositório público — a política de privacidade precisa de URL
+      pública para a verificação.
+- [ ] Publicar o app (Audience → Publish) depois de testar com 2–3 contas.
+- [ ] Medir de novo a velocidade do Drive com o projeto próprio (esperado: fim
+      dos `Rate limited` no log) e registrar o antes/depois no `PLANO.md`.
+- [ ] Enviar para verificação quando o app estiver estável para distribuição.

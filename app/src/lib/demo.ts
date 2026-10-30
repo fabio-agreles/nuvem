@@ -450,6 +450,11 @@ class DemoBackend {
     await delay(40);
   }
 
+  async oauthInfo() {
+    await delay(30);
+    return { fonte: "rclone" as const, clientId: null };
+  }
+
   async quitApp() {
     await delay(40);
   }

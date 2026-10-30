@@ -134,6 +134,15 @@ pub struct AccountUsage {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct OAuthInfo {
+    /// `usuario`, `nuvem` ou `rclone`.
+    pub fonte: String,
+    /// `client_id` do projeto em vigor (público; o segredo nunca sai daqui).
+    pub client_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateInfo {
     /// Versão publicada, sem o `v` do tag.
     pub version: String,

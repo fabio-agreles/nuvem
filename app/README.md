@@ -47,6 +47,7 @@ o rclone embutido.
 | Aba Arquivos mantém a conta e o caminho ao trocar de aba | ✅ |
 | Transferências ajustadas para o limite do Google (3× mais rápido no teste) | ✅ |
 | Credenciais OAuth próprias do Google em **Ajustes → Avançado** | ✅ |
+| Projeto OAuth do próprio Nuvem embutido no build (usuário > Nuvem > rclone) | ✅ código e script; falta o par do projeto |
 | Painel RC do rclone com senha sorteada a cada execução (HTTP Basic) | ✅ |
 | Estado gravado com `0600` e recuperação automática de arquivo corrompido | ✅ |
 | Licença MIT (`LICENSE`) e repositório git versionado | ✅ |
@@ -339,8 +340,18 @@ sua. O cartão mostra o estado de cada conta (*projeto do rclone* / *cota própr
 avisa que contas antigas precisam ser removidas e conectadas de novo (o token vale
 para o projeto que o emitiu).
 
+O caminho definitivo é o **projeto do Nuvem**, embutido no build: com ele todo
+mundo que instala já usa uma cota do aplicativo, sem criar projeto nenhum. O par
+entra pelas variáveis `NUVEM_GOOGLE_CLIENT_ID`/`NUVEM_GOOGLE_CLIENT_SECRET` na
+compilação (ou em tempo de execução, sem recompilar) e a precedência é
+**usuário > Nuvem > rclone** — Ajustes → Avançado mostra qual está em vigor e o
+`client_id` em uso. Para criar o projeto e embutir o par:
+[`docs/oauth-google.md`](../docs/oauth-google.md) e `scripts/oauth-google.sh`.
+
 Ressalva do Google: projeto no modo *Testing* expira a autorização em **7 dias**;
-publicar o app (verificação do escopo `drive`) evita reautorizar toda semana.
+publicar o app (Audience → Publish) evita reautorizar toda semana, ao custo da
+tela "app não verificado" e de um teto de 100 usuários novos até a verificação do
+escopo `drive` terminar.
 
 ## Limitações atuais
 
@@ -638,10 +649,13 @@ NSIS do Windows (`pacotes.yml`).
 2. **Validações que faltam**: conta OneDrive real, conflito real (edição simultânea
    nos dois lados), login de verdade para conferir o item de autostart, e instalar o
    `.deb` com `dpkg` numa máquina limpa.
-3. **Projeto OAuth para distribuição**: o campo de credenciais próprias já existe;
-   falta um projeto verificado do Nuvem (como o rclone tem) para o usuário final não
-   precisar criar o dele — e para o app não depender do `client_id` compartilhado,
-   que se aposenta em 2026.
+3. **Projeto OAuth para distribuição**: o código já aceita o par do Nuvem embutido
+   (usuário > Nuvem > rclone) e o guia está em
+   [`docs/oauth-google.md`](../docs/oauth-google.md). Falta o projeto existir: criar
+   no Google Cloud, publicar (senão o refresh token expira em 7 dias), colar o par
+   nos segredos do repositório e submeter à verificação do escopo `drive` — sem ela
+   o app fica com a tela "não verificado" e teto de 100 usuários novos. O
+   `client_id` compartilhado do rclone se aposenta em 2026.
 4. **Windows de verdade**: o `-setup.exe` já sai no CI a cada tag (23,1 MB, com
    `rclone.exe` dentro). Falta rodar o app numa máquina Windows (bandeja, WebView2,
    autostart pela chave `Run`, desinstalação) e assinar o binário — hoje o

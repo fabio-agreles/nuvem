@@ -2,6 +2,7 @@ use crate::{
     autostart,
     error::{AppError, AppResult},
     models::*,
+    oauth,
     rclone::Rclone,
     state::{AppState, JobRecord},
 };
@@ -98,7 +99,13 @@ pub async fn list_accounts_inner(state: &AppState) -> AppResult<Vec<Account>> {
             let custom_client = config
                 .get("client_id")
                 .and_then(Value::as_str)
-                .map(|id| !id.trim().is_empty())
+                .map(|id| {
+                    // Conta autorizada com o projeto embutido no build não é
+                    // "credencial própria": o selo na interface é para quem
+                    // colou o par dele em Ajustes.
+                    let id = id.trim();
+                    !id.is_empty() && Some(id) != oauth::do_build().map(|par| par.0).as_deref()
+                })
                 .unwrap_or(false);
             Account {
                 name,
@@ -224,6 +231,9 @@ pub async fn list_accounts(state: State<'_, AppState>) -> AppResult<Vec<Account>
 /// `client_id`/`client_secret` do usuário, a cota de “consultas por minuto” deixa
 /// de ser a do projeto compartilhado do rclone (que vive estourada) e passa a ser
 /// a de um projeto que só ele usa. A conta é autorizada de novo no navegador.
+///
+/// Precedência: credenciais do usuário (Ajustes → Avançado) > projeto do Nuvem
+/// embutido no build > projeto compartilhado do rclone.
 async fn parametros_do_provedor(state: &AppState, provider: &str) -> AppResult<Value> {
     if provider != "drive" {
         return Ok(json!({}));
@@ -237,10 +247,12 @@ async fn parametros_do_provedor(state: &AppState, provider: &str) -> AppResult<V
         )
     };
 
+    // Par do usuário incompleto é erro (ele começou a preencher e parou no meio);
+    // par ausente cai para o projeto do Nuvem, se o build tiver um.
     match (id.is_empty(), secret.is_empty()) {
-        (true, true) => Ok(json!({})),
+        (true, true) => Ok(oauth::efetivas(("", "")).como_json()),
         (false, false) => {
-            if !id.ends_with(".apps.googleusercontent.com") {
+            if !id.ends_with(oauth::SUFIXO_CLIENT_ID) {
                 return Err(AppError::new(
                     "o client_id do Google termina em .apps.googleusercontent.com — confira se colou o valor certo.",
                 ));
@@ -248,9 +260,28 @@ async fn parametros_do_provedor(state: &AppState, provider: &str) -> AppResult<V
             Ok(json!({ "client_id": id, "client_secret": secret }))
         }
         _ => Err(AppError::new(
-            "preencha o client_id e o client_secret do Google — ou deixe os dois em branco para usar o projeto do rclone.",
+            "preencha o client_id e o client_secret do Google — ou deixe os dois em branco para usar o projeto do Nuvem.",
         )),
     }
+}
+
+/// Diz qual projeto OAuth está em vigor, para a interface e para o suporte.
+///
+/// Nunca devolve o `client_secret`: só a origem e o `client_id` (público).
+#[tauri::command]
+pub async fn oauth_info(state: State<'_, AppState>) -> AppResult<OAuthInfo> {
+    let (id, secret) = {
+        let settings = state.settings.lock().await;
+        (
+            settings.drive_client_id.clone(),
+            settings.drive_client_secret.clone(),
+        )
+    };
+    let credenciais = oauth::efetivas((&id, &secret));
+    Ok(OAuthInfo {
+        fonte: credenciais.fonte.id().to_string(),
+        client_id: credenciais.client_id,
+    })
 }
 
 #[tauri::command]
@@ -1717,14 +1748,15 @@ fn montar_relatorio(ctx: &ContextoRelatorio<'_>) -> String {
         if settings.docs_conversion { "sim" } else { "não" },
         if settings.symlinks { "sim" } else { "não" }
     ));
+    let credenciais = oauth::efetivas((&settings.drive_client_id, &settings.drive_client_secret));
     texto.push_str(&format!(
-        "- credenciais OAuth próprias: {}\n",
-        if settings.drive_client_id.trim().is_empty() {
-            "não (projeto do rclone)"
-        } else {
-            "sim"
-        }
+        "- credenciais OAuth: {}\n",
+        credenciais.fonte.descricao()
     ));
+    if let Some(id) = &credenciais.client_id {
+        // Público por natureza (vai na URL de autorização); ajuda no suporte.
+        texto.push_str(&format!("- client_id: {id}\n"));
+    }
 
     if !recuperacao.is_empty() {
         texto.push_str("\nRecuperação na inicialização\n");
@@ -1913,7 +1945,16 @@ mod tests {
         });
 
         assert!(!texto.contains("GOCSPX-nao-pode-vazar"), "segredo no relatório");
-        assert!(texto.contains("credenciais OAuth próprias: sim"));
+        assert!(
+            texto.contains("credenciais OAuth: credenciais próprias do usuário"),
+            "origem das credenciais não aparece no relatório"
+        );
+        // O relatório pode dizer a origem e o client_id (público), nunca o segredo.
+        assert!(!texto.contains("GOCSPX"), "segredo do cliente no relatório");
+        assert!(
+            texto.contains("client_id: 1234-abc.apps.googleusercontent.com"),
+            "client_id (público) deveria aparecer para o suporte"
+        );
         assert!(texto.contains("Nuvem 1.0.0"));
         assert!(texto.contains("pessoal (Google Drive)"));
     }

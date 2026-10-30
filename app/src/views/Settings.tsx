@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Icon } from "../components/Icons";
 import { api, errorMessage, isDesktop } from "../lib/bridge";
-import type { Account, EngineStatus, Settings as SettingsModel } from "../lib/types";
+import type { Account, EngineStatus, OAuthInfo, Settings as SettingsModel } from "../lib/types";
 
 export function Settings({
   settings,
@@ -40,6 +40,31 @@ export function Settings({
   );
 
   const credenciaisProprias = Boolean(settings.driveClientId.trim());
+  // Qual projeto OAuth o Google Drive está usando de fato: o do usuário, o
+  // embutido no build (Nuvem) ou o compartilhado do rclone.
+  const [oauth, setOauth] = useState<OAuthInfo | null>(null);
+  useEffect(() => {
+    let vivo = true;
+    void api
+      .oauthInfo()
+      .then((info) => {
+        if (vivo) setOauth(info);
+      })
+      .catch(() => {
+        if (vivo) setOauth(null);
+      });
+    return () => {
+      vivo = false;
+    };
+  }, [settings.driveClientId, settings.driveClientSecret]);
+
+  const fonteOauth: "usuario" | "nuvem" | "rclone" =
+    oauth?.fonte ?? (credenciaisProprias ? "usuario" : "rclone");
+  const rotuloOauth = {
+    usuario: "seu projeto",
+    nuvem: "projeto do Nuvem",
+    rclone: "projeto do rclone",
+  }[fonteOauth];
   const driveConectado = accounts.some((account) => account.provider === "drive");
 
   const salvarCredenciais = () => {
@@ -60,7 +85,9 @@ export function Settings({
     notify(
       id
         ? "Credenciais salvas. As contas conectadas agora precisam ser autorizadas de novo."
-        : "Credenciais apagadas. O Google Drive volta a usar o projeto do rclone.",
+        : fonteOauth === "nuvem"
+          ? "Credenciais apagadas. O Google Drive volta a usar o projeto do Nuvem."
+          : "Credenciais apagadas. O Google Drive volta a usar o projeto do rclone.",
       "ok",
     );
   };
@@ -425,19 +452,33 @@ export function Settings({
         <div className="card-head">
           <h2>Avançado · Google Drive</h2>
           <span className="spacer" />
-          <span className={`badge ${credenciaisProprias ? "ok" : "muted"}`}>
-            {credenciaisProprias ? "projeto próprio" : "projeto do rclone"}
+          <span className={`badge ${fonteOauth === "rclone" ? "muted" : "ok"}`}>
+            {rotuloOauth}
           </span>
         </div>
         <div className="card-body" style={{ paddingTop: 10 }}>
           <div className="advanced">
             <div>
               <p className="muted" style={{ fontSize: 12.5 }}>
-                O rclone usa, por padrão, um projeto OAuth compartilhado por todos os
-                usuários dele. O Google cobra a cota de{" "}
-                <strong>requisições por minuto</strong> nesse projeto, que vive
-                estourada — daí a sincronização arrastar mesmo com banda sobrando. Com
-                um projeto seu, a fila passa a ser só sua.
+                O Google cobra a cota de <strong>requisições por minuto</strong> no
+                projeto OAuth usado na autorização. O projeto compartilhado do rclone é
+                usado por todos os usuários dele e vive estourado — daí a sincronização
+                arrastar mesmo com banda sobrando.
+              </p>
+              <div className="row" style={{ padding: "10px 0", borderBottom: "none" }}>
+                <div className="row-text">
+                  <div className="row-title">Projeto em uso</div>
+                  <div className="row-desc mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
+                    {oauth?.clientId ?? "sem client_id (projeto compartilhado do rclone)"}
+                  </div>
+                </div>
+              </div>
+              <p className="muted" style={{ fontSize: 12.5 }}>
+                {fonteOauth === "nuvem"
+                  ? "Este build já usa o projeto OAuth do próprio Nuvem: a cota é do aplicativo e não a do rclone. Preencha os campos abaixo só se quiser usar um projeto seu."
+                  : fonteOauth === "usuario"
+                    ? "As contas Google deste computador usam o projeto que você colou abaixo."
+                    : "Sem projeto próprio, a cota é a do projeto compartilhado do rclone. Crie o seu para a fila ser só sua."}
               </p>
               <p className="muted" style={{ fontSize: 12.5, marginTop: 8 }}>
                 1. Crie um projeto no Google Cloud, ative a <em>Drive API</em> e

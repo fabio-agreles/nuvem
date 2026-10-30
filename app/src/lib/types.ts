@@ -139,3 +139,12 @@ export type UpdateInfo = {
   /** Página da release, para abrir no navegador. */
   url: string;
 };
+
+/** Qual projeto OAuth do Google está em uso no Google Drive. */
+export type OAuthInfo = {
+  /** "usuario" (credenciais coladas em Ajustes), "nuvem" (projeto embutido no
+   *  build) ou "rclone" (projeto compartilhado, com cota estourada). */
+  fonte: "usuario" | "nuvem" | "rclone";
+  /** client_id em vigor — público, vai na URL de autorização. */
+  clientId: string | null;
+};

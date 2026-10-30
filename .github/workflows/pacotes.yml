@@ -52,6 +52,13 @@ jobs:
 
       - name: Build
         working-directory: app
+        # As credenciais do projeto OAuth do Nuvem entram pelo ambiente: o
+        # `option_env!` do Rust as embute no binário. Sem os segredos no
+        # repositório, o build continua funcionando com o projeto do rclone
+        # (o app avisa isso em Ajustes → Avançado).
+        env:
+          NUVEM_GOOGLE_CLIENT_ID: ${{ secrets.NUVEM_GOOGLE_CLIENT_ID }}
+          NUVEM_GOOGLE_CLIENT_SECRET: ${{ secrets.NUVEM_GOOGLE_CLIENT_SECRET }}
         run: |
           npm ci
           npx tauri build --bundles deb appimage
@@ -102,6 +109,9 @@ jobs:
 
       - name: Build
         working-directory: app
+        env:
+          NUVEM_GOOGLE_CLIENT_ID: ${{ secrets.NUVEM_GOOGLE_CLIENT_ID }}
+          NUVEM_GOOGLE_CLIENT_SECRET: ${{ secrets.NUVEM_GOOGLE_CLIENT_SECRET }}
         run: |
           npm ci
           npx tauri build --bundles nsis

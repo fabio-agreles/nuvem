@@ -193,6 +193,16 @@ Alternativas descartadas por ora:
   Decisão: **não** usar `tauri-plugin-updater`, que exigiria assinar os pacotes.
   Roteiro de validação do `.exe` em Windows real em
   [`docs/roteiro-teste-windows.md`](docs/roteiro-teste-windows.md).
+- ✅ Projeto OAuth do próprio Nuvem (código pronto, falta o par): `src-tauri/src/oauth.rs`
+  resolve a origem com precedência **usuário > Nuvem > rclone**, valida o formato do
+  `client_id` e nunca expõe o segredo; `oauth_info` alimenta o cartão Avançado, que
+  mostra "seu projeto" / "projeto do Nuvem" / "projeto do rclone" e o `client_id` em
+  uso. O par entra por `NUVEM_GOOGLE_CLIENT_ID`/`_SECRET` na compilação (segredos do
+  repositório no CI) ou em tempo de execução (inclusive `flatpak override --env`).
+  Guia do console, verificação do Google, análise da avaliação CASA (não se aplica:
+  não há servidor) e política de privacidade em [`docs/oauth-google.md`](docs/oauth-google.md)
+  e [`PRIVACIDADE.md`](PRIVACIDADE.md). Pendente: criar o projeto, colar o par nos
+  segredos, publicar o app e medir de novo a velocidade do Drive.
 - Command palette completa, atalhos, onboarding animado, estados vazios.
 - Regras de ignore com validação, limites de banda, proxy, conversão de docs Google.
 - Diagnóstico (“doctor”) com explicação em linguagem simples.

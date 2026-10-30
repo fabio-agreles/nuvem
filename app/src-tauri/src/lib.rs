@@ -10,6 +10,7 @@ mod autosync;
 mod commands;
 mod error;
 mod models;
+mod oauth;
 mod monitor;
 mod rclone;
 mod retry;
@@ -117,6 +118,7 @@ pub fn run() {
             commands::save_diagnostics,
             commands::check_update,
             commands::open_url,
+        commands::oauth_info,
             commands::quit_app,
         ])
         .build(tauri::generate_context!())

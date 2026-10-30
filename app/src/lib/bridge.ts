@@ -8,6 +8,7 @@ import type {
   EngineStatus,
   FolderSize,
   NewProfile,
+  OAuthInfo,
   Profile,
   RemoteEntry,
   Settings,
@@ -54,6 +55,7 @@ export type Backend = {
   saveDiagnostics(): Promise<string>;
   checkUpdate(): Promise<UpdateInfo | null>;
   openUrl(url: string): Promise<void>;
+  oauthInfo(): Promise<OAuthInfo>;
   quitApp(): Promise<void>;
 };
 
@@ -99,6 +101,7 @@ const desktop: Backend = {
   saveDiagnostics: () => invoke("save_diagnostics"),
   checkUpdate: () => invoke("check_update"),
   openUrl: (url) => invoke("open_url", { url }),
+  oauthInfo: () => invoke("oauth_info"),
   quitApp: () => invoke("quit_app"),
 };
 
@@ -136,6 +139,7 @@ const demo: Backend = {
   saveDiagnostics: () => demoBackend.saveDiagnostics(),
   checkUpdate: () => demoBackend.checkUpdate(),
   openUrl: () => demoBackend.openUrl(),
+  oauthInfo: () => demoBackend.oauthInfo(),
   quitApp: () => demoBackend.quitApp(),
 };
 

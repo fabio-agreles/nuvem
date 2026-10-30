@@ -196,6 +196,7 @@ explicit in vendor/modules.txt`. Use o `modules.txt` do próprio `go mod vendor`
 | Sincronização real com conta Google/OneDrive | ✅ verificada com conta real |
 | Início automático (`org.freedesktop.portal.Background`) | ✅ escreve `~/.config/autostart` do sistema |
 | Credenciais OAuth próprias (`Ajustes → Avançado · Google Drive`) | ✅ cartão presente no binário instalado (`client_id`/`client_secret` compilados); validação coberta por teste |
+| Projeto OAuth do próprio Nuvem embutido no build | ✅ código; no Flatpak o par entra por `flatpak override --user --env=NUVEM_GOOGLE_CLIENT_ID=… --env=NUVEM_GOOGLE_CLIENT_SECRET=…` (o app lê em tempo de execução) ou `build-options.env` no manifesto |
 | Trava do bisync removida após fechar o app no meio | ✅ observado no app instalado (“Trava antiga do bisync removida — 1 arquivo(s)”) |
 
 ### Início automático
@@ -299,7 +300,10 @@ app.nuvem.Nuvem`.
 2. **Credenciais próprias**: o caminho é validado por teste unitário e o cartão está
    no binário, mas o fluxo completo (autorizar no navegador com um `client_id`
    próprio e sincronizar) ainda não foi exercitado — depende de criar o projeto no
-   Google Cloud.
+   Google Cloud. Enquanto o build do Flathub não tiver o par do projeto (que exigiria
+   pô-lo no manifesto, e o Flathub prefere que segredos não fiquem lá), o caminho
+   para o usuário do Flatpak é Ajustes → Avançado ou o `flatpak override --env`
+   descrito acima.
 
 ## Por que Flatpak
 

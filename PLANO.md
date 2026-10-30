@@ -174,6 +174,15 @@ Alternativas descartadas por ora:
   `401` sem credencial / `200` com HTTP Basic. Armadilhas documentadas: JSON de
   fontes tem de ser **string** na lista `sources`, `modules.txt` do
   `flatpak-go-mod` sai incompleto e `go mod vendor` exige `CGO_ENABLED=0`.
+- ✅ P1 de distribuição (Flathub) na parte que não depende de terceiros:
+  metainfo AppStream completo (`<developer>`, `homepage`/`bugtracker`/`vcs-browser`,
+  seis capturas 2480×1800, `<releases>` 0.1.0, `provides`, cores de marca e
+  `recommends`), `.desktop` com uma categoria principal (`Network;FileTransfer;`,
+  `desktop-file-validate` sem avisos) e `--filesystem=home` justificado por escrito
+  para a revisão. `app/scripts/capture-previews.mjs` refaz as capturas em 2x (modo
+  demonstração, sem expor contas) e `app/scripts/check-flatpak.sh` roda no CI o que
+  o Flathub cobra. Falta publicar o repositório público (as URLs do metainfo
+  apontam para ele) e um build `aarch64` de verdade.
 - Command palette completa, atalhos, onboarding animado, estados vazios.
 - Regras de ignore com validação, limites de banda, proxy, conversão de docs Google.
 - Diagnóstico (“doctor”) com explicação em linguagem simples.

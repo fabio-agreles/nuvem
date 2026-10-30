@@ -50,23 +50,33 @@ o rclone embutido.
 | Painel RC do rclone com senha sorteada a cada execução (HTTP Basic) | ✅ |
 | Estado gravado com `0600` e recuperação automática de arquivo corrompido | ✅ |
 | Licença MIT (`LICENSE`) e repositório git versionado | ✅ |
+| Build Flatpak offline com crates, npm e módulos Go vendorizados | ✅ |
+| Metainfo AppStream completo (`developer`, URLs, 6 capturas 2x, `releases`) e `.desktop` sem avisos | ✅ |
 
 ## Prévia
 
-Capturas do modo demonstração (`npm run dev`), com dados simulados:
+Capturas do modo demonstração (`npm run dev`), com dados simulados — as do
+metainfo do Flatpak são as mesmas, em 2480×1800:
 
 | | |
 | --- | --- |
 | ![Visão geral](docs/previews/preview-dashboard.png) | ![Arquivos](docs/previews/preview-files.png) |
-| ![Pasta aberta](docs/previews/preview-files-inside.png) | ![Pastas](docs/previews/preview-folders.png) |
-| ![Conflitos](docs/previews/preview-conflicts.png) | ![Ajustes](docs/previews/preview-settings.png) |
-| ![Atividade com histórico por arquivo](docs/previews/preview-activity.png) | ![Paleta de comandos](docs/previews/preview-palette.png) |
-| ![Adicionar pasta](docs/previews/preview-add-folder.png) | ![Limpar a atividade](docs/previews/preview-activity-clear.png) |
-| ![Credenciais próprias do Google em Ajustes → Avançado](docs/previews/preview-settings-advanced.png) | ![Tema escuro](docs/previews/preview-dark.png) |
+| ![Pastas](docs/previews/preview-folders.png) | ![Conflitos](docs/previews/preview-conflicts.png) |
+| ![Ajustes](docs/previews/preview-settings.png) | ![Credenciais próprias do Google em Ajustes → Avançado](docs/previews/preview-settings-advanced.png) |
+| ![Atividade com histórico por arquivo](docs/previews/preview-activity.png) | ![Limpar a atividade](docs/previews/preview-activity-clear.png) |
+| ![Adicionar pasta escolhendo na nuvem](docs/previews/preview-add-folder.png) | ![Paleta de comandos](docs/previews/preview-palette.png) |
+| ![Tema escuro](docs/previews/preview-dark.png) | ![Nuvem no Flatpak, com conta real](docs/previews/flatpak.png) |
 
-E o app real empacotado como Flatpak (conta ainda não conectada, rclone embutido):
+Para refazer o conjunto (o script esconde o selo *Modo demonstração* e usa
+1240×900 @2x):
 
-![Nuvem como Flatpak](docs/previews/flatpak.png)
+```bash
+npm run build && npx vite preview --port 4173 &
+NODE_PATH=/caminho/do/node_modules node scripts/capture-previews.mjs
+```
+
+`playwright-core` não é dependência do app: aponte `NODE_PATH` (ou
+`PLAYWRIGHT_CORE=`) para onde ele estiver instalado.
 
 ## Rodar
 
@@ -598,9 +608,11 @@ O código-fonte está versionado em git na raiz do projeto; `app/` é o aplicati
 
 ## Próximos passos
 
-1. **Flathub**: a vendorização está feita (build offline; falta rodar num `aarch64`
-   real), mais metainfo com URL/dados reais (hoje `example.invalid`), screenshots e
-   `<releases>`, e um `.desktop` com três categorias principais.
+1. **Flathub**: build offline, metainfo completo e `.desktop` válido já estão
+   prontos. Falta publicar o repositório nas URLs do metainfo
+   (`github.com/fabio-agreles/nuvem`) e rodar um build `aarch64` de verdade, além de
+   decidir com a revisão se `--filesystem=home` fica (a justificativa está em
+   [`flatpak/README.md`](flatpak/README.md)).
 2. **Validações que faltam**: conta OneDrive real, conflito real (edição simultânea
    nos dois lados), login de verdade para conferir o item de autostart, e instalar o
    `.deb` com `dpkg` numa máquina limpa.

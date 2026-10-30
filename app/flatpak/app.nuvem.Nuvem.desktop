@@ -2,11 +2,11 @@
 Type=Application
 Name=Nuvem
 GenericName=Sincronização em nuvem
-Comment=Sincronize Google Drive e OneDrive com pastas locais
+Comment=Sincronize o Google Drive e o OneDrive com pastas deste computador
 Exec=nuvem
 Icon=app.nuvem.Nuvem
 Terminal=false
-Categories=Network;FileTransfer;Utility;
-Keywords=drive;onedrive;sync;sincronização;nuvem;
+Categories=Network;FileTransfer;
+Keywords=drive;onedrive;sync;sincronizacao;nuvem;backup;rclone;
 StartupNotify=true
 StartupWMClass=Nuvem

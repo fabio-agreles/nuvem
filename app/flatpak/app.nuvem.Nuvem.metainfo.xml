@@ -1,27 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
   <id>app.nuvem.Nuvem</id>
-  <name>Nuvem</name>
-  <summary>Sincronize Google Drive e OneDrive com pastas locais</summary>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
+  <name>Nuvem</name>
+  <summary>Sincronize o Google Drive e o OneDrive com pastas deste computador</summary>
+
+  <developer id="app.nuvem">
+    <name>Equipe do Nuvem</name>
+  </developer>
+
   <description>
     <p>
       Nuvem mantém pastas do Google Drive e do OneDrive iguais às pastas locais,
-      nos dois sentidos, com uma interface simples e clara.
+      nos dois sentidos, com uma interface simples e clara. O motor de
+      sincronização é o rclone, que vem embutido no aplicativo.
     </p>
+    <p>O que dá para fazer:</p>
     <ul>
-      <li>Várias contas e pastas em um só lugar</li>
-      <li>Seleção de quais pastas sincronizar</li>
-      <li>Progresso, atividade e conflitos visíveis</li>
-      <li>Limites de banda e regras de ignorar</li>
+      <li>Várias contas de Google Drive e OneDrive em um só lugar</li>
+      <li>Escolher quais pastas da nuvem sincronizar, e com qual pasta local</li>
+      <li>Acompanhar progresso, velocidade, atividade e conflitos em tempo real</li>
+      <li>Resolver conflitos escolhendo a versão da nuvem, a local ou guardando as duas</li>
+      <li>Ver a cota de cada conta, com o último valor conhecido quando a rede falha</li>
+      <li>Limitar banda, ignorar arquivos por padrão e sincronizar em intervalos</li>
+      <li>Ficar na bandeja do sistema, iniciar com o sistema e notificar ao terminar</li>
     </ul>
+    <p>
+      Os dados ficam neste computador: as credenciais são gravadas no formato do
+      rclone, com permissão só para o seu usuário, e o Nuvem não envia nada para
+      servidores próprios.
+    </p>
   </description>
+
   <launchable type="desktop-id">app.nuvem.Nuvem.desktop</launchable>
-  <url type="homepage">https://example.invalid/nuvem</url>
+
+  <url type="homepage">https://github.com/fabio-agreles/nuvem</url>
+  <url type="bugtracker">https://github.com/fabio-agreles/nuvem/issues</url>
+  <url type="vcs-browser">https://github.com/fabio-agreles/nuvem</url>
+  <url type="contribute">https://github.com/fabio-agreles/nuvem/blob/main/app/README.md</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Visão geral: estado das pastas, velocidade e contas conectadas</caption>
+      <image type="source" width="2480" height="1800">https://raw.githubusercontent.com/fabio-agreles/nuvem/main/app/docs/previews/preview-dashboard.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Pastas: cada pasta da nuvem com o par local e o estado da sincronização</caption>
+      <image type="source" width="2480" height="1800">https://raw.githubusercontent.com/fabio-agreles/nuvem/main/app/docs/previews/preview-folders.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Arquivos: navegue pela nuvem sem baixar nada e envie arquivos avulsos</caption>
+      <image type="source" width="2480" height="1800">https://raw.githubusercontent.com/fabio-agreles/nuvem/main/app/docs/previews/preview-files.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Conflitos: escolha a versão da nuvem, a local ou fique com as duas</caption>
+      <image type="source" width="2480" height="1800">https://raw.githubusercontent.com/fabio-agreles/nuvem/main/app/docs/previews/preview-conflicts.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Ajustes: comportamento, credenciais próprias do Google e início automático</caption>
+      <image type="source" width="2480" height="1800">https://raw.githubusercontent.com/fabio-agreles/nuvem/main/app/docs/previews/preview-settings-advanced.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Tema escuro em toda a interface</caption>
+      <image type="source" width="2480" height="1800">https://raw.githubusercontent.com/fabio-agreles/nuvem/main/app/docs/previews/preview-dark.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="0.1.0" date="2026-10-30">
+      <description>
+        <p>Primeira versão distribuída:</p>
+        <ul>
+          <li>Google Drive e OneDrive com sincronização bidirecional (bisync)</li>
+          <li>Progresso, atividade por arquivo e resolução de conflitos</li>
+          <li>Cota por conta, limites de banda e regras de ignorar</li>
+          <li>Bandeja do sistema com ícone simbólico e início automático</li>
+          <li>Painel do rclone protegido por senha sorteada a cada execução</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
   <categories>
     <category>Network</category>
     <category>FileTransfer</category>
   </categories>
+
+  <keywords>
+    <keyword>drive</keyword>
+    <keyword>onedrive</keyword>
+    <keyword>sincronizacao</keyword>
+    <keyword>nuvem</keyword>
+    <keyword>backup</keyword>
+    <keyword>rclone</keyword>
+  </keywords>
+
+  <provides>
+    <binary>nuvem</binary>
+  </provides>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#4f6df5</color>
+    <color type="primary" scheme_preference="dark">#7f94ff</color>
+  </branding>
+
   <content_rating type="oars-1.1"/>
+
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
 </component>

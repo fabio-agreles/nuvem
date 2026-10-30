@@ -38,7 +38,18 @@ Instalar por caminho (`flatpak install --user ./flatpak-repo app.nuvem.Nuvem`)
 também funciona, mas o remoto `nuvem-origin` deixa `flatpak update` enxergar os
 commits novos.
 
-Rode o comando **da raiz do repositório**, não de `app/`: `--repo` e `--builddir`
+Antes de enviar mudanças, o lint local (o mesmo que o CI roda em
+`.github/workflows/flatpak-lint.yml`):
+
+```bash
+cd app && scripts/check-flatpak.sh
+```
+
+Ele confere JSON do manifesto, `desktop-file-validate`, `appstreamcli validate`,
+se toda captura citada existe em `docs/previews/` e se a `<release>` mais nova tem
+a versão do `package.json`.
+
+Rode o comando de build **da raiz do repositório**, não de `app/`: `--repo` e `--builddir`
 são relativos ao diretório atual, e apontá-los para fora de `app/` faz o
 flatpak-builder criar `flatpak-repo/` e `builddir/` no lugar errado (o app
 instalado continua no commit antigo). Os dois já estão no `.gitignore` da raiz.
@@ -233,24 +244,58 @@ ser removidas e conectadas de novo; o cartão avisa e as contas aparecem com o s
 sandbox: o `settings.json` e o `rclone.conf` ficam sob `~/.var/app`, que o app lê
 normalmente.
 
-## Pendências conhecidas
+## Situação para o Flathub
 
-1. **Somente `$HOME`**: `--filesystem=home` cobre o caso normal (Insync-like), mas
-   pastas em `/mnt`, `/media` ou unidades externas não aparecem no sandbox. Para
-   esses casos, adicione `--filesystem=/media` / `/mnt` ou um portal de arquivos.
-2. **Build offline**: ✅ resolvido — crates, npm e módulos Go vendorizados (seção
-   *Build offline*). O que ainda baixa é só o *download de fontes* do flatpak-builder
-   (tarball do rclone, zips do `proxy.golang.org`, repos do `shared-modules`), que é
-   o comportamento normal no Flathub — a etapa de build em si não tem rede.
-3. **x86_64 apenas**: o manifesto não declara `aarch64`; as fontes são
-   independentes de arquitetura (os zips do `proxy.golang.org` e os crates são
-   universais), então o Flathub gera o `aarch64` sozinho — falta testar num ARM.
-4. **Metainfo**: a `url` (`example.invalid/nuvem`) e os dados de licença/artista são
-   provisórios; a AppStream valida hoje, mas o Flathub exige valores reais, além de
-   screenshots e um bloco `<releases>`.
-5. **`.desktop`**: o `desktop-file-validate` reclama de categorias — o Flathub pede
-   pelo menos três categorias principais além de `GTK`.
-6. **Credenciais próprias**: o caminho é validado por teste unitário e o cartão está
+| Requisito | Situação |
+| --- | --- |
+| Build sem rede | ✅ crates, npm e Go vendorizados (seção *Build offline*) |
+| Metainfo completo (`developer`, `url`, screenshots, `releases`) | ✅ `appstreamcli validate` limpo (só o aviso pedante de maiúsculas no ID) |
+| `.desktop` válido, uma categoria principal | ✅ `desktop-file-validate` sem avisos |
+| Capturas de tela 4:3 em 2x | ✅ 2480×1800, geradas por `app/scripts/capture-previews.mjs` |
+| Lint automático no CI | ✅ `app/scripts/check-flatpak.sh` em `.github/workflows/flatpak-lint.yml` |
+| Licença | ✅ MIT no `project_license`, `LICENSE` instalada em `/app/share/licenses` |
+| `--filesystem=home` justificado | ⚠️ ver abaixo |
+| `aarch64` | ⚠️ não testado (sem máquina ARM aqui) |
+| Repositório público com as URLs do metainfo | ⚠️ ainda não publicado |
+
+### O que falta antes de abrir o PR no Flathub
+
+1. **Publicar o repositório** em `https://github.com/fabio-agreles/nuvem` — é o
+   endereço que está no `<url type="homepage">`, no `vcs-browser` e nas capturas
+   (`raw.githubusercontent.com/.../app/docs/previews/preview-*.png`). Enquanto ele
+   não existir, as imagens do metainfo dão 404 (a AppStream local valida, mas a
+   revisão do Flathub confere).
+2. **`aarch64`**: as fontes são independentes de arquitetura (zips do
+   `proxy.golang.org`, crates e tarballs npm são universais), então o build deve
+   passar; se falhar, o `flathub.json` com `"only-arches": ["x86_64"]` resolve
+   temporariamente.
+3. **PR** em `flathub/flathub` com o manifesto na raiz, o `shared-modules` como
+   submódulo e o texto de justificativa abaixo.
+
+### Justificativa de `--filesystem=home`
+
+O Nuvem é um cliente de sincronização no modelo do Insync e do Dropbox: o usuário
+aponta **qualquer** pasta do disco para espelhar com a nuvem, e o espelhamento é
+feito pelo `rclone` como processo filho, em segundo plano, sem interface. O portal
+de documentos (`xdg-document-portal`) só dá acesso a arquivos escolhidos numa janela
+aberta, e o acesso some quando o app é reiniciado — o `rclone` não tem como usá-lo
+para um bisync contínuo. `xdg-documents`, `xdg-download` e `xdg-pictures` cobririam
+só parte dos casos (o app também sincroniza, por exemplo, `~/Projetos` ou uma pasta
+dentro de `~/.local/share`), e obrigariam o usuário a escolher entre o portal e uma
+mensagem de erro.
+
+Limitar a `xdg-documents`/`xdg-download` é possível se o Flathub preferir: o app
+passaria a recusar pastas fora desses diretórios com uma explicação. O que não dá
+para fazer hoje é acesso arbitrário sem `--filesystem=home`. Pastas em `/mnt` e
+`/media` (unidades externas) continuam fora do sandbox mesmo com `home` — para
+essas, o usuário precisa de `flatpak override --user --filesystem=/media
+app.nuvem.Nuvem`.
+
+### Pendências conhecidas
+
+1. **Somente `$HOME`**: pastas em `/mnt`, `/media` ou unidades externas não
+   aparecem no sandbox (ver a justificativa acima).
+2. **Credenciais próprias**: o caminho é validado por teste unitário e o cartão está
    no binário, mas o fluxo completo (autorizar no navegador com um `client_id`
    próprio e sincronizar) ainda não foi exercitado — depende de criar o projeto no
    Google Cloud.

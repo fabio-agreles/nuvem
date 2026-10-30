@@ -1,0 +1,38 @@
+name: Flatpak (lint)
+
+# Confere o que o Flathub cobra num PR — metainfo, .desktop, capturas citadas e
+# versão das <releases> — sem compilar nada. O build de verdade é caro e mora no
+# repositório do Flathub (`flatpak-builder`).
+
+on:
+  push:
+    paths:
+      - "app/flatpak/**"
+      - "app/docs/previews/**"
+      - "app/package.json"
+      - "app/scripts/check-flatpak.sh"
+      - ".github/workflows/flatpak-lint.yml"
+  pull_request:
+    paths:
+      - "app/flatpak/**"
+      - "app/docs/previews/**"
+      - "app/package.json"
+      - "app/scripts/check-flatpak.sh"
+      - ".github/workflows/flatpak-lint.yml"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Metainfo, .desktop e manifesto
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ferramentas de validação
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y desktop-file-utils appstream
+
+      - name: scripts/check-flatpak.sh
+        working-directory: app
+        run: scripts/check-flatpak.sh

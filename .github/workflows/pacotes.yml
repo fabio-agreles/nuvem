@@ -3,11 +3,19 @@ name: Pacotes
 # Instalador do Windows (NSIS) e pacotes do Linux. O NSIS só roda no próprio
 # Windows, então este workflow é o caminho para gerar o `.exe` de instalação:
 # no Linux o build por cargo-xwin chega até o `.exe` portátil, não até o NSIS.
+#
+# Os binários vão para a Release do tag (armazenamento separado da cota de
+# artefatos do GitHub Actions, que no plano gratuito é de 500 MB e estoura com
+# um AppImage de ~100 MB). O `upload-artifact` continua como conveniência em
+# execuções manuais, sem derrubar o job quando a cota acaba.
 
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   linux:
@@ -49,7 +57,17 @@ jobs:
           npx tauri build --bundles deb appimage
           bash scripts/fix-deb.sh || true
 
+      - name: Publicar na Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/src-tauri/target/release/bundle/deb/*.deb
+            app/src-tauri/target/release/bundle/appimage/*.AppImage
+          fail_on_unmatched_files: true
+
       - uses: actions/upload-artifact@v5
+        continue-on-error: true
         with:
           name: nuvem-linux
           path: |
@@ -85,7 +103,15 @@ jobs:
           npm ci
           npx tauri build --bundles nsis
 
+      - name: Publicar na Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/src-tauri/target/release/bundle/nsis/*.exe
+          fail_on_unmatched_files: true
+
       - uses: actions/upload-artifact@v5
+        continue-on-error: true
         with:
           name: nuvem-windows
           path: app/src-tauri/target/release/bundle/nsis/*.exe

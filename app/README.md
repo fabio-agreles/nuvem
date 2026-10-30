@@ -116,7 +116,7 @@ usa o backend Rust (`src-tauri/`). A UI escolhe automaticamente.
 | Pacote | Arquivo | Tamanho | rclone |
 | --- | --- | --- | --- |
 | `.deb` | `src-tauri/target/release/bundle/deb/Nuvem_0.1.0_amd64.deb` | 31,1 MB | embutido em `/usr/lib/Nuvem/rclone` |
-| AppImage | `src-tauri/target/release/bundle/appimage/Nuvem_0.1.0_amd64.AppImage` | 124,7 MB | embutido em `usr/lib/Nuvem/rclone` |
+| AppImage | `src-tauri/target/release/bundle/appimage/Nuvem_0.1.0_amd64.AppImage` | 124,7 MB local · 102,8 MB no CI | embutido em `usr/lib/Nuvem/rclone` |
 | Flatpak | repositório local em `flatpak-repo/` | 91,5 MB instalado | compilado em `/app/bin/rclone` |
 | Windows (portátil) | `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-0.1.0-windows-x64.zip` | 30 MB | `rclone.exe` ao lado do `Nuvem.exe` |
 | Windows (instalador) | Release `v0.1.0`, `Nuvem_0.1.0_x64-setup.exe` (gerado no CI) | 23,2 MB | `resources/rclone.exe` dentro do NSIS |
@@ -124,7 +124,8 @@ usa o backend Rust (`src-tauri/`). A UI escolhe automaticamente.
 Os pacotes do Linux também saem no CI, na página de Releases do repositório — o
 `.deb` de lá passa por `scripts/fix-deb.sh` e leva `LICENSE` em
 `/usr/share/doc/nuvem/copyright`, ícones 32/128/256/512 e um `.desktop` com
-`Categories=Network;FileTransfer;`.
+`Categories=Network;FileTransfer;`. O AppImage do CI sai menor (102,8 MB) porque o
+`appimagetool` do Ubuntu 22.04 comprime diferente do daqui.
 
 A busca do motor (`Rclone::find_binary`) tenta, em ordem: `NUVEM_RCLONE`, a cópia
 ao lado do executável (`rclone` ou `rclone.exe`, conforme o sistema) e em

@@ -113,9 +113,19 @@ sai dessa conta).
 - Selo por conta — "credenciais próprias" só quando a conta foi autorizada com o
   projeto do usuário, não com o do Nuvem.
 
-## 5. Pendências
+## 5. Situação (30/10)
 
-- [ ] Criar o projeto e colar o par nos segredos do repositório (você).
+- [x] Projeto criado no Google Cloud (cliente "App para computador"), par salvo
+      em `app/.env.oauth` (`0600`, fora do git) e app de release compilado com o
+      par embutido — Ajustes → Avançado mostra **"projeto do Nuvem"** e o
+      `client_id` `875036643376-…` em uso (conferido na tela, em X virtual).
+      Prova automática: teste `ambiente_com_o_par_do_projeto_vira_fonte_nuvem`,
+      que só roda quando as variáveis estão no ambiente.
+
+## 6. Pendências
+
+- [ ] Gravar o par nos segredos do repositório (para os pacotes oficiais saírem
+      com o projeto embutido).
 - [ ] Tornar o repositório público — a política de privacidade precisa de URL
       pública para a verificação.
 - [ ] Publicar o app (Audience → Publish) depois de testar com 2–3 contas.

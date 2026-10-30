@@ -153,6 +153,28 @@ mod testes {
         );
     }
 
+    /// Roda de verdade quando NUVEM_GOOGLE_CLIENT_ID/_SECRET estão no ambiente
+    /// (é o teste que prova o par real do projeto do Nuvem); em CI, sem as
+    /// variáveis, ele não tem o que conferir e passa sem fazer nada.
+    #[test]
+    fn ambiente_com_o_par_do_projeto_vira_fonte_nuvem() {
+        let (Ok(id), Ok(segredo)) = (
+            std::env::var("NUVEM_GOOGLE_CLIENT_ID"),
+            std::env::var("NUVEM_GOOGLE_CLIENT_SECRET"),
+        ) else {
+            return;
+        };
+        if par_valido(&id, &segredo).is_none() {
+            return;
+        }
+        let credenciais = efetivas(("", ""));
+        assert_eq!(credenciais.fonte, Fonte::Nuvem);
+        assert_eq!(credenciais.client_id.as_deref(), Some(id.trim()));
+        assert_eq!(credenciais.como_json()["client_secret"], segredo.trim());
+        // E o par do usuário continua ganhando, como manda a precedência.
+        assert_eq!(efetivas((&id, &segredo)).fonte, Fonte::Usuario);
+    }
+
     #[test]
     fn primeiro_valido_respeita_a_ordem() {
         let escolhido = primeiro_valido([

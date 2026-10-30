@@ -115,11 +115,11 @@ usa o backend Rust (`src-tauri/`). A UI escolhe automaticamente.
 
 | Pacote | Arquivo | Tamanho | rclone |
 | --- | --- | --- | --- |
-| `.deb` | `src-tauri/target/release/bundle/deb/Nuvem_0.1.0_amd64.deb` | 31,1 MB | embutido em `/usr/lib/Nuvem/rclone` |
-| AppImage | `src-tauri/target/release/bundle/appimage/Nuvem_0.1.0_amd64.AppImage` | 124,7 MB local · 102,8 MB no CI | embutido em `usr/lib/Nuvem/rclone` |
+| `.deb` | `src-tauri/target/release/bundle/deb/Nuvem_1.0.0_amd64.deb` | 31,1 MB | embutido em `/usr/lib/Nuvem/rclone` |
+| AppImage | `src-tauri/target/release/bundle/appimage/Nuvem_1.0.0_amd64.AppImage` | 124,7 MB local · 102,8 MB no CI | embutido em `usr/lib/Nuvem/rclone` |
 | Flatpak | repositório local em `flatpak-repo/` | 91,5 MB instalado | compilado em `/app/bin/rclone` |
-| Windows (portátil) | `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-0.1.0-windows-x64.zip` | 30 MB | `rclone.exe` ao lado do `Nuvem.exe` |
-| Windows (instalador) | Release `v0.1.0`, `Nuvem_0.1.0_x64-setup.exe` (gerado no CI) | 23,2 MB | `resources/rclone.exe` dentro do NSIS |
+| Windows (portátil) | `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-1.0.0-windows-x64.zip` | 30 MB | `rclone.exe` ao lado do `Nuvem.exe` |
+| Windows (instalador) | Release `v1.0.0`, `Nuvem_1.0.0_x64-setup.exe` (gerado no CI) | 23,2 MB | `resources/rclone.exe` dentro do NSIS |
 
 Os pacotes do Linux também saem no CI, na página de Releases do repositório — o
 `.deb` de lá passa por `scripts/fix-deb.sh` e leva `LICENSE` em
@@ -158,7 +158,7 @@ aplica só a correção, sem reconstruir).
 Instalar o pacote:
 
 ```bash
-sudo dpkg -i src-tauri/target/release/bundle/deb/Nuvem_0.1.0_amd64.deb
+sudo dpkg -i src-tauri/target/release/bundle/deb/Nuvem_1.0.0_amd64.deb
 # se faltar alguma dependência:
 sudo apt -f install
 ```

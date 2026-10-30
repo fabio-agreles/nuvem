@@ -514,7 +514,7 @@ export function Settings({
         <div className="card-body" style={{ paddingTop: 8 }}>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Nuvem 0.1.0</div>
+              <div className="row-title">Nuvem 1.0.0</div>
               <div className="row-desc">Tauri · React · rclone</div>
             </div>
             <div className="row-control">

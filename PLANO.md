@@ -176,7 +176,7 @@ Alternativas descartadas por ora:
   `flatpak-go-mod` sai incompleto e `go mod vendor` exige `CGO_ENABLED=0`.
 - ✅ P1 de distribuição (Flathub) na parte que não depende de terceiros:
   metainfo AppStream completo (`<developer>`, `homepage`/`bugtracker`/`vcs-browser`,
-  seis capturas 2480×1800, `<releases>` 0.1.0, `provides`, cores de marca e
+  seis capturas 2480×1800, `<releases>` 1.0.0, `provides`, cores de marca e
   `recommends`), `.desktop` com uma categoria principal (`Network;FileTransfer;`,
   `desktop-file-validate` sem avisos) e `--filesystem=home` justificado por escrito
   para a revisão. `app/scripts/capture-previews.mjs` refaz as capturas em 2x (modo

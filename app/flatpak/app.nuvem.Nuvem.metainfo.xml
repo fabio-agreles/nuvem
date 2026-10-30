@@ -68,15 +68,17 @@
   </screenshots>
 
   <releases>
-    <release version="0.1.0" date="2026-10-30">
+    <release version="1.0.0" date="2026-10-30">
       <description>
-        <p>Primeira versão distribuída:</p>
+        <p>Primeira versão estável:</p>
         <ul>
           <li>Google Drive e OneDrive com sincronização bidirecional (bisync)</li>
           <li>Progresso, atividade por arquivo e resolução de conflitos</li>
           <li>Cota por conta, limites de banda e regras de ignorar</li>
           <li>Bandeja do sistema com ícone simbólico e início automático</li>
+          <li>Credenciais OAuth próprias do Google em Ajustes → Avançado</li>
           <li>Painel do rclone protegido por senha sorteada a cada execução</li>
+          <li>Estado local gravado com permissão de dono e recuperação de arquivo corrompido</li>
         </ul>
       </description>
     </release>

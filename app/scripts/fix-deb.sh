@@ -9,10 +9,16 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-deb="${1:-$root/src-tauri/target/release/bundle/deb/Nuvem_0.1.0_amd64.deb}"
+deb="${1:-}"
 
-if [[ ! -f "$deb" ]]; then
-  echo "fix-deb: arquivo não encontrado: $deb" >&2
+# Sem argumento, pega o .deb mais recente do bundle — o nome carrega a versão,
+# então não dá para fixar `Nuvem_0.1.0_amd64.deb` aqui.
+if [[ -z "$deb" ]]; then
+  deb="$(ls -t "$root"/src-tauri/target/release/bundle/deb/*.deb 2>/dev/null | head -1)"
+fi
+
+if [[ -z "$deb" || ! -f "$deb" ]]; then
+  echo "fix-deb: nenhum .deb em src-tauri/target/release/bundle/deb/ (rode 'npx tauri build --bundles deb')" >&2
   exit 1
 fi
 

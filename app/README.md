@@ -119,6 +119,12 @@ usa o backend Rust (`src-tauri/`). A UI escolhe automaticamente.
 | AppImage | `src-tauri/target/release/bundle/appimage/Nuvem_0.1.0_amd64.AppImage` | 124,7 MB | embutido em `usr/lib/Nuvem/rclone` |
 | Flatpak | repositório local em `flatpak-repo/` | 91,5 MB instalado | compilado em `/app/bin/rclone` |
 | Windows (portátil) | `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-0.1.0-windows-x64.zip` | 30 MB | `rclone.exe` ao lado do `Nuvem.exe` |
+| Windows (instalador) | Release `v0.1.0`, `Nuvem_0.1.0_x64-setup.exe` (gerado no CI) | 23,2 MB | `resources/rclone.exe` dentro do NSIS |
+
+Os pacotes do Linux também saem no CI, na página de Releases do repositório — o
+`.deb` de lá passa por `scripts/fix-deb.sh` e leva `LICENSE` em
+`/usr/share/doc/nuvem/copyright`, ícones 32/128/256/512 e um `.desktop` com
+`Categories=Network;FileTransfer;`.
 
 A busca do motor (`Rclone::find_binary`) tenta, em ordem: `NUVEM_RCLONE`, a cópia
 ao lado do executável (`rclone` ou `rclone.exe`, conforme o sistema) e em
@@ -483,6 +489,16 @@ publicar o app (verificação do escopo `drive`) evita reautorizar toda semana.
   "cargo-sources.json"}` só **copia** o arquivo para o build — as fontes de dentro
   dele nunca são aplicadas e o `cargo` sai tentando o crates.io. O correto é o nome
   do JSON como **string** na lista `sources` (`"cargo-sources.json"`).
+- **Ícone `@2x` no `.deb` vira um diretório inválido**: o bundler do Tauri
+  transforma `icons/128x128@2x.png` em `hicolor/256x256@2/apps/` (falta o `x`), e
+  o GTK nunca procura esse caminho. Basta ter um arquivo chamado
+  `icons/256x256.png` — o diretório sai certo.
+- **`bundle.category` não aceita `Network`**: o enum é o do macOS (`Business`,
+  `DeveloperTool`, `Productivity`, `Utility`…), e `Network` aborta o build com
+  `invalid category`. Para o `.deb` ter o mesmo `.desktop` do Flatpak
+  (`Network;FileTransfer;` + `Keywords` + `GenericName`), use
+  `bundle.linux.deb.desktopTemplate` com um arquivo próprio
+  (`src-tauri/deb/nuvem.desktop`).
 - **`modules.txt` do `flatpak-go-mod` sai incompleto**: no rclone 1.75.2 ele gerou
   800 linhas em vez de 1743 e o `go build -mod=vendor` parou em
   `is explicitly required in go.mod, but not marked as explicit in

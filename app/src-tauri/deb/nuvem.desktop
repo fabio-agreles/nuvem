@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Nuvem
+GenericName=Sincronização em nuvem
+Comment=Sincronize o Google Drive e o OneDrive com pastas deste computador
+Exec=nuvem
+Icon=nuvem
+Terminal=false
+Categories=Network;FileTransfer;
+Keywords=drive;onedrive;sync;sincronizacao;nuvem;backup;rclone;
+StartupNotify=true
+StartupWMClass=nuvem

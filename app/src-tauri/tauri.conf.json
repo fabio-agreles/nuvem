@@ -32,25 +32,36 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["deb", "appimage"],
+    "targets": [
+      "deb",
+      "appimage"
+    ],
     "resources": {
       "resources/rclone": "rclone"
     },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
-      "icons/128x128@2x.png",
+      "icons/256x256.png",
       "icons/icon.png"
     ],
-    "category": "Utility",
     "shortDescription": "Sincronize Google Drive e OneDrive",
     "longDescription": "Nuvem sincroniza suas contas de nuvem com pastas locais usando bisync, com uma interface simples e clara.",
     "linux": {
       "deb": {
-        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"],
-        "recommends": ["libayatana-appindicator3-1"],
+        "depends": [
+          "libwebkit2gtk-4.1-0",
+          "libgtk-3-0"
+        ],
+        "recommends": [
+          "libayatana-appindicator3-1"
+        ],
         "section": "utils",
-        "priority": "optional"
+        "priority": "optional",
+        "files": {
+          "/usr/share/doc/nuvem/copyright": "../../LICENSE"
+        },
+        "desktopTemplate": "deb/nuvem.desktop"
       }
     }
   }

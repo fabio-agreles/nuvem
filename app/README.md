@@ -628,11 +628,11 @@ NSIS do Windows (`pacotes.yml`).
 
 ## Próximos passos
 
-1. **Flathub**: build offline, metainfo completo, `.desktop` válido e repositório
-   público (`github.com/fabio-agreles/nuvem`, com as capturas respondendo) já estão
-   prontos. Falta rodar um build `aarch64` de verdade e decidir com a revisão se
-   `--filesystem=home` fica (a justificativa está em
-   [`flatpak/README.md`](flatpak/README.md)).
+1. **Flathub**: build offline, metainfo completo e `.desktop` válido já estão
+   prontos. Faltam três coisas: tornar o repositório **público** (as URLs e capturas
+   do metainfo dão 404 enquanto ele estiver privado), rodar um build `aarch64` de
+   verdade e decidir com a revisão se `--filesystem=home` fica (a justificativa está
+   em [`flatpak/README.md`](flatpak/README.md)).
 2. **Validações que faltam**: conta OneDrive real, conflito real (edição simultânea
    nos dois lados), login de verdade para conferir o item de autostart, e instalar o
    `.deb` com `dpkg` numa máquina limpa.
@@ -640,9 +640,12 @@ NSIS do Windows (`pacotes.yml`).
    falta um projeto verificado do Nuvem (como o rclone tem) para o usuário final não
    precisar criar o dele — e para o app não depender do `client_id` compartilhado,
    que se aposenta em 2026.
-4. **Windows de verdade**: gerar o `-setup.exe` no CI (NSIS exige Windows), rodar o
-   app numa máquina Windows (bandeja, WebView2, autostart pelo registro) e assinar
-   o binário. O pacote portátil já existe e é o que dá para testar hoje.
-5. **AppImage com WebKit embutido**: hoje ele usa o WebKitGTK do sistema (como todo
+4. **Windows de verdade**: o `-setup.exe` já sai no CI a cada tag (23,1 MB, com
+   `rclone.exe` dentro). Falta rodar o app numa máquina Windows (bandeja, WebView2,
+   autostart pela chave `Run`, desinstalação) e assinar o binário — hoje o
+   SmartScreen avisa. O portátil também está pronto para esse teste.
+5. **Atualização automática**: não há `tauri-plugin-updater` nem aviso de nova
+   versão; quem instala pelo `.deb`/AppImage/Windows precisa baixar de novo à mão.
+6. **AppImage com WebKit embutido**: hoje ele usa o WebKitGTK do sistema (como todo
    AppImage de Tauri). Embutir é possível com `linuxdeploy-plugin-gtk`, ao custo de
    ~80 MB e de depender do mesmo runtime do sistema de qualquer jeito.

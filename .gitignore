@@ -18,3 +18,6 @@
 
 # Estado do flatpak-builder (cache de módulos, ~1 GB)
 /.flatpak-builder/
+
+# Bundle de arquivo único gerado por `flatpak build-bundle`
+/*.flatpak

@@ -603,8 +603,8 @@ MIT — veja [`LICENSE`](../LICENSE). O rclone embutido nos pacotes também é M
 (copyright do projeto rclone); o arquivo de licença vai junto no Flatpak
 (`/app/share/licenses/app.nuvem.Nuvem/LICENSE`) e no pacote portátil do Windows.
 
-O código-fonte está versionado em git na raiz do projeto (público em
-<https://github.com/fabio-agreles/nuvem>); `app/` é o aplicativo, `flatpak-repo/` e
+O código-fonte está versionado em git na raiz do projeto
+(<https://github.com/fabio-agreles/nuvem>, privado por enquanto); `app/` é o aplicativo, `flatpak-repo/` e
 `builddir/` são artefatos de build e ficam fora do repositório. O CI roda o lint do
 Flatpak (`flatpak-lint.yml`) e, em tags `v*`, gera `.deb`, AppImage e o instalador
 NSIS do Windows (`pacotes.yml`).

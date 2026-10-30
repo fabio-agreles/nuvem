@@ -257,15 +257,20 @@ normalmente.
 | Licença | ✅ MIT no `project_license`, `LICENSE` instalada em `/app/share/licenses` |
 | `--filesystem=home` justificado | ⚠️ ver abaixo |
 | `aarch64` | ⚠️ não testado (sem máquina ARM aqui) |
-| Repositório público com as URLs do metainfo | ✅ `github.com/fabio-agreles/nuvem` (capturas e URLs respondendo 200) |
+| Repositório público com as URLs do metainfo | ⚠️ `github.com/fabio-agreles/nuvem` existe, mas está **privado** por ora: as URLs e as capturas respondem 404 para quem não tem acesso |
 
 ### O que falta antes de abrir o PR no Flathub
 
-1. **`aarch64`**: as fontes são independentes de arquitetura (zips do
+1. **Repositório público**: enquanto `github.com/fabio-agreles/nuvem` estiver
+   privado, `<url type="homepage">`, `bugtracker`, `vcs-browser` e as seis capturas
+   dão 404 para a revisão. Basta `gh repo edit fabio-agreles/nuvem --visibility
+   public` antes de abrir o PR (a AppStream local valida igual, então o lint não
+   acusa nada).
+2. **`aarch64`**: as fontes são independentes de arquitetura (zips do
    `proxy.golang.org`, crates e tarballs npm são universais), então o build deve
    passar; se falhar, o `flathub.json` com `"only-arches": ["x86_64"]` resolve
    temporariamente.
-2. **PR** em `flathub/flathub` com o manifesto na raiz, o `shared-modules` como
+3. **PR** em `flathub/flathub` com o manifesto na raiz, o `shared-modules` como
    submódulo e o texto de justificativa abaixo.
 
 ### Justificativa de `--filesystem=home`

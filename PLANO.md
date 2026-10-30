@@ -181,8 +181,9 @@ Alternativas descartadas por ora:
   `desktop-file-validate` sem avisos) e `--filesystem=home` justificado por escrito
   para a revisão. `app/scripts/capture-previews.mjs` refaz as capturas em 2x (modo
   demonstração, sem expor contas) e `app/scripts/check-flatpak.sh` roda no CI o que
-  o Flathub cobra. Falta publicar o repositório público (as URLs do metainfo
-  apontam para ele) e um build `aarch64` de verdade.
+  o Flathub cobra. O repositório é público em `github.com/fabio-agreles/nuvem`
+  (capturas e URLs do metainfo respondendo 200, lint verde no CI); falta um build
+  `aarch64` de verdade.
 - Command palette completa, atalhos, onboarding animado, estados vazios.
 - Regras de ignore com validação, limites de banda, proxy, conversão de docs Google.
 - Diagnóstico (“doctor”) com explicação em linguagem simples.

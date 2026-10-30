@@ -603,15 +603,18 @@ MIT — veja [`LICENSE`](../LICENSE). O rclone embutido nos pacotes também é M
 (copyright do projeto rclone); o arquivo de licença vai junto no Flatpak
 (`/app/share/licenses/app.nuvem.Nuvem/LICENSE`) e no pacote portátil do Windows.
 
-O código-fonte está versionado em git na raiz do projeto; `app/` é o aplicativo,
-`flatpak-repo/` e `builddir/` são artefatos de build e ficam fora do repositório.
+O código-fonte está versionado em git na raiz do projeto (público em
+<https://github.com/fabio-agreles/nuvem>); `app/` é o aplicativo, `flatpak-repo/` e
+`builddir/` são artefatos de build e ficam fora do repositório. O CI roda o lint do
+Flatpak (`flatpak-lint.yml`) e, em tags `v*`, gera `.deb`, AppImage e o instalador
+NSIS do Windows (`pacotes.yml`).
 
 ## Próximos passos
 
-1. **Flathub**: build offline, metainfo completo e `.desktop` válido já estão
-   prontos. Falta publicar o repositório nas URLs do metainfo
-   (`github.com/fabio-agreles/nuvem`) e rodar um build `aarch64` de verdade, além de
-   decidir com a revisão se `--filesystem=home` fica (a justificativa está em
+1. **Flathub**: build offline, metainfo completo, `.desktop` válido e repositório
+   público (`github.com/fabio-agreles/nuvem`, com as capturas respondendo) já estão
+   prontos. Falta rodar um build `aarch64` de verdade e decidir com a revisão se
+   `--filesystem=home` fica (a justificativa está em
    [`flatpak/README.md`](flatpak/README.md)).
 2. **Validações que faltam**: conta OneDrive real, conflito real (edição simultânea
    nos dois lados), login de verdade para conferir o item de autostart, e instalar o

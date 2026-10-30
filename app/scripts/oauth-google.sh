@@ -42,8 +42,9 @@ Só a pessoa com acesso à conta Google pode fazer estes cliques. Leva ~10 min.
    - Público: **Externo** (usuários com qualquer conta Google)
    - Logotipo: app/src-tauri/icons/128x128.png (opcional por enquanto)
    - Domínio autorizado: deixe vazio (app instalado não tem site)
-   - Privacidade: https://github.com/fabio-agreles/nuvem/blob/main/PRIVACIDADE.md
-     (crie esse arquivo antes de publicar; ver docs/oauth-google.md)
+   - Link da política de privacidade:
+     https://github.com/fabio-agreles/nuvem/blob/main/PRIVACIDADE.md
+     (o arquivo já existe; o link só responde quando o repositório for público)
 
 4. Escopos (Google Auth Platform → Data Access)
    https://console.cloud.google.com/auth/scopes

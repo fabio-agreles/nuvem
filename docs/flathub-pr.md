@@ -6,8 +6,8 @@ processo é uma issue com o link do repositório de manifestos).
 
 Pré-requisitos que ainda faltam (ver `docs/oauth-google.md` e `flatpak/README.md`):
 
-- [ ] Repositório público (`github.com/fabio-agreles/nuvem`) — hoje privado; as
-      capturas do metainfo e a política de privacidade dão 404.
+- [x] Repositório público (`github.com/fabio-agreles/nuvem`) desde 31/10/2026;
+      capturas do metainfo e política de privacidade respondendo 200.
 - [ ] Repositório de manifestos seguindo o padrão do Flathub
       (`flathub/app.nuvem.Nuvem`), com o manifesto e os `*-sources.json`.
 - [ ] Build `aarch64` validado (o Flathub publica x86_64 **e** aarch64).

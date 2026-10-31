@@ -131,7 +131,7 @@ sai dessa conta).
 
 - [ ] Gravar o par nos segredos do repositório (para os pacotes oficiais saírem
       com o projeto embutido).
-- [ ] Tornar o repositório público — a política de privacidade precisa de URL
+- [x] Tornar o repositório público (31/10/2026) — a política de privacidade precisa de URL
       pública para a verificação.
 - [ ] Publicar o app (Audience → Publish) depois de testar com 2–3 contas.
 - [x] Medir de novo a velocidade do Drive com o projeto próprio — feito, ver

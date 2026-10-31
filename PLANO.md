@@ -208,6 +208,11 @@ Alternativas descartadas por ora:
   com zero `Rate limited` e zero 403**. O gargalo era mesmo a cota do projeto, não
   a banda. Falta apontar o app instalado para o projeto (override + reconectar a
   conta) e gravar o par nos segredos do repositório.
+- ✅ Repositório tornou-se **público** em 31/10: varredura do histórico inteiro
+  (26 commits) sem segredo — só placeholders `GOCSPX-…` nos testes — e o e-mail
+  pessoal saiu do README. Com isso a política de privacidade
+  (`.../blob/main/PRIVACIDADE.md`) e as 6 capturas do metainfo respondem 200;
+  destrava a publicação do projeto OAuth no Google e a submissão ao Flathub.
 - ✅ **1.2.1** (31/10): fim das janelas de console no Windows (trait `SemConsole`
   aplicado em todos os subprocessos), trava `risco_de_apagar_tudo` (um lado vazio
   barra a rodada em vez de apagar o outro) e o erro do cartão da pasta virou o

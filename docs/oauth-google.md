@@ -148,9 +148,10 @@ sai dessa conta).
       produção**) em <https://console.cloud.google.com/auth/audience> e clicar
       **Publicar app** se ainda estiver em teste — em *Teste* o refresh token
       expira em 7 dias.
-- [ ] Verificar a propriedade de `fabio-agreles.github.io` no Search Console e
-      preencher na marca: página inicial, política de privacidade, domínio
-      autorizado, logo 120×120 e e-mail de suporte.
+- [x] Propriedade de `fabio-agreles.github.io` verificada no Search Console
+      (31/10/2026, via `docs/googlee37fbd119c4e6022.html`). Falta preencher a
+      marca: página inicial, política de privacidade, domínio autorizado, logo
+      120×120 e e-mail de suporte.
 - [ ] Enviar a verificação do escopo restrito em
       <https://console.cloud.google.com/auth/verification>: justificativa do
       `drive`, motivo de `drive.file` não servir, vídeo do fluxo completo e

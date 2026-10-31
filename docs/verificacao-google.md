@@ -36,6 +36,14 @@ verificação por **arquivo HTML** e coloque o arquivo baixado em `docs/` (ele �
 publicado junto com o site em alguns minutos). `github.io` é sufixo público, por
 isso se verifica o subdomínio `fabio-agreles.github.io`, não `github.io`.
 
+### Estado (31/10/2026)
+
+- [x] Propriedade `https://fabio-agreles.github.io/nuvem/` verificada no Search
+      Console pelo arquivo `docs/googlee37fbd119c4e6022.html` (publicado em
+      <https://fabio-agreles.github.io/nuvem/googlee37fbd119c4e6022.html>).
+      **Esse arquivo não pode ser apagado**: o Search Console revalida de tempos
+      em tempos e, sem ele, a verificação do domínio cai.
+
 ## 3. Acesso a dados (Data Access)
 
 <https://console.cloud.google.com/auth/scopes> → escopo já adicionado:

@@ -407,7 +407,7 @@ escopo `drive` terminar.
   - arquivo criado no Drive desceu em ~30 s (verificação periódica);
   - verificação sem mudanças não gera atividade nem notificação, mas atualiza
     “última verificação” (contagem de atividades ficou igual por 80 s).
-- **Sincronização real com Google Drive** (`fabioagreles@gmail.com`, `Documentos` ↔
+- **Sincronização real com Google Drive** (conta real, pasta `Documentos` ↔
   `~/Downloads/Brisa`), feita com a conta do usuário:
   - ressincronização inicial concluída em 3 s e `resyncNeeded` virou `false`;
   - arquivo criado na pasta local subiu para a nuvem;

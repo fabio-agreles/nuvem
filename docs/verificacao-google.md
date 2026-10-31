@@ -45,6 +45,39 @@ verificada; (c) esperar 24 h para os sistemas de marca sincronizarem. Depois,
 **Corrigi os problemas → Pedir nova verificação** (não usar "os problemas estão
 incorretos", que apenas repete a análise).
 
+### Passo a passo do Search Console (o que destrava a marca)
+
+O erro "não está registrado para você" só desaparece quando a conta que abre o
+console do Google Cloud é a **mesma** que verificou o site no Search Console.
+
+1. **Conta certa.** Abra <https://search.google.com/search-console> e confira o
+   avatar no canto superior direito: precisa ser `fabioagreles@gmail.com`. Para
+   trocar de conta sem sair de tudo:
+   <https://accounts.google.com/AccountChooser?continue=https://search.google.com/search-console>
+2. **Lista de propriedades.** Você deve ver
+   `https://fabio-agreles.github.io/nuvem/` com o selo de verificada. Se não
+   existir, em **Adicionar propriedade** escolha **Prefixo do URL** e cole
+   exatamente (com a barra no fim):
+   `https://fabio-agreles.github.io/nuvem/`
+3. **Método de verificação.** Escolha **Arquivo HTML**. O arquivo já está
+   publicado (`docs/googlee37fbd119c4e6022.html`), então basta clicar em
+   **Verificar**. Se a tela mostrar um nome de arquivo **diferente** desse,
+   baixe-o, coloque em `docs/` e avise — sem o arquivo na raiz do site a
+   verificação não passa.
+4. **Confirme a permissão na propriedade.** Na propriedade, em
+   *Configurações → Usuários e permissões*, a conta precisa estar como
+   **Proprietário**.
+5. **Confirme o dono do projeto no Cloud.** Em
+   <https://console.cloud.google.com/iam-admin/iam>, a mesma conta precisa ter o
+   papel **Proprietário** (Owner).
+6. **Espere 24 h.** Mensagem do próprio Google: os sistemas de marca levam até um
+   dia para registrar a verificação.
+7. **Peça nova verificação.** Passadas as 24 h, em
+   <https://console.cloud.google.com/auth/branding> abra **Status da verificação
+   → Ver problemas**, marque **Corrigi os problemas** e clique **Continuar**.
+   Não use "Acredito que os problemas encontrados estão incorretos": isso repete
+   a análise com o mesmo estado e só gasta tempo de revisor.
+
 ## 2. Marca (Branding)
 
 <https://console.cloud.google.com/auth/branding>

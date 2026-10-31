@@ -37,8 +37,12 @@ o limite deixa de ser aplicado. Não queime vagas com contas descartáveis.
 > 24 hours before retrying to allow our systems to update.
 
 O site responde corretamente (`/nuvem/` 200, `/nuvem` 301 → `/nuvem/`, arquivo de
-verificação 200), então a causa está no vínculo entre o Search Console e a conta
-do projeto. Verificar, nesta ordem: (a) a conta logada no Search Console é a
+verificação 200). Em 31/10 às 20:36 o Search Console confirmou
+**"Você é um proprietário verificado"**, método *Arquivo HTML*, na propriedade
+`https://fabio-agreles.github.io/nuvem/` — ou seja, do lado do site e do Search
+Console está tudo certo. Sobram duas hipóteses: (a) a conta logada no Search
+Console não é a mesma *owner* do projeto no Cloud; (b) os sistemas de marca ainda
+não sincronizaram (o Google pede 24 h). Verificar, nesta ordem: (a) a conta logada no Search Console é a
 mesma *owner/editor* do projeto no Cloud (`fabioagreles@gmail.com`); (b) existe a
 propriedade de **prefixo de URL** `https://fabio-agreles.github.io/nuvem/` como
 verificada; (c) esperar 24 h para os sistemas de marca sincronizarem. Depois,

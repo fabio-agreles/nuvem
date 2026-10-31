@@ -44,9 +44,16 @@ Detalhes que importam:
 - **Escopo `drive` (restrito), não `drive.file`.** `drive.file` só enxerga
   arquivos criados pelo próprio app; não sincroniza uma pasta que já existe. O
   custo é que `drive` é escopo restrito e passa por revisão do Google.
-- A tela de consentimento exige uma **URL de política de privacidade** pública —
-  é o [`PRIVACIDADE.md`](../PRIVACIDADE.md) deste repositório. Enquanto o
-  repositório estiver privado esse link dá 404 e a verificação não anda.
+- A tela de consentimento exige **URL de página inicial**, **URL de política de
+  privacidade** e **domínio autorizado**. O site do projeto está no GitHub Pages
+  (pasta `docs/`, publicada em 31/10/2026):
+  - página inicial: <https://fabio-agreles.github.io/nuvem/>
+  - política de privacidade: <https://fabio-agreles.github.io/nuvem/privacidade.html>
+  - domínio autorizado: `fabio-agreles.github.io` — o Google exige verificar a
+    propriedade do domínio no [Search Console](https://search.google.com/search-console)
+    (propriedade do tipo *prefixo de URL*, com o arquivo HTML que o Google fornece
+    colocado em `docs/`, ao lado do `index.html`). `github.io` está na lista de
+    sufixos públicos, então o que se verifica é o subdomínio, não `github.io`.
 
 ## 2. Embutir no build
 
@@ -129,13 +136,23 @@ sai dessa conta).
 
 ## 6. Pendências
 
-- [ ] Gravar o par nos segredos do repositório (para os pacotes oficiais saírem
-      com o projeto embutido).
-- [x] Tornar o repositório público (31/10/2026) — a política de privacidade precisa de URL
-      pública para a verificação.
-- [ ] Publicar o app (Audience → Publish) depois de testar com 2–3 contas.
-- [x] Medir de novo a velocidade do Drive com o projeto próprio — feito, ver
-      "Situação" acima.
-- [ ] Apontar o app instalado (Flatpak) para o projeto: `flatpak override --user
-      --env=…` e reconectar a conta Google para o token nascer no projeto novo.
+- [x] Gravar o par nos segredos do repositório (feito em 31/10; a 1.2.1 saiu com
+      o par embutido no `.deb`, no AppImage, no `.exe` e no Flatpak — conferido
+      com `strings` em cada binário).
+- [x] Tornar o repositório público (31/10/2026) e publicar o site com a política
+      de privacidade: <https://fabio-agreles.github.io/nuvem/privacidade.html>.
+- [x] Apontar o app instalado (Flatpak) para o projeto: o build já embute o par e
+      a conta Google foi reconectada nele (`rclone config update`), sem perder
+      pastas.
+- [ ] Verificar em que estado está o *Público* do projeto (**Teste** x **Em
+      produção**) em <https://console.cloud.google.com/auth/audience> e clicar
+      **Publicar app** se ainda estiver em teste — em *Teste* o refresh token
+      expira em 7 dias.
+- [ ] Verificar a propriedade de `fabio-agreles.github.io` no Search Console e
+      preencher na marca: página inicial, política de privacidade, domínio
+      autorizado, logo 120×120 e e-mail de suporte.
+- [ ] Enviar a verificação do escopo restrito em
+      <https://console.cloud.google.com/auth/verification>: justificativa do
+      `drive`, motivo de `drive.file` não servir, vídeo do fluxo completo e
+      política de privacidade pública.
 - [ ] Enviar para verificação quando o app estiver estável para distribuição.

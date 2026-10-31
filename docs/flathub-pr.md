@@ -1,5 +1,15 @@
 # Rascunho do PR no Flathub
 
+> **Aviso (política do Flathub).** O repositório `flathub/flathub` tem um
+> `AGENTS.md` dizendo que **assistência de IA não é permitida no Flathub** —
+> incluindo empacotamento — e que uma submissão feita com ajuda de IA é
+> rejeitada. O formulário de PR também exige declarar o material gerado por IA
+> no aplicativo e afirma que a submissão não foi gerada nem automatizada por IA.
+> Portanto: este documento guarda apenas **notas técnicas** do próprio projeto;
+> o manifesto do Flathub, a submissão e as respostas da revisão precisam ser
+> feitas **manualmente pelo mantenedor**, e o uso de IA no aplicativo deve ser
+> declarado com honestidade no item correspondente do formulário.
+
 Texto pronto para `flathub/flathub`, submissão pelo formulário
 <https://github.com/flathub/flathub/issues/new?template=new-pr.yml> (o novo
 processo é uma issue com o link do repositório de manifestos).

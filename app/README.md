@@ -323,10 +323,11 @@ O daemon sobe com um ajuste pensado no limite do Google (em `rclone.rs`):
 Medido neste ambiente (link de ~10 MB/s de subida, mesma conta e mesmos arquivos,
 antes → depois):
 
-| Carga | Antes (padrões do rclone) | Depois |
-| --- | --- | --- |
-| 1 arquivo de 64 MiB | 121 s (uma vez) / 27 s | **9 s** (~7,5 MB/s) |
-| 100 arquivos de 200 KiB | 349 s | **242 s** |
+| Carga | Antes (padrões do rclone) | Depois (ajustes de transferência) | Com o projeto OAuth do Nuvem |
+| --- | --- | --- | --- |
+| 1 arquivo de 64 MiB | 121 s (uma vez) / 27 s | **9 s** (~7,5 MB/s) | — |
+| 100 arquivos de 200 KiB | 349 s | **242 s** | — |
+| 3 arquivos de 200 KiB | 22 s, com **12** eventos `Rate limited` | — | **4,4–4,6 s, zero** `Rate limited` (3 medições) |
 
 O teto real não é a banda: é a cota do projeto OAuth que o rclone usa por padrão.
 O próprio rclone avisa que esse `client_id` compartilhado **vai parar de funcionar

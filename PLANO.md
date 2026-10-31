@@ -203,6 +203,11 @@ Alternativas descartadas por ora:
   não há servidor) e política de privacidade em [`docs/oauth-google.md`](docs/oauth-google.md)
   e [`PRIVACIDADE.md`](PRIVACIDADE.md). Pendente: criar o projeto, colar o par nos
   segredos, publicar o app e medir de novo a velocidade do Drive.
+  **Medido em 30/10 com o projeto próprio** (conta de teste, 3 arquivos de 200 KiB):
+  22 s e 12 eventos `Rate limited` no projeto compartilhado → **4,4 / 4,4 / 4,6 s
+  com zero `Rate limited` e zero 403**. O gargalo era mesmo a cota do projeto, não
+  a banda. Falta apontar o app instalado para o projeto (override + reconectar a
+  conta) e gravar o par nos segredos do repositório.
 - Command palette completa, atalhos, onboarding animado, estados vazios.
 - Regras de ignore com validação, limites de banda, proxy, conversão de docs Google.
 - Diagnóstico (“doctor”) com explicação em linguagem simples.

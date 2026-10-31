@@ -121,6 +121,11 @@ sai dessa conta).
       `client_id` `875036643376-…` em uso (conferido na tela, em X virtual).
       Prova automática: teste `ambiente_com_o_par_do_projeto_vira_fonte_nuvem`,
       que só roda quando as variáveis estão no ambiente.
+- [x] Conta de teste autorizada contra o projeto novo (consentimento mostrando
+      "Nuvem", sem `redirect_uri_mismatch`) e **medida**: 3 arquivos de 200 KiB
+      subindo em 4,4 / 4,4 / 4,6 s com **zero** `Rate limited` e zero 403 —
+      contra 22 s e 12 eventos `Rate limited` no projeto compartilhado. O remoto
+      de teste e as pastas criadas no Drive foram removidos depois.
 
 ## 6. Pendências
 
@@ -129,6 +134,8 @@ sai dessa conta).
 - [ ] Tornar o repositório público — a política de privacidade precisa de URL
       pública para a verificação.
 - [ ] Publicar o app (Audience → Publish) depois de testar com 2–3 contas.
-- [ ] Medir de novo a velocidade do Drive com o projeto próprio (esperado: fim
-      dos `Rate limited` no log) e registrar o antes/depois no `PLANO.md`.
+- [x] Medir de novo a velocidade do Drive com o projeto próprio — feito, ver
+      "Situação" acima.
+- [ ] Apontar o app instalado (Flatpak) para o projeto: `flatpak override --user
+      --env=…` e reconectar a conta Google para o token nascer no projeto novo.
 - [ ] Enviar para verificação quando o app estiver estável para distribuição.

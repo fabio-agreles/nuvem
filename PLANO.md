@@ -208,6 +208,12 @@ Alternativas descartadas por ora:
   com zero `Rate limited` e zero 403**. O gargalo era mesmo a cota do projeto, não
   a banda. Falta apontar o app instalado para o projeto (override + reconectar a
   conta) e gravar o par nos segredos do repositório.
+- ✅ **1.2.0 publicada** (tag `v1.2.0`, 30/10): os 5 pacotes saíram com o par
+  embutido (conferido com `strings` no binário do `.deb`, no `nuvem.exe` de
+  dentro do instalador NSIS, no portátil e no binário do Flatpak) e o pacote
+  local está em `~/Downloads/nuvem-1.2.0/` (+ zip único). `scripts/build-flatpak.sh`
+  gera o bundle com o par a partir do `.env.oauth`, sem deixá-lo no git — no
+  Flathub, o par terá de ir no manifesto (que é público).
 - Command palette completa, atalhos, onboarding animado, estados vazios.
 - Regras de ignore com validação, limites de banda, proxy, conversão de docs Google.
 - Diagnóstico (“doctor”) com explicação em linguagem simples.

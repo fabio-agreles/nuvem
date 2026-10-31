@@ -24,3 +24,4 @@
 
 # Credenciais do projeto OAuth do Google usado no build (scripts/oauth-google.sh)
 /app/.env.oauth
+/app/flatpak/app.nuvem.Nuvem.build.json

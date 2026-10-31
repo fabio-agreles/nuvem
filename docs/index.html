@@ -24,7 +24,13 @@
   a { color: var(--accent2); }
   ul { padding-left: 20px; }
   li { margin: 6px 0; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 16px 0 8px; }
+  .head { display: flex; gap: 16px; align-items: center; margin-bottom: 28px; }
+  .head img { border-radius: 14px; flex: none; }
+  .head .sub { margin: 2px 0 0; }
+  .cmd { display: block; margin-top: 6px; font-family: ui-monospace, monospace; font-size: 0.8rem;
+         color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+         padding: 5px 8px; white-space: nowrap; overflow-x: auto; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 16px 0 8px; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
   .card strong { display: block; margin-bottom: 2px; }
   .card span { color: var(--muted); font-size: 0.9rem; }
@@ -39,17 +45,21 @@
 <body>
 <main>
   <span class="tag">código aberto · MIT</span>
-  <h1>Nuvem</h1>
-  <p class="sub">Suas pastas do computador e do Google Drive (ou OneDrive) sempre iguais —
-  nos dois sentidos, sem painel cheio de opções.</p>
-
+  <div class="head">
+    <img src="nuvem.png" alt="" width="64" height="64">
+    <div>
+      <h1>Nuvem</h1>
+      <p class="sub">Suas pastas do computador e do Google Drive (ou OneDrive) sempre iguais —
+      nos dois sentidos, sem painel cheio de opções.</p>
+    </div>
+  </div>
   <p>Aplicativo de desktop para Linux e Windows. A sincronização é feita pelo
   motor <a href="https://rclone.org/bisync/">bisync do rclone</a>, embutido no
   pacote: não é preciso instalar nada além do Nuvem.</p>
 
   <h2>Baixar</h2>
   <div class="grid">
-    <div class="card"><strong>Debian, Ubuntu, Mint</strong><span>.deb — <code>sudo apt install ./Nuvem_*.deb</code></span></div>
+    <div class="card"><strong>Debian, Ubuntu, Mint</strong><span>.deb</span><span class="cmd">sudo apt install ./Nuvem_*.deb</span></div>
     <div class="card"><strong>Qualquer Linux</strong><span>AppImage, sem instalar</span></div>
     <div class="card"><strong>Flatpak</strong><span>isolado, com bandeja</span></div>
     <div class="card"><strong>Windows 10/11</strong><span>instalador <code>.exe</code></span></div>

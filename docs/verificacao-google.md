@@ -28,6 +28,23 @@ o limite deixa de ser aplicado. Não queime vagas com contas descartáveis.
   aplicativo" permanece até a verificação terminar, e o projeto tem teto de
   **100 usuários novos na vida** (não zera).
 
+### Histórico de tentativas
+
+**Tentativa 1 — 31/10/2026, reprovada.** Mensagem no console:
+
+> O site do URL da sua página inicial "https://fabio-agreles.github.io/nuvem/"
+> não está registrado para você. Verify ownership of your home page, then wait
+> 24 hours before retrying to allow our systems to update.
+
+O site responde corretamente (`/nuvem/` 200, `/nuvem` 301 → `/nuvem/`, arquivo de
+verificação 200), então a causa está no vínculo entre o Search Console e a conta
+do projeto. Verificar, nesta ordem: (a) a conta logada no Search Console é a
+mesma *owner/editor* do projeto no Cloud (`fabioagreles@gmail.com`); (b) existe a
+propriedade de **prefixo de URL** `https://fabio-agreles.github.io/nuvem/` como
+verificada; (c) esperar 24 h para os sistemas de marca sincronizarem. Depois,
+**Corrigi os problemas → Pedir nova verificação** (não usar "os problemas estão
+incorretos", que apenas repete a análise).
+
 ## 2. Marca (Branding)
 
 <https://console.cloud.google.com/auth/branding>

@@ -68,6 +68,20 @@
   </screenshots>
 
   <releases>
+    <release version="1.2.0" date="2026-10-30">
+      <description>
+        <p>
+          O Google Drive passa a usar o projeto OAuth do próprio Nuvem, sem a
+          fila do projeto compartilhado do rclone: 3 arquivos pequenos subiram
+          em 4,4 s em vez de 22 s, sem nenhum "Rate limited".
+        </p>
+        <ul>
+          <li>Ajustes → Avançado mostra qual projeto OAuth está em uso.</li>
+          <li>Suas credenciais continuam ganhando do projeto do app.</li>
+          <li>Política de privacidade e guia do projeto OAuth no repositório.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.1.0" date="2026-10-30">
       <description>
         <p>Diagnóstico e atualização:</p>

@@ -31,7 +31,7 @@ rclone_version="${1:-1.75.2}"
 recursos="$root/src-tauri/resources"
 rclone_exe="$recursos/rclone.exe"
 alvo="x86_64-pc-windows-msvc"
-produto="Nuvem-1.1.0-windows-x64"
+produto="Nuvem-1.2.0-windows-x64"
 
 if [[ ! -f "$rclone_exe" ]]; then
   echo "build-windows: baixando rclone v$rclone_version para Windows…"

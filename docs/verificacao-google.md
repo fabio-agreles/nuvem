@@ -3,6 +3,21 @@
 Só o dono do projeto consegue preencher isto (login no console). Este arquivo
 guarda os textos e o roteiro do vídeo para não ter de reescrever na hora.
 
+## 0. Situação medida em 31/10/2026
+
+Capturado em **`console.cloud.google.com/auth/audience`**:
+
+| Item | Valor |
+| --- | --- |
+| Status de publicação | **Em produção** (não está em teste — o refresh token não expira em 7 dias) |
+| Tipo de usuário | Externo |
+| Limite de usuários do OAuth | **3 de 100** usados (o limite é vitalício e não pode ser zerado) |
+| Aviso no topo | "Seu aplicativo precisa ser verificado" → botão **Acessar o Centro de verificação** |
+
+Consequência prática: faltam **97 autorizações novas** até a verificação passar.
+Cada conta que autoriza o app consome uma vaga para sempre; depois de aprovado,
+o limite deixa de ser aplicado. Não queime vagas com contas descartáveis.
+
 ## 1. Estado do público (30 segundos)
 
 <https://console.cloud.google.com/auth/audience> → seção **Público**:
@@ -94,6 +109,25 @@ https://www.googleapis.com/auth/drive
 Formato: link público (YouTube não listado ou Google Drive com link). Fale em
 voz alta o que está fazendo, em inglês ou português — o revisor precisa entender
 o fluxo.
+
+### Pasta de demonstração (para não gravar seus arquivos pessoais)
+
+Criada em 31/10/2026:
+
+- local: `~/Downloads/nuvem-demo` (`nota.txt`, `planilha-demo.csv`, `exemplo.md`)
+- nuvem: `Nuvem-demo/` na conta Google, com os mesmos três arquivos
+
+### Como a tela de consentimento aparece no vídeo
+
+Ela só é exibida para uma autorização **nova**. Com a conta já autorizada, o
+rclone reconecta sem mostrar nada. Duas saídas:
+
+1. **Conta reserva (recomendado)**: conectar uma segunda conta Google que ainda
+   não autorizou o app — custa 1 das 97 vagas, mas não mexe na configuração real.
+2. **Revogar e reconectar a conta principal**: remover o acesso em
+   <https://myaccount.google.com/permissions> e, no app, remover a conta e
+   conectar de novo. Depois é preciso **adicionar a pasta outra vez** (o app
+   apaga as credenciais e o estado do bisync ao desconectar) e ressincronizar.
 
 ## 5. Depois de enviar
 

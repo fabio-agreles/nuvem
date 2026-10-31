@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de privacidade do Nuvem</title>
+<meta name="description" content="Política de privacidade do Nuvem: quais dados o aplicativo acessa, o escopo do Google Drive, o que sai do computador e como apagar seus dados.">
+<style>
+  :root { --bg: #0f1216; --fg: #e8ecf1; --muted: #9aa7b4; --card: #171c22;
+          --line: #26303a; --accent2: #8ab4f8; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f7f9fb; --fg: #1a2027; --muted: #5b6875; --card: #fff;
+            --line: #e2e8ee; --accent2: #2b5bb5; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.7 -apple-system, "Segoe UI", Roboto, Cantarell, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 52px 22px 80px; }
+  h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .data { color: var(--muted); font-size: 0.92rem; margin: 0 0 30px; }
+  h2 { font-size: 1.12rem; margin: 34px 0 10px; }
+  p, li { margin: 10px 0; }
+  a { color: var(--accent2); }
+  code { background: var(--card); border: 1px solid var(--line); border-radius: 6px;
+         padding: 1px 5px; font-size: 0.88em; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.94rem; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-top: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  .en { margin-top: 46px; padding-top: 20px; border-top: 1px solid var(--line);
+        color: var(--muted); font-size: 0.94rem; }
+  .en h2 { color: var(--fg); font-size: 1rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Política de privacidade do Nuvem</h1>
+  <p class="data">Última atualização: 30 de outubro de 2026.</p>
+
+  <p>O Nuvem é um aplicativo de desktop que mantém pastas deste computador em
+  sincronização bidirecional com o Google Drive e o OneDrive. <strong>Não existe
+  servidor do Nuvem</strong>: nada do seu conteúdo passa por máquinas nossas,
+  porque não temos nenhuma.</p>
+
+  <h2>Que dados o aplicativo acessa</h2>
+  <table>
+    <tr><th>Dado</th><th>Para quê</th><th>Onde fica</th></tr>
+    <tr>
+      <td>Arquivos e pastas da nuvem <strong>que você escolhe sincronizar</strong></td>
+      <td>Copiar de/para a pasta local que você indicou (bisync)</td>
+      <td>No seu computador e no provedor que você conectou</td>
+    </tr>
+    <tr>
+      <td>Nome, e-mail e cota da sua conta Google/OneDrive</td>
+      <td>Mostrar o card da conta e o uso de armazenamento</td>
+      <td>No seu computador</td>
+    </tr>
+    <tr>
+      <td>Tokens de acesso (OAuth)</td>
+      <td>Falar com a API do provedor sem pedir sua senha a cada vez</td>
+      <td><code>~/.config/rclone/rclone.conf</code> (<code>%APPDATA%\rclone</code>), permissão <code>0600</code></td>
+    </tr>
+    <tr>
+      <td>Ajustes e histórico de atividade</td>
+      <td>Manter as preferências e mostrar o que foi sincronizado</td>
+      <td><code>~/.config/app.nuvem.Nuvem</code> (<code>%APPDATA%\app.nuvem.Nuvem</code>)</td>
+    </tr>
+  </table>
+
+  <p>O aplicativo <strong>não</strong> lê arquivos fora das pastas que você
+  adicionou, <strong>não</strong> acessa Gmail, contatos, calendário ou fotos, e
+  <strong>não</strong> guarda cópia do seu conteúdo em lugar nenhum além do
+  computador e da conta que você conectou.</p>
+
+  <h2>Escopo do Google Drive</h2>
+  <p>O Nuvem pede o escopo <code>https://www.googleapis.com/auth/drive</code>
+  porque a sincronização precisa ler e gravar arquivos que <strong>já existem</strong>
+  na sua conta — é o caso de uma pasta de trabalho que você quer manter igual nos
+  dois lados. O escopo mais restrito (<code>drive.file</code>) só enxerga arquivos
+  criados pelo próprio aplicativo, o que impediria a sincronização de pastas
+  existentes. O acesso é usado exclusivamente para transferir os arquivos das
+  pastas que você escolheu.</p>
+
+  <h2>O que sai do seu computador</h2>
+  <ul>
+    <li>Requisições para as APIs do <strong>Google</strong> e da <strong>Microsoft</strong>
+      (as mesmas que o seu navegador faria ao usar o Drive/OneDrive na web),
+      autenticadas com o token da sua conta.</li>
+    <li>Se você pedir “Verificar atualização” em Ajustes → Sobre: uma requisição
+      para <code>https://api.github.com</code> perguntando a última versão
+      publicada. Ela não leva identificador seu, arquivos, nomes de pastas nem token.</li>
+  </ul>
+  <p>Não há telemetria, análise de uso, crash reporting remoto nem publicidade.</p>
+
+  <h2>Relatório de diagnóstico</h2>
+  <p>O relatório (Ajustes → Sobre → Salvar) é gerado <strong>localmente</strong> e
+  só é enviado se você mesmo enviar. Ele contém versão do app, sistema, versão do
+  rclone, nomes das contas e das pastas, ajustes e os últimos erros — nunca
+  senhas, tokens ou o <code>client_secret</code> do OAuth.</p>
+
+  <h2>Como apagar seus dados</h2>
+  <ol>
+    <li><strong>Desconectar uma conta</strong> (Visão geral → Contas): apaga as
+      credenciais dela do <code>rclone.conf</code> e o estado do bisync daquelas pastas.</li>
+    <li><strong>Desinstalar</strong> o aplicativo: os arquivos ficam em
+      <code>~/.config/app.nuvem.Nuvem</code> e <code>~/.config/rclone</code>
+      (Windows: <code>%APPDATA%</code>). Apague essas duas pastas para remover
+      tudo. Seus arquivos na nuvem não são tocados.</li>
+    <li><strong>Revogar o acesso</strong> direto no provedor:
+      <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>
+      (Google) ou <a href="https://account.live.com/consent/Manage">account.live.com/consent/Manage</a>
+      (Microsoft).</li>
+  </ol>
+
+  <h2>Contato</h2>
+  <p>Dúvidas sobre privacidade: abra uma issue em
+  <a href="https://github.com/fabio-agreles/nuvem/issues">github.com/fabio-agreles/nuvem/issues</a>.</p>
+
+  <div class="en">
+    <h2>Privacy policy — English summary</h2>
+    <p>Nuvem is an open-source desktop application (MIT) that keeps folders on
+    your computer in two-way sync with Google Drive or OneDrive. It has
+    <strong>no server</strong>: your files and credentials never reach us.</p>
+    <p>The application only accesses the files and folders you explicitly add to
+    it, plus your account name, e-mail and storage quota (to show them in the
+    interface). OAuth tokens and settings are stored locally with <code>0600</code>
+    permissions. The <code>https://www.googleapis.com/auth/drive</code> scope is
+    requested because syncing an existing folder requires reading and writing
+    files the app did not create — the narrower <code>drive.file</code> scope
+    would only cover app-created files. Data received from Google APIs is used
+    solely to transfer the files in the folders you selected.</p>
+    <p>Network requests go only to the Google and Microsoft APIs, and — if you
+    press “Check for updates” — to <code>api.github.com</code>. There is no
+    telemetry, analytics, remote crash reporting or advertising. To delete your
+    data: disconnect the account in the app, remove
+    <code>~/.config/app.nuvem.Nuvem</code> and <code>~/.config/rclone</code>, and
+    revoke access at
+    <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.
+    Contact: open an issue at
+    <a href="https://github.com/fabio-agreles/nuvem/issues">github.com/fabio-agreles/nuvem/issues</a>.</p>
+  </div>
+</main>
+</body>
+</html>

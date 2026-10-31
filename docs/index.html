@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nuvem — sincronização entre o computador e Google Drive / OneDrive</title>
+<meta name="description" content="Nuvem: aplicativo de desktop que mantém pastas do computador em sincronização bidirecional com Google Drive e OneDrive. Linux e Windows, código aberto, sem servidor.">
+<style>
+  :root {
+    --bg: #0f1216; --fg: #e8ecf1; --muted: #9aa7b4; --card: #171c22;
+    --line: #26303a; --accent: #7cc4a4; --accent2: #8ab4f8;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f7f9fb; --fg: #1a2027; --muted: #5b6875; --card: #ffffff;
+            --line: #e2e8ee; --accent: #2f7f63; --accent2: #2b5bb5; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.65 -apple-system, "Segoe UI", Roboto, Cantarell, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 56px 22px 80px; }
+  h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); font-size: 1.05rem; margin: 0 0 34px; }
+  h2 { font-size: 1.05rem; margin: 34px 0 10px; }
+  a { color: var(--accent2); }
+  ul { padding-left: 20px; }
+  li { margin: 6px 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 16px 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .card strong { display: block; margin-bottom: 2px; }
+  .card span { color: var(--muted); font-size: 0.9rem; }
+  .tag { display: inline-block; font-size: 0.78rem; font-weight: 600; color: var(--accent);
+         border: 1px solid var(--accent); border-radius: 999px; padding: 1px 9px; margin-bottom: 18px; }
+  code { background: var(--card); border: 1px solid var(--line); border-radius: 6px;
+         padding: 1px 5px; font-size: 0.88em; }
+  footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
+           color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+<main>
+  <span class="tag">código aberto · MIT</span>
+  <h1>Nuvem</h1>
+  <p class="sub">Suas pastas do computador e do Google Drive (ou OneDrive) sempre iguais —
+  nos dois sentidos, sem painel cheio de opções.</p>
+
+  <p>Aplicativo de desktop para Linux e Windows. A sincronização é feita pelo
+  motor <a href="https://rclone.org/bisync/">bisync do rclone</a>, embutido no
+  pacote: não é preciso instalar nada além do Nuvem.</p>
+
+  <h2>Baixar</h2>
+  <div class="grid">
+    <div class="card"><strong>Debian, Ubuntu, Mint</strong><span>.deb — <code>sudo apt install ./Nuvem_*.deb</code></span></div>
+    <div class="card"><strong>Qualquer Linux</strong><span>AppImage, sem instalar</span></div>
+    <div class="card"><strong>Flatpak</strong><span>isolado, com bandeja</span></div>
+    <div class="card"><strong>Windows 10/11</strong><span>instalador <code>.exe</code></span></div>
+  </div>
+  <p><a href="https://github.com/fabio-agreles/nuvem/releases/latest">Baixar a versão mais recente →</a></p>
+
+  <h2>O que ele faz</h2>
+  <ul>
+    <li>Sincronização <strong>bidirecional</strong> (bisync): o que muda de um lado aparece do outro.</li>
+    <li>Google Drive e OneDrive, com o projeto OAuth do próprio app.</li>
+    <li>Conflitos lado a lado, para você escolher qual versão fica.</li>
+    <li>Trava de segurança: se um dos lados esvaziar, a sincronização para em vez de apagar o outro.</li>
+    <li>Bandeja do sistema, iniciar com o sistema, notificações, limites de banda, tema claro/escuro.</li>
+    <li>Sem telemetria e <strong>sem servidor</strong>: os dados vão do seu computador direto para o Google ou a Microsoft.</li>
+  </ul>
+
+  <h2>Documentação</h2>
+  <ul>
+    <li><a href="https://github.com/fabio-agreles/nuvem">Código-fonte</a></li>
+    <li><a href="privacidade.html">Política de privacidade</a></li>
+    <li><a href="https://github.com/fabio-agreles/nuvem/blob/main/app/README.md">Arquitetura e como compilar</a></li>
+  </ul>
+
+  <footer>
+    Nuvem é software livre sob licença MIT. Google Drive e OneDrive são marcas de
+    seus respectivos donos; este projeto não é afiliado ao Google nem à Microsoft.
+  </footer>
+</main>
+</body>
+</html>

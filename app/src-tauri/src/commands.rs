@@ -3,7 +3,7 @@ use crate::{
     error::{AppError, AppResult},
     models::*,
     oauth,
-    rclone::Rclone,
+    rclone::{Rclone, SemConsole},
     state::{AppState, JobRecord},
 };
 use serde_json::{json, Value};
@@ -74,8 +74,11 @@ fn new_id() -> String {
 
 pub async fn list_accounts_inner(state: &AppState) -> AppResult<Vec<Account>> {
     let binary = state.rclone.binary().await?;
-    let output = tokio::process::Command::new(binary)
-        .args(["config", "dump"])
+    // Esta função roda a cada tela que lista contas: sem `sem_console` seria uma
+    // janela de console piscando a cada navegação no Windows.
+    let mut command = tokio::process::Command::new(binary);
+    command.args(["config", "dump"]).sem_console();
+    let output = command
         .output()
         .await
         .map_err(|error| AppError::new(format!("não foi possível ler a configuração do rclone: {error}")))?;
@@ -552,8 +555,88 @@ async fn limpar_cache_da_conta(state: &AppState, account: &str) {
 /// no meio de uma sincronização. Como só chamamos isto quando o app **não** tem
 /// tarefa rodando, qualquer trava encontrada é resto — e travas com menos de um
 /// minuto são respeitadas por via das dúvidas.
-pub(crate) async fn limpar_travas_do_bisync(state: &AppState) -> usize {
-    let Ok(paths) = state
+/// Qual lado está vazio quando o outro não está.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum LadoVazio {
+    Nuvem,
+    Local,
+}
+
+impl LadoVazio {
+    pub(crate) fn mensagem(self) -> &'static str {
+        match self {
+            // O caso que já aconteceu de verdade: a pasta na nuvem foi esvaziada
+            // (para a lixeira do Drive) e o bisync, sem esta trava, propagaria a
+            // exclusão para os arquivos locais.
+            Self::Nuvem => {
+                "a pasta na nuvem está vazia e a local tem arquivos: sincronizar agora apagaria tudo o \
+                 que está no computador. Nada foi apagado. Confira a pasta na nuvem (a lixeira do Drive \
+                 guarda o que saiu de lá); se o vazio for intencional, clique neste erro e escolha \
+                 Ressincronizar."
+            }
+            Self::Local => {
+                "a pasta local está vazia e a na nuvem tem arquivos: sincronizar agora apagaria tudo o \
+                 que está na nuvem. Nada foi apagado. Recrie a pasta local se ela sumiu sem querer; se \
+                 o vazio for intencional, clique neste erro e escolha Ressincronizar."
+            }
+        }
+    }
+}
+
+/// Decide se a rodada precisa ser barrada.
+///
+/// O bisync propaga exclusões **nos dois sentidos**: se um lado ficou vazio por
+/// acidente, a próxima rodada transforma o outro lado em vazio também — e o
+/// rclone só reclamaria depois, com um "bisync aborted" incompreensível. Com
+/// `resync` o usuário está pedindo explicitamente para aceitar o estado atual,
+/// então a trava não se aplica.
+pub(crate) fn risco_de_apagar_tudo(
+    resync: bool,
+    nuvem_vazia: bool,
+    local_vazio: bool,
+) -> Option<LadoVazio> {
+    if resync {
+        return None;
+    }
+    match (nuvem_vazia, local_vazio) {
+        // Os dois vazios é uma pasta nova: nada a perder.
+        (true, true) => None,
+        (true, false) => Some(LadoVazio::Nuvem),
+        (false, true) => Some(LadoVazio::Local),
+        (false, false) => None,
+    }
+}
+
+/// A pasta local tem pelo menos um item? Uma leitura de diretório, sem varrer
+/// a árvore inteira — uma pasta com 100 mil arquivos responderia na hora.
+fn tem_algo_em(dir: &Path) -> bool {
+    std::fs::read_dir(dir)
+        .map(|mut entradas| entradas.next().is_some())
+        .unwrap_or(true)
+}
+
+/// A pasta remota está vazia? `None` quando não deu para saber (sem rede, por
+/// exemplo) — nesse caso a trava não opina e o bisync segue o caminho normal.
+async fn pasta_remota_vazia(state: &AppState, account: &str, remote: &str) -> Option<bool> {
+    let resposta = state
+        .rclone
+        .call(
+            "operations/list",
+            json!({ "fs": format!("{account}:"), "remote": remote }),
+            Duration::from_secs(30),
+        )
+        .await
+        .ok()?;
+    Some(
+        resposta
+            .get("list")
+            .and_then(Value::as_array)
+            .map(Vec::is_empty)
+            .unwrap_or(false),
+    )
+}
+
+pub(crate) async fn limpar_travas_do_bisync(state: &AppState) -> usize {    let Ok(paths) = state
         .rclone
         .call("config/paths", json!({}), Duration::from_secs(15))
         .await
@@ -686,6 +769,22 @@ async fn start_profile_inner(
     }
 
     let resync = force_resync || profile.resync_needed;
+
+    // Trava de segurança. Uma rodada de bisync propaga exclusões nos dois
+    // sentidos: com a pasta na nuvem vazia (foi para a lixeira do Drive, por
+    // exemplo) e a local cheia, a rodada apagaria os arquivos do computador e
+    // só depois reclamaria com um "bisync aborted" incompreensível. Melhor
+    // barrar antes de começar e dizer o que fazer.
+    if !resync {
+        if let Some(nuvem_vazia) =
+            pasta_remota_vazia(state, &profile.account, &profile.remote_path).await
+        {
+            let local_vazio = !tem_algo_em(Path::new(&profile.local_path));
+            if let Some(lado) = risco_de_apagar_tudo(resync, nuvem_vazia, local_vazio) {
+                return Err(AppError::new(lado.mensagem()));
+            }
+        }
+    }
     let filters: Vec<String> = state
         .settings
         .lock()
@@ -1518,10 +1617,9 @@ fn abrir_no_sistema<P: AsRef<std::path::Path>>(path: P) -> std::io::Result<()> {
     let program = "explorer";
     #[cfg(not(windows))]
     let program = "xdg-open";
-    std::process::Command::new(program)
-        .arg(path.as_ref())
-        .spawn()
-        .map(|_| ())
+    let mut command = std::process::Command::new(program);
+    command.arg(path.as_ref()).sem_console();
+    command.spawn().map(|_| ())
 }
 
 #[tauri::command]
@@ -1902,7 +2000,10 @@ pub fn open_url(url: String) -> AppResult<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::{montar_relatorio, resposta_para, versao_mais_nova, ContextoRelatorio};
+    use super::{
+        montar_relatorio, resposta_para, risco_de_apagar_tudo, tem_algo_em, versao_mais_nova,
+        ContextoRelatorio, LadoVazio,
+    };
     use crate::models::{Account, ActivityEntry, Profile, Settings};
     use serde_json::json;
 
@@ -2061,6 +2162,57 @@ mod tests {
         assert_eq!(super::remover_travas_antigas(&dir, Duration::from_secs(0)), 1);
         assert!(!trava.exists());
         assert!(dir.join("lista.path1.lst").exists());
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn trava_barra_a_nuvem_vazia_com_a_pasta_local_cheia() {
+        // O caso real de 30/10: `Documentos` esvaziada na nuvem (foi para a
+        // lixeira) e os arquivos intactos no computador.
+        let lado = risco_de_apagar_tudo(false, true, false).expect("devia barrar");
+        assert_eq!(lado, LadoVazio::Nuvem);
+        let texto = lado.mensagem();
+        assert!(texto.contains("nuvem está vazia"));
+        assert!(texto.contains("Nada foi apagado"));
+        assert!(texto.contains("Ressincronizar"));
+    }
+
+    #[test]
+    fn trava_barra_a_pasta_local_vazia_com_a_nuvem_cheia() {
+        let lado = risco_de_apagar_tudo(false, false, true).expect("devia barrar");
+        assert_eq!(lado, LadoVazio::Local);
+        assert!(lado.mensagem().contains("pasta local está vazia"));
+    }
+
+    #[test]
+    fn ressincronizar_e_o_jeito_de_aceitar_o_estado_atual() {
+        // Ressincronizar é o pedido explícito do usuário: a trava não opina.
+        assert_eq!(risco_de_apagar_tudo(true, true, false), None);
+        assert_eq!(risco_de_apagar_tudo(true, false, true), None);
+        assert_eq!(risco_de_apagar_tudo(true, true, true), None);
+    }
+
+    #[test]
+    fn pasta_nova_ou_em_dia_segue_sem_trava() {
+        // Pasta recém-criada, vazia dos dois lados: nada a perder.
+        assert_eq!(risco_de_apagar_tudo(false, true, true), None);
+        // Caso normal: os dois lados com conteúdo.
+        assert_eq!(risco_de_apagar_tudo(false, false, false), None);
+    }
+
+    #[test]
+    fn sentinela_de_pasta_vazia_le_um_unico_item() {
+        let dir = std::env::temp_dir().join(format!("nuvem-vazia-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).expect("pasta temporária");
+
+        assert!(!tem_algo_em(&dir));
+        std::fs::write(dir.join("TABELA CLIENTES IPTV.xlsx"), b"x").expect("arquivo");
+        assert!(tem_algo_em(&dir));
+        // Pasta que não existe não é "vazia": evita barrar por engano uma
+        // pasta que ainda vai ser criada.
+        assert!(tem_algo_em(&dir.join("nao-existe")));
 
         let _ = std::fs::remove_dir_all(&dir);
     }

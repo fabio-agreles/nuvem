@@ -55,6 +55,8 @@ o rclone embutido.
 | Metainfo AppStream completo (`developer`, URLs, 6 capturas 2x, `releases`) e `.desktop` sem avisos | ✅ |
 | Relatório de diagnóstico em um clique (sem senhas nem tokens) | ✅ |
 | Aviso de nova versão publicada (consulta a última Release) | ✅ |
+| Trava contra apagar tudo: um dos lados vazio e o outro cheio **barra** a sincronização | ✅ |
+| Nenhum subprocesso abre janela de console no Windows (`CREATE_NO_WINDOW` em todos) | ✅ |
 
 ## Prévia
 
@@ -492,6 +494,19 @@ escopo `drive` terminar.
   apenas criar o projeto no Google Cloud para ver a cota trocar de dono.
 
 ## Armadilhas já resolvidas (para não voltar nelas)
+
+- **Janela de console piscando no Windows a cada navegação**: o `rclone.exe` é um
+  programa de console, então *todo* `Command::new` no Windows abre uma janela preta
+  por um instante — mesmo com `.output()` capturando a saída. A flag
+  `CREATE_NO_WINDOW` (`0x0800_0000`, via `creation_flags`) existia só no spawn do
+  daemon; faltava em `config dump` (que roda a cada tela de contas), no
+  `rclone version` e no `explorer`. Hoje tudo passa pelo trait `SemConsole`
+  (`rclone.rs`), que é no-op no Linux/macOS. Ao criar um subprocesso novo, use-o.
+- **Um lado vazio apaga o outro**: o bisync propaga exclusões nos dois sentidos.
+  Quando a pasta na nuvem foi esvaziada (lixeira do Drive) e a local estava cheia,
+  a rodada apagaria os arquivos do computador — e o `maxDelete=50` do app não
+  segurava, porque eram 9 arquivos. Agora `risco_de_apagar_tudo` barra a rodada
+  antes de começar e o erro no cartão da pasta vira o botão de ressincronizar.
 
 - **`cargo build --release` sem `--features custom-protocol`** gera um binário que
   carrega a `devUrl` e mostra *“Could not connect to localhost”*. Use `tauri build`

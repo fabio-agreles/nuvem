@@ -57,6 +57,50 @@ const RCLONE: &str = "rclone";
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
+/// Esconde a janela de console do subprocesso no Windows.
+///
+/// O `rclone.exe` é um programa de console: todo `Command::new` no Windows
+/// **abre uma janela preta** por um instante, mesmo quando a saída é capturada
+/// com `.output()`. Isso rendeu reclamação real — "ficam piscando umas janelas
+/// do MS-DOS, inclusive ao navegar pelo programa", porque `list_accounts_inner`
+/// (`config dump`) roda a cada tela que lista contas e `version()` roda no
+/// status do motor. A flag foi aplicada no daemon e ficou faltando no resto.
+///
+/// No Linux/macOS não existe janela a esconder: os métodos viram no-op, então o
+/// mesmo código de chamada serve para os três sistemas.
+pub trait SemConsole {
+    fn sem_console(&mut self) -> &mut Self;
+}
+
+#[cfg(windows)]
+impl SemConsole for Command {
+    fn sem_console(&mut self) -> &mut Self {
+        self.creation_flags(CREATE_NO_WINDOW)
+    }
+}
+
+#[cfg(windows)]
+impl SemConsole for std::process::Command {
+    fn sem_console(&mut self) -> &mut Self {
+        use std::os::windows::process::CommandExt as _;
+        self.creation_flags(CREATE_NO_WINDOW)
+    }
+}
+
+#[cfg(not(windows))]
+impl SemConsole for Command {
+    fn sem_console(&mut self) -> &mut Self {
+        self
+    }
+}
+
+#[cfg(not(windows))]
+impl SemConsole for std::process::Command {
+    fn sem_console(&mut self) -> &mut Self {
+        self
+    }
+}
+
 #[derive(Clone)]
 pub struct Rclone {
     inner: Arc<Inner>,
@@ -142,7 +186,11 @@ impl Rclone {
     }
 
     pub async fn version(&self, binary: &Path) -> Option<String> {
-        let output = Command::new(binary).arg("version").output().await.ok()?;
+        // `rclone version` roda a cada consulta de status: no Windows tem de sair
+        // sem console, senão a janela preta pisca ao navegar.
+        let mut command = Command::new(binary);
+        command.arg("version").sem_console();
+        let output = command.output().await.ok()?;
         let text = String::from_utf8_lossy(&output.stdout);
         text.lines()
             .find_map(|line| line.strip_prefix("rclone v").map(|rest| format!("v{}", rest.trim())))
@@ -228,8 +276,7 @@ impl Rclone {
             .stderr(Stdio::null())
             .kill_on_drop(true);
         // Sem console piscando no Windows (o rclone roda escondido a vida toda).
-        #[cfg(windows)]
-        command.creation_flags(CREATE_NO_WINDOW);
+        command.sem_console();
         let mut child = command
             .spawn()
             .map_err(|error| AppError::new(format!("não foi possível iniciar o rclone: {error}")))?;

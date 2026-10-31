@@ -5,6 +5,14 @@ import { api, errorMessage } from "../lib/bridge";
 import { relativeTime } from "../lib/format";
 import type { Account, Profile } from "../lib/types";
 
+/// Erros do rclone são longos ("bisync aborted", "a pasta na nuvem está
+/// vazia…"). O cartão mostra o começo; o texto inteiro — e a dica de
+/// ressincronizar — ficam no tooltip.
+function resumoDoErro(texto: string): string {
+  const limpo = texto.replace(/\s+/g, " ").trim();
+  return limpo.length > 46 ? `${limpo.slice(0, 44).trimEnd()}…` : limpo;
+}
+
 export function Folders({
   profiles,
   accounts,
@@ -88,10 +96,28 @@ export function Folders({
 
               <div className="folder-state">
                 {profile.lastError ? (
-                  <span className="badge danger" title={profile.lastError}>
+                  // O erro é um botão: é por ele que se pede a ressincronização
+                  // (aceitar o estado atual das duas pastas). Sem isso, um aviso
+                  // como "a pasta na nuvem está vazia" não teria saída na tela.
+                  <button
+                    className="badge danger"
+                    style={{
+                      border: "none",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      maxWidth: "100%",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                    title={`${profile.lastError}\n\nClique para Ressincronizar: aceita o estado atual das duas pastas e refaz a base de comparação.`}
+                    aria-label={`${profile.lastError} — Ressincronizar ${profile.remotePath}`}
+                    onClick={() => onSync(profile.id, true)}
+                  >
                     <Icon name="alert" size={12} />
-                    {profile.lastError}
-                  </span>
+                    {resumoDoErro(profile.lastError)}
+                  </button>
                 ) : !profile.enabled ? (
                   <span className="badge muted">desativada</span>
                 ) : profile.resyncNeeded ? (

@@ -208,6 +208,14 @@ Alternativas descartadas por ora:
   com zero `Rate limited` e zero 403**. O gargalo era mesmo a cota do projeto, não
   a banda. Falta apontar o app instalado para o projeto (override + reconectar a
   conta) e gravar o par nos segredos do repositório.
+- ✅ **1.2.1** (31/10): fim das janelas de console no Windows (trait `SemConsole`
+  aplicado em todos os subprocessos), trava `risco_de_apagar_tudo` (um lado vazio
+  barra a rodada em vez de apagar o outro) e o erro do cartão da pasta virou o
+  botão de ressincronizar. 51 testes, clippy limpo.
+- ✅ Pasta `Documentos` recuperada da lixeira do Drive em 31/10: ela foi esvaziada
+  em 30/10 18:40 por uma rodada de teste feita com o perfil real; os 26 itens
+  voltaram para a pasta viva (`1NgXjgMM…`) pela API do Drive e foram conferidos
+  com `rclone lsf`. O 1.2.1 nasce com a trava que impede a repetição.
 - ✅ **1.2.0 publicada** (tag `v1.2.0`, 30/10): os 5 pacotes saíram com o par
   embutido (conferido com `strings` no binário do `.deb`, no `nuvem.exe` de
   dentro do instalador NSIS, no portátil e no binário do Flatpak) e o pacote

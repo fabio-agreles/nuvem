@@ -68,6 +68,21 @@
   </screenshots>
 
   <releases>
+    <release version="1.2.1" date="2026-10-31">
+      <description>
+        <p>
+          Correções depois do primeiro uso no Windows e de uma pasta esvaziada
+          na nuvem.
+        </p>
+        <ul>
+          <li>Fim das janelas de console piscando no Windows ao navegar pelo app.</li>
+          <li>A sincronização é barrada quando um dos lados está vazio e o outro
+            não: antes ela apagaria o lado cheio, agora avisa e deixa o erro
+            clicável para ressincronizar.</li>
+          <li>Cada conta mostra qual projeto OAuth a autorizou.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.2.0" date="2026-10-30">
       <description>
         <p>

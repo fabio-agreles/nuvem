@@ -130,16 +130,20 @@ export function Settings({
                 </div>
                 <div className="row-control">
                   {account.provider === "drive" ? (
-                    account.customClient ? (
+                    account.clientOrigem === "usuario" ? (
                       <span className="badge ok" title="Autorizada com o seu projeto OAuth">
                         cota própria
+                      </span>
+                    ) : account.clientOrigem === "nuvem" ? (
+                      <span className="badge ok" title="Autorizada com o projeto OAuth do Nuvem">
+                        cota do Nuvem
                       </span>
                     ) : (
                       <span
                         className="badge muted"
-                        title="Usa o projeto OAuth compartilhado do rclone: o Google limita as requisições por minuto e isso deixa a sincronização lenta em horários de pico."
+                        title="Autorizada no projeto OAuth compartilhado do rclone, de antes desta versão: reconecte a conta (em Avançado) para usar a cota do Nuvem."
                       >
-                        projeto do rclone
+                        projeto antigo · reconectar
                       </span>
                     )
                   ) : (

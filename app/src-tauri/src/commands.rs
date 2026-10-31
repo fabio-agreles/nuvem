@@ -96,22 +96,20 @@ pub async fn list_accounts_inner(state: &AppState) -> AppResult<Vec<Account>> {
                 .and_then(Value::as_str)
                 .unwrap_or("desconhecido")
                 .to_string();
-            let custom_client = config
-                .get("client_id")
-                .and_then(Value::as_str)
-                .map(|id| {
-                    // Conta autorizada com o projeto embutido no build não é
-                    // "credencial própria": o selo na interface é para quem
-                    // colou o par dele em Ajustes.
-                    let id = id.trim();
-                    !id.is_empty() && Some(id) != oauth::do_build().map(|par| par.0).as_deref()
-                })
-                .unwrap_or(false);
+            // Quem autorizou a conta: sem `client_id` é o projeto compartilhado
+            // do rclone; igual ao do build é o projeto do Nuvem; qualquer outro
+            // é o par que a pessoa colou em Ajustes → Avançado.
+            let client_origem = oauth::fonte_da_conta(
+                config.get("client_id").and_then(Value::as_str),
+                oauth::do_build().as_ref().map(|par| par.0.as_str()),
+            )
+            .id()
+            .to_string();
             Account {
                 name,
                 label: provider_label(&provider).to_string(),
                 provider,
-                custom_client,
+                client_origem,
             }
         })
         .collect();
@@ -1931,7 +1929,7 @@ mod tests {
             name: "pessoal".to_string(),
             provider: "drive".to_string(),
             label: "Google Drive".to_string(),
-            custom_client: true,
+            client_origem: "usuario".to_string(),
         }];
         let texto = montar_relatorio(&ContextoRelatorio {
             versao_app: "1.0.0",

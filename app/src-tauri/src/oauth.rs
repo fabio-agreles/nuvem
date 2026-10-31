@@ -109,6 +109,21 @@ pub fn do_build() -> Option<(String, String)> {
     primeiro_valido([ambiente, compilado])
 }
 
+/// Qual projeto autorizou uma conta já conectada (o `client_id` gravado no
+/// `rclone.conf`), comparando com o par embutido no build.
+pub fn fonte_da_conta(client_id: Option<&str>, do_build: Option<&str>) -> Fonte {
+    match client_id.map(str::trim) {
+        Some(id) if !id.is_empty() => {
+            if Some(id) == do_build.map(str::trim) {
+                Fonte::Nuvem
+            } else {
+                Fonte::Usuario
+            }
+        }
+        _ => Fonte::Rclone,
+    }
+}
+
 /// Resolve o par que vale agora: o do usuário ganha do embutido.
 pub fn efetivas(do_usuario: (&str, &str)) -> Credenciais {
     com(do_usuario, do_build())
@@ -216,6 +231,18 @@ mod testes {
         let credenciais = com((BOM, "GOCSPX-meu"), do_build_par);
         assert_eq!(credenciais.fonte, Fonte::Usuario);
         assert_eq!(credenciais.como_json()["client_secret"], "GOCSPX-meu");
+    }
+
+    #[test]
+    fn origem_da_conta_conectada() {
+        assert_eq!(fonte_da_conta(None, Some(BOM)), Fonte::Rclone);
+        assert_eq!(fonte_da_conta(Some("   "), Some(BOM)), Fonte::Rclone);
+        assert_eq!(fonte_da_conta(Some(BOM), Some(BOM)), Fonte::Nuvem);
+        assert_eq!(fonte_da_conta(Some(BOM), None), Fonte::Usuario);
+        assert_eq!(
+            fonte_da_conta(Some("999-outro.apps.googleusercontent.com"), Some(BOM)),
+            Fonte::Usuario
+        );
     }
 
     #[test]

@@ -50,8 +50,8 @@ const initialTransfers: Transfer[] = [
  */
 class DemoBackend {
   accounts: Account[] = [
-    { name: "pessoal", provider: "drive", label: "Google Drive", customClient: false },
-    { name: "trabalho", provider: "onedrive", label: "OneDrive", customClient: false },
+    { name: "pessoal", provider: "drive", label: "Google Drive", clientOrigem: "rclone" },
+    { name: "trabalho", provider: "onedrive", label: "OneDrive", clientOrigem: "rclone" },
   ];
 
   profiles: Profile[] = [
@@ -196,11 +196,14 @@ class DemoBackend {
     await delay(700);
     const label =
       provider === "drive" ? "Google Drive" : provider === "onedrive" ? "OneDrive" : provider;
-    const account = {
+    const account: Account = {
       name: name.trim() || `${label} ${this.accounts.length + 1}`,
       provider,
       label,
-      customClient: provider === "drive" && Boolean(this.settings.driveClientId.trim()),
+      clientOrigem:
+        provider === "drive" && Boolean(this.settings.driveClientId.trim())
+          ? "usuario"
+          : "rclone",
     };
     this.accounts = [...this.accounts, account];
     this.pushActivity("account", "Conta conectada", `${label} · ${account.name}`, null);

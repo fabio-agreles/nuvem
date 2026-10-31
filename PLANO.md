@@ -214,6 +214,12 @@ Alternativas descartadas por ora:
   local está em `~/Downloads/nuvem-1.2.0/` (+ zip único). `scripts/build-flatpak.sh`
   gera o bundle com o par a partir do `.env.oauth`, sem deixá-lo no git — no
   Flathub, o par terá de ir no manifesto (que é público).
+- ✅ Conta Google do app instalado reconectada no projeto novo sem perder pastas:
+  `rclone config update <conta> client_id=… client_secret=…` já refaz o OAuth e
+  emite um token do projeto do Nuvem (conferido: `rclone about` devolve a cota).
+  O selo por conta passou a ter três estados (`rclone` / `nuvem` / `usuario`) em
+  `oauth::fonte_da_conta`; a 1.2.0 ainda mostra "projeto do rclone" para essa
+  conta, o que sai na próxima versão.
 - Command palette completa, atalhos, onboarding animado, estados vazios.
 - Regras de ignore com validação, limites de banda, proxy, conversão de docs Google.
 - Diagnóstico (“doctor”) com explicação em linguagem simples.

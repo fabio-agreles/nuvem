@@ -6,10 +6,10 @@ pub struct Account {
     pub name: String,
     pub provider: String,
     pub label: String,
-    /// A conta foi autorizada com um `client_id` do próprio usuário (e não com o
-    /// projeto compartilhado do rclone, que vive estourado de cota).
-    #[serde(default)]
-    pub custom_client: bool,
+    /// Qual projeto OAuth autorizou a conta: `rclone` (o compartilhado, sem
+    /// `client_id`), `nuvem` (o embutido no build) ou `usuario` (o que a pessoa
+    /// colou em Ajustes → Avançado).
+    pub client_origem: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

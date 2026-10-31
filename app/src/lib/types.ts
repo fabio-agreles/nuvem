@@ -2,8 +2,9 @@ export type Account = {
   name: string;
   provider: string;
   label: string;
-  /** Autorizada com um client_id próprio (a cota do Google é só desta conta). */
-  customClient: boolean;
+  /** Projeto OAuth que autorizou a conta: o do rclone (cota estourada), o do
+   *  Nuvem (embutido no build) ou o do próprio usuário. */
+  clientOrigem: "rclone" | "nuvem" | "usuario";
 };
 
 export type Profile = {

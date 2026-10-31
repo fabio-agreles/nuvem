@@ -247,6 +247,9 @@ normalmente.
 
 ## Situação para o Flathub
 
+O texto de submissão (descrição, justificativa das permissões e a nota sobre o
+projeto OAuth) está em [`docs/flathub-pr.md`](../../docs/flathub-pr.md).
+
 | Requisito | Situação |
 | --- | --- |
 | Build sem rede | ✅ crates, npm e Go vendorizados (seção *Build offline*) |

@@ -87,7 +87,22 @@ falha, tire um print e salve o relatório de diagnóstico (passo 7).
 4. Abra o `.txt` e confirme que **não** há `client_secret`, `GOCSPX-` nem token;
    deve ter versão, Windows, rclone, contas, pastas e últimos erros.
 
-## 8. Ajustes específicos do Windows
+## 8. Projeto OAuth e ajustes do Windows
+
+### 8a. Cota do Google
+
+1. Ajustes → **Avançado · Google Drive**: o selo deve dizer **"projeto do Nuvem"**
+   e "Projeto em uso" deve trazer um `client_id` terminando em
+   `.apps.googleusercontent.com`. *(Falha se disser "projeto do rclone": esse
+   pacote foi compilado sem as credenciais do projeto.)*
+2. Em **Contas**, a conta Google deve mostrar **"cota do Nuvem"** — ou
+   **"projeto antigo · reconectar"** se foi autorizada numa versão anterior
+   (sincroniza igual, mas na cota do rclone).
+3. Com a conta conectada, crie 3 arquivos pequenos numa pasta sincronizada e
+   acompanhe o log: o esperado é **nenhuma** linha `Rate limited`. Antes do
+   projeto próprio eram 12 eventos no mesmo teste.
+
+### 8b. Ajustes do Windows
 
 1. Ajustes → **Configuração → Abrir**: deve abrir o Explorer na pasta de estado
    (`%APPDATA%\app.nuvem.Nuvem`).

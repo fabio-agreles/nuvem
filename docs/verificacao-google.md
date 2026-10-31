@@ -40,9 +40,10 @@ O site responde corretamente (`/nuvem/` 200, `/nuvem` 301 → `/nuvem/`, arquivo
 verificação 200). Em 31/10 às 20:36 o Search Console confirmou
 **"Você é um proprietário verificado"**, método *Arquivo HTML*, na propriedade
 `https://fabio-agreles.github.io/nuvem/` — ou seja, do lado do site e do Search
-Console está tudo certo. Sobram duas hipóteses: (a) a conta logada no Search
-Console não é a mesma *owner* do projeto no Cloud; (b) os sistemas de marca ainda
-não sincronizaram (o Google pede 24 h). Verificar, nesta ordem: (a) a conta logada no Search Console é a
+Console está tudo certo. Em 31/10 às 20:43 o IAM do projeto "Nuvem" confirmou
+`fabioagreles@gmail.com` como **Owner** — a mesma conta do Search Console. As
+duas hipóteses de vínculo estão descartadas; resta a sincronização das 24 h
+(verificar às ~19h de 01/11 e reenviar). Verificar, nesta ordem: (a) a conta logada no Search Console é a
 mesma *owner/editor* do projeto no Cloud (`fabioagreles@gmail.com`); (b) existe a
 propriedade de **prefixo de URL** `https://fabio-agreles.github.io/nuvem/` como
 verificada; (c) esperar 24 h para os sistemas de marca sincronizarem. Depois,

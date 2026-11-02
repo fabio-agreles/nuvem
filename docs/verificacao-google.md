@@ -64,6 +64,11 @@ quer o **site do domínio** verificado, não só o prefixo da pasta. Preparado e
   `https://fabio-agreles.github.io/` (arquivo HTML novo, na raiz desse
   repositório).
 
+**Resolvido em 02/11 às 18:58**: a propriedade de prefixo
+`https://fabio-agreles.github.io/` passou a constar como verificada no Search
+Console (mesmo arquivo de token, agora na raiz do domínio). Falta reenviar a
+marca.
+
 Se depois disso o erro persistir, os caminhos são: contestar com
 "Acredito que os problemas encontrados estão incorretos" (há prova nos dois
 painéis do Google) ou registrar um domínio próprio e verificar por DNS TXT, que

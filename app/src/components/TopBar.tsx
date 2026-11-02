@@ -60,9 +60,6 @@ export function TopBar({
           <Icon name={theme === "light" ? "moon" : "sun"} size={18} />
         </button>
 
-        <div className="avatar" aria-label="Perfil local">
-          N
-        </div>
       </div>
     </header>
   );

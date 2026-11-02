@@ -68,6 +68,18 @@
   </screenshots>
 
   <releases>
+    <release version="1.2.2" date="2026-11-02">
+      <description>
+        <p>
+          Limpeza do cabeçalho: saiu o avatar decorativo que não fazia nada.
+        </p>
+        <ul>
+          <li>O círculo com a letra "N" no canto superior direito foi removido
+            — ele parecia um perfil de usuário, mas o Nuvem não tem conta nem
+            clique nenhum ali.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.2.1" date="2026-10-31">
       <description>
         <p>

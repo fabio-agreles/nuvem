@@ -179,19 +179,19 @@ por isso é fácil de esquecer e a página de download fica sem ele:
 
 ```bash
 cd app
-scripts/publicar-flatpak.sh v1.2.1     # builda (com o par do .env.oauth) e anexa
+scripts/publicar-flatpak.sh v1.2.2     # builda (com o par do .env.oauth) e anexa
 ```
 
 O script confere do lado do servidor se o anexo apareceu antes de dizer que deu
 certo. Sem isso, a Release tem `.deb`, AppImage e `.exe`, mas não o `.flatpak`.
 
-O **portátil do Windows** (`Nuvem-1.2.1-windows-x64.zip`) tem o mesmo problema e
+O **portátil do Windows** (`Nuvem-<versão>-windows-x64.zip`) tem o mesmo problema e
 a mesma saída: o job do CI no `windows-latest` gera só o instalador NSIS, então o
 zip sai de `scripts/build-windows.sh` (cargo-xwin) e é anexado à parte:
 
 ```bash
 cd app && scripts/build-windows.sh
-gh release upload v1.2.1 src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-1.2.1-windows-x64.zip
+gh release upload v1.2.2 src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-1.2.2-windows-x64.zip
 ```
 
 

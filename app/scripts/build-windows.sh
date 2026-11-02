@@ -31,7 +31,9 @@ rclone_version="${1:-1.75.2}"
 recursos="$root/src-tauri/resources"
 rclone_exe="$recursos/rclone.exe"
 alvo="x86_64-pc-windows-msvc"
-produto="Nuvem-1.2.1-windows-x64"
+# A versão vem do package.json: assim o zip nunca sai com nome de versão velha.
+versao="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["version"])' "$root/package.json")"
+produto="Nuvem-$versao-windows-x64"
 
 if [[ ! -f "$rclone_exe" ]]; then
   echo "build-windows: baixando rclone v$rclone_version para Windows…"

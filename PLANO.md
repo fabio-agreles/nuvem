@@ -213,6 +213,11 @@ Alternativas descartadas por ora:
   pessoal saiu do README. Com isso a política de privacidade
   (`.../blob/main/PRIVACIDADE.md`) e as 6 capturas do metainfo respondem 200;
   destrava a publicação do projeto OAuth no Google e a submissão ao Flathub.
+- ✅ **1.2.2** (02/11): saiu o avatar decorativo "N" do canto superior direito —
+  ele parecia um perfil de usuário, mas o Nuvem não tem conta e o círculo não
+  fazia nada. `scripts/build-windows.sh` passou a ler a versão do `package.json`
+  (o zip do portátil não sai mais com nome de versão velha). 51 testes, clippy e
+  tsc limpos.
 - ✅ **1.2.1** (31/10): fim das janelas de console no Windows (trait `SemConsole`
   aplicado em todos os subprocessos), trava `risco_de_apagar_tudo` (um lado vazio
   barra a rodada em vez de apagar o outro) e o erro do cartão da pasta virou o

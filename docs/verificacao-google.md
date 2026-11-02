@@ -69,6 +69,11 @@ quer o **site do domínio** verificado, não só o prefixo da pasta. Preparado e
 Console (mesmo arquivo de token, agora na raiz do domínio). Falta reenviar a
 marca.
 
+**Tentativa 3 — 02/11 às 18:59, reprovada na hora.** Reenvio imediato após
+verificar a propriedade raiz: mesmo erro, como esperado (o validador ainda não
+viu a propriedade nova). Plano: reenviar em 03/11 depois das 19h; se falhar outra
+vez, contestar com "Acredito que os problemas encontrados estão incorretos".
+
 Se depois disso o erro persistir, os caminhos são: contestar com
 "Acredito que os problemas encontrados estão incorretos" (há prova nos dois
 painéis do Google) ou registrar um domínio próprio e verificar por DNS TXT, que

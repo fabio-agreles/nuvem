@@ -194,6 +194,11 @@ cd app && scripts/build-windows.sh
 gh release upload v1.2.2 src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-1.2.2-windows-x64.zip
 ```
 
+O script lê a versão do `package.json` (o nome do zip acompanha sozinho) e, se
+`app/.env.oauth` existir, embute o par do projeto OAuth do Nuvem — sem ele o
+portátil sai apontando para o projeto compartilhado do rclone. Confira com
+`strings` no `Nuvem.exe` de dentro do zip se o `client_id` está lá.
+
 
 ## Windows
 

@@ -35,6 +35,18 @@ alvo="x86_64-pc-windows-msvc"
 versao="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["version"])' "$root/package.json")"
 produto="Nuvem-$versao-windows-x64"
 
+# O par do projeto OAuth do Nuvem entra embutido (`option_env!`) quando existe:
+# sem ele o portátil sai com o projeto do rclone, mais lento e sujeito a
+# "Rate limited". Mesmo padrão do build-flatpak.sh, e o .env.oauth não é
+# versionado.
+if [[ -f "$root/.env.oauth" ]]; then
+  # shellcheck disable=SC1091
+  set -a; source "$root/.env.oauth"; set +a
+  echo "build-windows: par OAuth do Nuvem embutido (${NUVEM_GOOGLE_CLIENT_ID:0:20}…)"
+else
+  echo "build-windows: sem .env.oauth — o portátil vai usar o projeto do rclone." >&2
+fi
+
 if [[ ! -f "$rclone_exe" ]]; then
   echo "build-windows: baixando rclone v$rclone_version para Windows…"
   tmp="$(mktemp -d)"

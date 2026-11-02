@@ -218,6 +218,11 @@ Alternativas descartadas por ora:
   fazia nada. `scripts/build-windows.sh` passou a ler a versão do `package.json`
   (o zip do portátil não sai mais com nome de versão velha). 51 testes, clippy e
   tsc limpos.
+- 🔧 O primeiro portátil do 1.2.2 saiu **sem** o par OAuth do Nuvem: o
+  `build-windows.sh` não lia o `.env.oauth` (só o build do Flatpak lia). Refeito
+  com o par embutido e reanexado. O script agora imprime "par OAuth do Nuvem
+  embutido" ou o aviso de que vai usar o projeto do rclone — não dá mais para
+  publicar o zip sem ver.
 - ✅ **1.2.1** (31/10): fim das janelas de console no Windows (trait `SemConsole`
   aplicado em todos os subprocessos), trava `risco_de_apagar_tudo` (um lado vazio
   barra a rodada em vez de apagar o outro) e o erro do cartão da pasta virou o

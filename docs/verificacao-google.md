@@ -50,6 +50,25 @@ verificada; (c) esperar 24 h para os sistemas de marca sincronizarem. Depois,
 **Corrigi os problemas → Pedir nova verificação** (não usar "os problemas estão
 incorretos", que apenas repete a análise).
 
+### Tentativa 2 — 02/11/2026: mesmo erro depois de 46 h
+
+Repetiu "O site do URL da sua página inicial ... não está registrado para você",
+o que descarta a hipótese de sincronização. Interpretação mais provável: o Google
+quer o **site do domínio** verificado, não só o prefixo da pasta. Preparado em
+02/11:
+
+- repositório `fabio-agreles.github.io` (site de raiz) publicado em
+  <https://fabio-agreles.github.io/> — antes a raiz do domínio respondia 404, o
+  que pode ser justamente o "site" que o Google procura;
+- falta verificar no Search Console a propriedade de **prefixo de URL**
+  `https://fabio-agreles.github.io/` (arquivo HTML novo, na raiz desse
+  repositório).
+
+Se depois disso o erro persistir, os caminhos são: contestar com
+"Acredito que os problemas encontrados estão incorretos" (há prova nos dois
+painéis do Google) ou registrar um domínio próprio e verificar por DNS TXT, que
+é a única forma de ter uma propriedade de **domínio** de verdade.
+
 ### Passo a passo do Search Console (o que destrava a marca)
 
 O erro "não está registrado para você" só desaparece quando a conta que abre o

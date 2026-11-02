@@ -185,6 +185,16 @@ scripts/publicar-flatpak.sh v1.2.1     # builda (com o par do .env.oauth) e anex
 O script confere do lado do servidor se o anexo apareceu antes de dizer que deu
 certo. Sem isso, a Release tem `.deb`, AppImage e `.exe`, mas não o `.flatpak`.
 
+O **portátil do Windows** (`Nuvem-1.2.1-windows-x64.zip`) tem o mesmo problema e
+a mesma saída: o job do CI no `windows-latest` gera só o instalador NSIS, então o
+zip sai de `scripts/build-windows.sh` (cargo-xwin) e é anexado à parte:
+
+```bash
+cd app && scripts/build-windows.sh
+gh release upload v1.2.1 src-tauri/target/x86_64-pc-windows-msvc/release/bundle/windows-portatil/Nuvem-1.2.1-windows-x64.zip
+```
+
+
 ## Windows
 
 A versão do Windows é compilada **a partir do Linux**, com `cargo-xwin` e o alvo

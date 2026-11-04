@@ -141,7 +141,7 @@ antiga agora redireciona para outro domínio e isso vira uma reprovação própr
 
 | Campo | Valor |
 | --- | --- |
-| Nome do app | `Nuvem Sync` |
+| Nome do app | `Nuvem Sync` (ajustado no passo 1.5 de `verificacao-google.md`) |
 | Página inicial | `https://nuvem-sync.app.br/` |
 | Política de privacidade | `https://nuvem-sync.app.br/privacidade.html` |
 | Termos de serviço | `https://nuvem-sync.app.br/termos.html` |

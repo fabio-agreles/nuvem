@@ -213,6 +213,10 @@ Alternativas descartadas por ora:
   pessoal saiu do README. Com isso a política de privacidade
   (`.../blob/main/PRIVACIDADE.md`) e as 6 capturas do metainfo respondem 200;
   destrava a publicação do projeto OAuth no Google e a submissão ao Flathub.
+- 📝 **Nome no Google (pendente, 04/11)**: trocar o nome do app na marca e o
+  nome de exibição do projeto para "Nuvem Sync" (roteiro em
+  `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
+  domínio: com `github.io` reprova outra vez.
 - ✅ **1.3.0** (04/11): o app virou **Nuvem Sync**, com o pacote de ícones novo
   (`NuvemSync_Desktop_Assets.zip`): ícone do app/no .deb/Flatpak/NSIS, logo do
   site, logo 120×120 da marca no Google e **12 ícones de bandeja** (6 estados ×

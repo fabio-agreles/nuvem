@@ -202,6 +202,41 @@ console do Google Cloud é a **mesma** que verificou o site no Search Console.
    Não use "Acredito que os problemas encontrados estão incorretos": isso repete
    a análise com o mesmo estado e só gasta tempo de revisor.
 
+## 1.5 Alinhar o nome: "Nuvem Sync" (fazer agora)
+
+A partir da **1.3.0** o app, o site e os pacotes se chamam **Nuvem Sync**. O
+nome no console do Google precisa dizer o mesmo, senão a revisão aponta
+divergência entre o app e a página inicial (o site já mostra "Nuvem Sync" no
+`<h1>`, na política e nos termos). São dois lugares:
+
+### a) Nome de exibição do projeto
+
+1. <https://console.cloud.google.com> com a conta **`fabioagreles@gmail.com`**.
+2. Seletor de projeto (topo) → **Configurações do projeto**.
+3. **Nome do projeto**: `Nuvem Sync` → **Salvar**.
+
+O *project id* (`nuvem-…`, o que aparece em `rclone about` e na URL do console)
+**não muda** — é só o rótulo.
+
+### b) Nome do app na marca
+
+1. <https://console.cloud.google.com/auth/branding> → **Editar**.
+2. **Nome do app**: `Nuvem Sync`. Regras do Google: 30 caracteres, sem emoji, e
+   precisa ser o nome que aparece na página inicial (é o que o site mostra).
+3. **Logo**: envie `app/docs/logo-120.png` (120×120 PNG, fundo transparente).
+4. Deixe **página inicial/política/termos e domínio autorizado** como estão
+   (`github.io`) **até o domínio existir** — trocar para `nuvem-sync.app.br`
+   antes do DNS responder reprova por "página inicial sem resposta".
+5. **Salvar** e, no fim da página, **Publicar marca** — sem isso o nome antigo
+   continua na tela de consentimento.
+
+Depois, no passo 7 de [`dominio-proprio.md`](dominio-proprio.md), as três URLs e
+o domínio autorizado trocam juntos, e só então se reenvia a verificação.
+
+> Por que não reenviar agora: a verificação vai falhar de novo enquanto a
+> homepage estiver em `github.io` (ver §04/11). O nome, porém, já pode — e deve —
+> ficar certo antes do reenvio.
+
 ## 2. Marca (Branding)
 
 <https://console.cloud.google.com/auth/branding>
@@ -214,7 +249,7 @@ console do Google Cloud é a **mesma** que verificou o site no Search Console.
 | Política de privacidade | `https://nuvem-sync.app.br/privacidade.html` |
 | Termos de serviço | (opcional; licença MIT em `LICENSE`) |
 | Domínio autorizado | `nuvem-sync.app.br` |
-| Logo | 120×120 — `app/src-tauri/icons/128x128@2x.png` reduzido |
+| Logo | 120×120 — `app/docs/logo-120.png` (também em `~/Downloads/logo-nuvem-sync-120.png`) |
 | Tipo de app | Público / Externo |
 | Categoria | "Utilitário" ou "Produtividade" |
 

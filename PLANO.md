@@ -243,6 +243,20 @@ Alternativas descartadas por ora:
   `nuvem` para `nuvem-sync`, com `Conflicts`/`Replaces` do antigo. 52 testes
   (novo: cada estado da bandeja tem desenho próprio). Capturas do README e do
   metainfo regeradas com a marca nova.
+- ✅ **`nuvem-sync.app.br` no ar** (04/11, 20:51): DNS completo no Registro.br —
+  4 A + 4 AAAA + `CNAME www` + TXT do desafio do GitHub + TXT
+  `google-site-verification` —, branch `dominio-cname` mesclada (CNAME +
+  canonicals) e **HTTPS válido** (Let's Encrypt, até 02/02/2027) servindo
+  `https://nuvem-sync.app.br/`, `/privacidade.html` e `/termos.html` com 200.
+  `www` faz 301 para o apex; o endereço antigo
+  `fabio-agreles.github.io/nuvem/` passa a 301 para o domínio novo (falta ligar
+  o *Enforce HTTPS* para o redirect sair em https). **Achado no caminho**: o
+  `scripts/checar-dominio.sh` conferia os registros contra `a.auto.dns.br` /
+  `b.auto.dns.br` — o RRset de NS do próprio domínio, que no Registro.br é o
+  servidor de transferência de zona do painel, não a delegação real
+  (`d.sec.dns.br` / `e.sec.dns.br`). Ele lia uma versão velha da zona e dizia
+  "nenhum A" com os quatro publicados; agora descobre a delegação no domínio
+  pai e consulta o autoritativo direto.
 - 🔑 **Domínio próprio escolhido: `nuvem-sync.app.br`** (04/11, livre no
   Registro.br, R$ 40/ano com DNS incluso). Sem hospedagem/servidor: o site
   continua no GitHub Pages, só o DNS aponta para lá. Preparado na branch

@@ -29,15 +29,20 @@ Baixe em [Releases](https://github.com/fabio-agreles/nuvem/releases/latest):
 
 | Pacote | Para |
 | --- | --- |
-| `Nuvem Sync_x.y.z_amd64.deb` | Debian, Ubuntu, Mint — `sudo apt install ./*.deb` |
-| `Nuvem Sync_x.y.z_amd64.AppImage` | Qualquer Linux, sem instalar (usa o WebKitGTK do sistema) |
+| `Nuvem.Sync_x.y.z_amd64.deb` | Debian, Ubuntu, Mint — `sudo apt install ./*.deb` |
+| `Nuvem.Sync_x.y.z_amd64.AppImage` | Qualquer Linux, sem instalar (usa o WebKitGTK do sistema) |
 | `Nuvem-Sync-x.y.z-x86_64.flatpak` | Flatpak, isolado |
-| `Nuvem Sync_x.y.z_x64-setup.exe` | Windows 10/11 (instalador NSIS, sem assinatura digital) |
+| `Nuvem.Sync_x.y.z_x64-setup.exe` | Windows 10/11 (instalador NSIS, sem assinatura digital) |
 | `Nuvem-Sync-x.y.z-windows-x64.zip` | Windows 10/11 portátil, sem instalar |
 
-> A partir da 1.3.0 o pacote Debian mudou de nome (`nuvem` → `nuvem-sync`),
-> junto com a marca. O `.deb` novo declara `Conflicts`/`Replaces` do antigo,
-> então `sudo apt install ./*.deb` remove a versão velha sozinho.
+O espaço do nome virou ponto no nome dos arquivos (`Nuvem.Sync_…`) porque o
+empacotador do Tauri troca espaço por ponto; dentro do pacote o nome é
+`nuvem-sync` (Debian) e o binário continua `/usr/bin/nuvem`.
+
+> A partir da 1.3.0 o app se chama **Nuvem Sync** e o pacote Debian mudou de
+> nome (`nuvem` → `nuvem-sync`). O `.deb` novo declara `Conflicts`/`Replaces` do
+> antigo, então `sudo apt install ./*.deb` substitui a versão velha — não fica
+> com dois apps instalados nem conflito em `/usr/bin/nuvem`.
 
 O rclone vai dentro de todos os pacotes: não é preciso instalá-lo.
 

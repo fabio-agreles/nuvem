@@ -3,16 +3,16 @@
   <id>app.nuvem.Nuvem</id>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
-  <name>Nuvem</name>
+  <name>Nuvem Sync</name>
   <summary>Sincronize o Google Drive e o OneDrive com pastas deste computador</summary>
 
   <developer id="app.nuvem">
-    <name>Equipe do Nuvem</name>
+    <name>Equipe do Nuvem Sync</name>
   </developer>
 
   <description>
     <p>
-      Nuvem mantém pastas do Google Drive e do OneDrive iguais às pastas locais,
+      Nuvem Sync mantém pastas do Google Drive e do OneDrive iguais às locais,
       nos dois sentidos, com uma interface simples e clara. O motor de
       sincronização é o rclone, que vem embutido no aplicativo.
     </p>
@@ -28,7 +28,7 @@
     </ul>
     <p>
       Os dados ficam neste computador: as credenciais são gravadas no formato do
-      rclone, com permissão só para o seu usuário, e o Nuvem não envia nada para
+      rclone, com permissão só para o seu usuário, e o Nuvem Sync não envia nada para
       servidores próprios.
     </p>
   </description>
@@ -68,6 +68,23 @@
   </screenshots>
 
   <releases>
+    <release version="1.3.0" date="2026-11-04">
+      <description>
+        <p>
+          O app passa a se chamar Nuvem Sync, com ícone novo e a bandeja
+          mostrando o estado da sincronização.
+        </p>
+        <ul>
+          <li>Ícone e logo novos, incluindo versões para o tema claro e o escuro.</li>
+          <li>A bandeja mostra o estado: parado, sincronizando, em dia, pausado,
+            com erro ou sem o motor — e troca a cor do traço conforme o tema do
+            painel.</li>
+          <li>O pacote do Linux mudou de nome (<code>nuvem</code> →
+            <code>nuvem-sync</code>) junto com a marca; o instalador substitui a
+            versão antiga sem deixar dois apps instalados.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.2.2" date="2026-11-02">
       <description>
         <p>
@@ -75,7 +92,7 @@
         </p>
         <ul>
           <li>O círculo com a letra "N" no canto superior direito foi removido
-            — ele parecia um perfil de usuário, mas o Nuvem não tem conta nem
+            — ele parecia um perfil de usuário, mas o Nuvem Sync não tem conta nem
             clique nenhum ali.</li>
         </ul>
       </description>
@@ -98,7 +115,7 @@
     <release version="1.2.0" date="2026-10-30">
       <description>
         <p>
-          O Google Drive passa a usar o projeto OAuth do próprio Nuvem, sem a
+          O Google Drive passa a usar o projeto OAuth do próprio Nuvem Sync, sem a
           fila do projeto compartilhado do rclone: 3 arquivos pequenos subiram
           em 4,4 s em vez de 22 s, sem nenhum "Rate limited".
         </p>

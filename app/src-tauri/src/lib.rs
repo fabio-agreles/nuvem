@@ -22,7 +22,7 @@ use tauri::{Emitter, Manager};
 
 pub fn run() {
     tauri::Builder::default()
-        // Primeiro plugin da lista: se já existe um Nuvem rodando, esta instância
+        // Primeiro plugin da lista: se já existe um Nuvem Sync rodando, esta instância
         // avisa a outra e termina em vez de abrir um segundo motor de sincronização.
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             // Início automático com o app já aberto não deve trazer a janela à frente.
@@ -122,7 +122,7 @@ pub fn run() {
             commands::quit_app,
         ])
         .build(tauri::generate_context!())
-        .expect("falha ao iniciar o Nuvem")
+        .expect("falha ao iniciar o Nuvem Sync")
         .run(|app_handle, event| {
             if let tauri::RunEvent::ExitRequested { .. } = event {
                 let state = app_handle.state::<AppState>();

@@ -1,4 +1,4 @@
-# Projeto OAuth do Google (para distribuir o Nuvem)
+# Projeto OAuth do Google (para distribuir o Nuvem Sync)
 
 O Google cobra a cota de **requisições por minuto** no *projeto OAuth* usado na
 autorização, não na conta. O projeto que o rclone compartilha entre todos os
@@ -6,17 +6,17 @@ usuários dele vive estourado — é o que faz a sincronização do Google Drive
 arrastar mesmo com banda sobrando (medido: 3 arquivos pequenos levando 22 s com
 12 eventos `Rate limited` no log).
 
-A saída é o Nuvem ter o **seu próprio** projeto. O código já suporta três
+A saída é o Nuvem Sync ter o **seu próprio** projeto. O código já suporta três
 origens, nesta ordem de precedência:
 
 | Origem | Quem usa | Como entra |
 | --- | --- | --- |
 | **Suas credenciais** | quem colou o par em Ajustes → Avançado | `settings.json` |
-| **Projeto do Nuvem** | o build publicado | variável de ambiente na compilação |
+| **Projeto do Nuvem Sync** | o build publicado | variável de ambiente na compilação |
 | **Projeto do rclone** | fallback | nada configurado |
 
 Ajustes → Avançado mostra qual está em vigor ("seu projeto", "projeto do
-Nuvem", "projeto do rclone") e o `client_id` em uso. O segredo nunca sai do
+Nuvem Sync", "projeto do rclone") e o `client_id` em uso. O segredo nunca sai do
 binário nem vai para o relatório de diagnóstico.
 
 ## 1. Criar o projeto (só você pode fazer)
@@ -47,13 +47,13 @@ Detalhes que importam:
 - A tela de consentimento exige **URL de página inicial**, **URL de política de
   privacidade** e **domínio autorizado**. O site do projeto está no GitHub Pages
   (pasta `docs/`, publicada em 31/10/2026):
-  - página inicial: <https://fabio-agreles.github.io/nuvem/>
-  - política de privacidade: <https://fabio-agreles.github.io/nuvem/privacidade.html>
-  - domínio autorizado: `fabio-agreles.github.io` — o Google exige verificar a
-    propriedade do domínio no [Search Console](https://search.google.com/search-console)
-    (propriedade do tipo *prefixo de URL*, com o arquivo HTML que o Google fornece
-    colocado em `docs/`, ao lado do `index.html`). `github.io` está na lista de
-    sufixos públicos, então o que se verifica é o subdomínio, não `github.io`.
+  - página inicial: <https://nuvem-sync.app.br/>
+  - política de privacidade: <https://nuvem-sync.app.br/privacidade.html>
+  - domínio autorizado: `nuvem-sync.app.br` — verificado no Search Console pela
+    propriedade de **Domínio** (registro TXT), que é a única forma aceita pelo
+    validador de marca. Passo a passo em [`dominio-proprio.md`](dominio-proprio.md).
+    Antes disso o site ficou em `fabio-agreles.github.io/nuvem/`, que foi
+    reprovado 4 vezes justamente por ser subdomínio de plataforma de terceiros.
 
 ## 2. Embutir no build
 
@@ -94,7 +94,7 @@ Ordem real do processo:
    justificativa de cada escopo, por que `drive.file` não serve, vídeo
    demonstrando o fluxo completo (conectar → escolher pasta → sincronizar →
    desconectar) e a política de privacidade pública.
-3. **Avaliação de segurança (CASA)** — **não se aplica ao Nuvem** enquanto ele
+3. **Avaliação de segurança (CASA)** — **não se aplica ao Nuvem Sync** enquanto ele
    não tiver servidor: o Google exige a avaliação anual de apps que acessam
    dados restritos "a partir de ou através de um servidor de terceiros". Os
    tokens e o conteúdo ficam na máquina do usuário; não existe backend do Nuvem.
@@ -103,14 +103,14 @@ Ordem real do processo:
 4. **Re-verificação anual** — o Google cobra a cada 12 meses.
 
 Enquanto isso não termina, o caminho honesto é o que o app já faz: distribuir
-com o projeto do Nuvem, avisar na documentação que a tela de app não verificado
+com o projeto do Nuvem Sync, avisar na documentação que a tela de app não verificado
 aparece, e usar o override de Ajustes para quem preferir o próprio projeto (o
 teto de 100 usuários é do projeto do app, mas cada usuário com projeto próprio
 sai dessa conta).
 
 ## 4. O que já está pronto no código
 
-- `src-tauri/src/oauth.rs` — resolve a origem (usuário > Nuvem > rclone),
+- `src-tauri/src/oauth.rs` — resolve a origem (usuário > Nuvem Sync > rclone),
   valida o formato do `client_id`, nunca expõe o segredo. 6 testes.
 - `parametros_do_provedor` — manda o par efetivo no `config/create` do rclone na
   hora de conectar a conta Google.
@@ -124,12 +124,12 @@ sai dessa conta).
 
 - [x] Projeto criado no Google Cloud (cliente "App para computador"), par salvo
       em `app/.env.oauth` (`0600`, fora do git) e app de release compilado com o
-      par embutido — Ajustes → Avançado mostra **"projeto do Nuvem"** e o
+      par embutido — Ajustes → Avançado mostra **"projeto do Nuvem Sync"** e o
       `client_id` `875036643376-…` em uso (conferido na tela, em X virtual).
       Prova automática: teste `ambiente_com_o_par_do_projeto_vira_fonte_nuvem`,
       que só roda quando as variáveis estão no ambiente.
 - [x] Conta de teste autorizada contra o projeto novo (consentimento mostrando
-      "Nuvem", sem `redirect_uri_mismatch`) e **medida**: 3 arquivos de 200 KiB
+      "Nuvem Sync", sem `redirect_uri_mismatch`) e **medida**: 3 arquivos de 200 KiB
       subindo em 4,4 / 4,4 / 4,6 s com **zero** `Rate limited` e zero 403 —
       contra 22 s e 12 eventos `Rate limited` no projeto compartilhado. O remoto
       de teste e as pastas criadas no Drive foram removidos depois.

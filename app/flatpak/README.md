@@ -70,7 +70,7 @@ ignora `node_modules`, `dist`, `src-tauri/target`, `src-tauri/gen`,
    Go vendorizadas (`rclone-sources.json` + `modules.txt`), `CGO_ENABLED=0`,
    `GOFLAGS=-mod=vendor`, instalado em `/app/bin/rclone`. O app o encontra por
    `NUVEM_RCLONE=/app/bin/rclone` (finish-arg).
-3. **Nuvem**: `npm ci --offline` + `npm run build` (Vite) e
+3. **Nuvem Sync**: `npm ci --offline` + `npm run build` (Vite) e
    `cargo --offline build --release --features custom-protocol`, com Node 22 e Rust
    stable das extensões de SDK e as dependências vendorizadas
    (`cargo-sources.json`, `node-sources.json`); instala binário, `.desktop`,
@@ -196,7 +196,7 @@ explicit in vendor/modules.txt`. Use o `modules.txt` do próprio `go mod vendor`
 | Sincronização real com conta Google/OneDrive | ✅ verificada com conta real |
 | Início automático (`org.freedesktop.portal.Background`) | ✅ escreve `~/.config/autostart` do sistema |
 | Credenciais OAuth próprias (`Ajustes → Avançado · Google Drive`) | ✅ cartão presente no binário instalado (`client_id`/`client_secret` compilados); validação coberta por teste |
-| Projeto OAuth do próprio Nuvem embutido no build | ✅ código; no Flatpak o par entra por `flatpak override --user --env=NUVEM_GOOGLE_CLIENT_ID=… --env=NUVEM_GOOGLE_CLIENT_SECRET=…` (o app lê em tempo de execução) ou `build-options.env` no manifesto |
+| Projeto OAuth do próprio Nuvem Sync embutido no build | ✅ código; no Flatpak o par entra por `flatpak override --user --env=NUVEM_GOOGLE_CLIENT_ID=… --env=NUVEM_GOOGLE_CLIENT_SECRET=…` (o app lê em tempo de execução) ou `build-options.env` no manifesto |
 | Trava do bisync removida após fechar o app no meio | ✅ observado no app instalado (“Trava antiga do bisync removida — 1 arquivo(s)”) |
 
 ### Início automático
@@ -209,7 +209,7 @@ que a sessão gráfica não lê. Dentro do Flatpak o switch de **Ajustes** passa
 ```ini
 [Desktop Entry]
 Type=Application
-Name=Nuvem
+Name=Nuvem Sync
 X-XDP-Autostart=app.nuvem.Nuvem
 Exec=flatpak run --command=/app/bin/nuvem app.nuvem.Nuvem --minimized
 X-Flatpak=app.nuvem.Nuvem
@@ -279,7 +279,7 @@ projeto OAuth) está em [`docs/flathub-pr.md`](../../docs/flathub-pr.md).
 
 ### Justificativa de `--filesystem=home`
 
-O Nuvem é um cliente de sincronização no modelo do Insync e do Dropbox: o usuário
+O Nuvem Sync é um cliente de sincronização no modelo do Insync e do Dropbox: o usuário
 aponta **qualquer** pasta do disco para espelhar com a nuvem, e o espelhamento é
 feito pelo `rclone` como processo filho, em segundo plano, sem interface. O portal
 de documentos (`xdg-document-portal`) só dá acesso a arquivos escolhidos numa janela

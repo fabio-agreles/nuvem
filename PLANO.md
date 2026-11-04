@@ -1,4 +1,4 @@
-# Nuvem — plano do app de sincronização
+# Nuvem Sync — plano do app de sincronização
 
 Código da fase 1: [`app/`](app/README.md) (Tauri + React + rclone).
 Protótipo visual anterior: app **nuvem-sync** (Goose Apps).
@@ -9,7 +9,7 @@ Referência analisada: `/home/agreles/Downloads/insync_3.9.11.60043-resolute_amd
 1. Google Drive **e** OneDrive no MVP.
 2. Sincronização **bidirecional (bisync)** desde o início.
 3. Distribuição por **Flatpak** (manifesto em `app/flatpak/`).
-4. Nome mantido: **Nuvem**.
+4. Nome mantido: **Nuvem Sync**.
 
 Entregue nas fases 1 e 2: contas, pastas, bisync real, progresso, atividade,
 resolução de conflitos (nuvem/local/ambas), quota por conta, notificações nativas,
@@ -193,10 +193,10 @@ Alternativas descartadas por ora:
   Decisão: **não** usar `tauri-plugin-updater`, que exigiria assinar os pacotes.
   Roteiro de validação do `.exe` em Windows real em
   [`docs/roteiro-teste-windows.md`](docs/roteiro-teste-windows.md).
-- ✅ Projeto OAuth do próprio Nuvem (código pronto, falta o par): `src-tauri/src/oauth.rs`
-  resolve a origem com precedência **usuário > Nuvem > rclone**, valida o formato do
+- ✅ Projeto OAuth do próprio Nuvem Sync (código pronto, falta o par): `src-tauri/src/oauth.rs`
+  resolve a origem com precedência **usuário > Nuvem Sync > rclone**, valida o formato do
   `client_id` e nunca expõe o segredo; `oauth_info` alimenta o cartão Avançado, que
-  mostra "seu projeto" / "projeto do Nuvem" / "projeto do rclone" e o `client_id` em
+  mostra "seu projeto" / "projeto do Nuvem Sync" / "projeto do rclone" e o `client_id` em
   uso. O par entra por `NUVEM_GOOGLE_CLIENT_ID`/`_SECRET` na compilação (segredos do
   repositório no CI) ou em tempo de execução (inclusive `flatpak override --env`).
   Guia do console, verificação do Google, análise da avaliação CASA (não se aplica:
@@ -213,6 +213,22 @@ Alternativas descartadas por ora:
   pessoal saiu do README. Com isso a política de privacidade
   (`.../blob/main/PRIVACIDADE.md`) e as 6 capturas do metainfo respondem 200;
   destrava a publicação do projeto OAuth no Google e a submissão ao Flathub.
+- ✅ **1.3.0** (04/11): o app virou **Nuvem Sync**, com o pacote de ícones novo
+  (`NuvemSync_Desktop_Assets.zip`): ícone do app/no .deb/Flatpak/NSIS, logo do
+  site, logo 120×120 da marca no Google e **12 ícones de bandeja** (6 estados ×
+  2 temas: traço escuro em painel claro, branco no escuro). A bandeja agora
+  também mostra o estado — parado, sincronizando, em dia, pausado, erro e
+  offline — em vez de só a dica. O identificador `app.nuvem.Nuvem` e o binário
+  `nuvem` **não** mudaram: só o nome de exibição. O pacote do `.deb` passou de
+  `nuvem` para `nuvem-sync`, com `Conflicts`/`Replaces` do antigo. 52 testes
+  (novo: cada estado da bandeja tem desenho próprio). Capturas do README e do
+  metainfo regeradas com a marca nova.
+- 🔑 **Domínio próprio escolhido: `nuvem-sync.app.br`** (04/11, livre no
+  Registro.br, R$ 40/ano com DNS incluso). Sem hospedagem/servidor: o site
+  continua no GitHub Pages, só o DNS aponta para lá. Preparado na branch
+  `dominio-proprio` (`docs/CNAME`, canonicals, URLs e o runbook
+  `docs/dominio-proprio.md`) — mesclar **só** depois que o DNS responder, senão
+  o site atual sai do ar.
 - ⛔ **Marca do Google reprovada 4 vezes** (04/11): o erro "o site ... não está
   registrado para você" não é atraso de 24 h — o Google exige **domínio que você
   possui** e desaconselha explicitamente homepage em plataforma de terceiros
@@ -222,13 +238,13 @@ Alternativas descartadas por ora:
   `docs/verificacao-google.md` (§04/11). O app segue funcionando sem verificação:
   aviso "não verificado" na tela de consentimento + teto de 100 usuários.
 - ✅ **1.2.2** (02/11): saiu o avatar decorativo "N" do canto superior direito —
-  ele parecia um perfil de usuário, mas o Nuvem não tem conta e o círculo não
+  ele parecia um perfil de usuário, mas o Nuvem Sync não tem conta e o círculo não
   fazia nada. `scripts/build-windows.sh` passou a ler a versão do `package.json`
   (o zip do portátil não sai mais com nome de versão velha). 51 testes, clippy e
   tsc limpos.
-- 🔧 O primeiro portátil do 1.2.2 saiu **sem** o par OAuth do Nuvem: o
+- 🔧 O primeiro portátil do 1.2.2 saiu **sem** o par OAuth do Nuvem Sync: o
   `build-windows.sh` não lia o `.env.oauth` (só o build do Flatpak lia). Refeito
-  com o par embutido e reanexado. O script agora imprime "par OAuth do Nuvem
+  com o par embutido e reanexado. O script agora imprime "par OAuth do Nuvem Sync
   embutido" ou o aviso de que vai usar o projeto do rclone — não dá mais para
   publicar o zip sem ver.
 - ✅ **1.2.1** (31/10): fim das janelas de console no Windows (trait `SemConsole`
@@ -247,7 +263,7 @@ Alternativas descartadas por ora:
   Flathub, o par terá de ir no manifesto (que é público).
 - ✅ Conta Google do app instalado reconectada no projeto novo sem perder pastas:
   `rclone config update <conta> client_id=… client_secret=…` já refaz o OAuth e
-  emite um token do projeto do Nuvem (conferido: `rclone about` devolve a cota).
+  emite um token do projeto do Nuvem Sync (conferido: `rclone about` devolve a cota).
   O selo por conta passou a ter três estados (`rclone` / `nuvem` / `usuario`) em
   `oauth::fonte_da_conta`; a 1.2.0 ainda mostra "projeto do rclone" para essa
   conta, o que sai na próxima versão.
@@ -260,7 +276,7 @@ Alternativas descartadas por ora:
 1. ~~Provedor primeiro~~ → Google Drive **e** OneDrive desde o MVP.
 2. ~~Sync real~~ → bidirecional contínuo com `sync/bisync`.
 3. ~~Distribuição~~ → Flatpak (principal), `.deb` e AppImage.
-4. ~~Nome~~ → “Nuvem” fica.
+4. ~~Nome~~ → “Nuvem Sync” fica.
 
 ## Requisitos externos
 

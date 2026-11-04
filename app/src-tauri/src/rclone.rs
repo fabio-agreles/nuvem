@@ -146,7 +146,7 @@ impl Rclone {
                 // pasta de origem ao lado do executável.
                 candidates.push(dir.join("resources").join(RCLONE));
                 if let Some(prefix) = dir.parent() {
-                    for product in ["Nuvem", "nuvem"] {
+                    for product in ["Nuvem Sync", "Nuvem", "nuvem-sync", "nuvem"] {
                         candidates.push(prefix.join("lib").join(product).join(RCLONE));
                     }
                 }
@@ -167,10 +167,13 @@ impl Rclone {
         #[cfg(windows)]
         {
             // O instalador do Windows põe o `rclone.exe` ao lado do `Nuvem.exe`
-            // (resources do NSIS). Estes dois cobrem instalações antigas/portáteis.
+            // (resources do NSIS). Os nomes antigos ficam porque a 1.2.x instalava
+            // em `Nuvem` e quem atualiza mantém a pasta até desinstalar.
             if let Some(local) = std::env::var_os("LOCALAPPDATA") {
-                candidates.push(PathBuf::from(&local).join("Nuvem").join(RCLONE));
-                candidates.push(PathBuf::from(local).join("Programs").join("Nuvem").join(RCLONE));
+                for produto in ["Nuvem Sync", "Nuvem"] {
+                    candidates.push(PathBuf::from(&local).join(produto).join(RCLONE));
+                    candidates.push(PathBuf::from(&local).join("Programs").join(produto).join(RCLONE));
+                }
             }
         }
 

@@ -126,14 +126,14 @@ a {
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
+  display: block;
+  flex: none;
   width: 36px;
   height: 36px;
-  border-radius: 12px;
-  color: #fff;
-  background: linear-gradient(140deg, var(--accent), var(--accent-2));
-  box-shadow: 0 6px 16px -6px rgba(79, 109, 245, 0.7);
+  border-radius: 10px;
+  object-fit: contain;
+  /* O ícone tem fundo transparente: o brilho suave separa do painel. */
+  filter: drop-shadow(0 4px 10px rgba(79, 109, 245, 0.28));
 }
 
 .brand-name {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { NOME, VERSAO } from "../lib/marca";
 import { Icon } from "../components/Icons";
 import { api, errorMessage, isDesktop } from "../lib/bridge";
 import type { Account, EngineStatus, OAuthInfo, Settings as SettingsModel } from "../lib/types";
@@ -41,7 +42,7 @@ export function Settings({
 
   const credenciaisProprias = Boolean(settings.driveClientId.trim());
   // Qual projeto OAuth o Google Drive está usando de fato: o do usuário, o
-  // embutido no build (Nuvem) ou o compartilhado do rclone.
+  // embutido no build (Nuvem Sync) ou o compartilhado do rclone.
   const [oauth, setOauth] = useState<OAuthInfo | null>(null);
   useEffect(() => {
     let vivo = true;
@@ -62,7 +63,7 @@ export function Settings({
     oauth?.fonte ?? (credenciaisProprias ? "usuario" : "rclone");
   const rotuloOauth = {
     usuario: "seu projeto",
-    nuvem: "projeto do Nuvem",
+    nuvem: "projeto do Nuvem Sync",
     rclone: "projeto do rclone",
   }[fonteOauth];
   const driveConectado = accounts.some((account) => account.provider === "drive");
@@ -86,7 +87,7 @@ export function Settings({
       id
         ? "Credenciais salvas. As contas conectadas agora precisam ser autorizadas de novo."
         : fonteOauth === "nuvem"
-          ? "Credenciais apagadas. O Google Drive volta a usar o projeto do Nuvem."
+          ? "Credenciais apagadas. O Google Drive volta a usar o projeto do Nuvem Sync."
           : "Credenciais apagadas. O Google Drive volta a usar o projeto do rclone.",
       "ok",
     );
@@ -135,13 +136,13 @@ export function Settings({
                         cota própria
                       </span>
                     ) : account.clientOrigem === "nuvem" ? (
-                      <span className="badge ok" title="Autorizada com o projeto OAuth do Nuvem">
+                      <span className="badge ok" title="Autorizada com o projeto OAuth do Nuvem Sync">
                         cota do Nuvem
                       </span>
                     ) : (
                       <span
                         className="badge muted"
-                        title="Autorizada no projeto OAuth compartilhado do rclone, de antes desta versão: reconecte a conta (em Avançado) para usar a cota do Nuvem."
+                        title="Autorizada no projeto OAuth compartilhado do rclone, de antes desta versão: reconecte a conta (em Avançado) para usar a cota do Nuvem Sync."
                       >
                         projeto antigo · reconectar
                       </span>
@@ -415,7 +416,7 @@ export function Settings({
           <div className="row">
             <div className="row-text">
               <div className="row-title">Configuração</div>
-              <div className="row-desc">Perfis e histórico do Nuvem.</div>
+              <div className="row-desc">Perfis e histórico do Nuvem Sync.</div>
             </div>
             <div className="row-control">
               <button
@@ -435,7 +436,7 @@ export function Settings({
 
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Sair do Nuvem</div>
+              <div className="row-title">Sair do Nuvem Sync</div>
               <div className="row-desc">Interrompe a sincronização até abrir de novo.</div>
             </div>
             <div className="row-control">
@@ -479,7 +480,7 @@ export function Settings({
               </div>
               <p className="muted" style={{ fontSize: 12.5 }}>
                 {fonteOauth === "nuvem"
-                  ? "Este build já usa o projeto OAuth do próprio Nuvem: a cota é do aplicativo e não a do rclone. Preencha os campos abaixo só se quiser usar um projeto seu."
+                  ? "Este build já usa o projeto OAuth do próprio Nuvem Sync: a cota é do aplicativo e não a do rclone. Preencha os campos abaixo só se quiser usar um projeto seu."
                   : fonteOauth === "usuario"
                     ? "As contas Google deste computador usam o projeto que você colou abaixo."
                     : "Sem projeto próprio, a cota é a do projeto compartilhado do rclone. Crie o seu para a fila ser só sua."}
@@ -563,7 +564,7 @@ export function Settings({
         <div className="card-body" style={{ paddingTop: 8 }}>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Nuvem 1.2.1</div>
+              <div className="row-title">{NOME} {VERSAO}</div>
               <div className="row-desc">Tauri · React · rclone</div>
             </div>
             <div className="row-control">
@@ -645,7 +646,7 @@ export function Settings({
             <div className="row-text">
               <div className="row-title">Privacidade</div>
               <div className="row-desc">
-                Credenciais ficam na configuração local do rclone. O Nuvem não envia
+                Credenciais ficam na configuração local do rclone. O Nuvem Sync não envia
                 dados para servidores próprios.
               </div>
             </div>

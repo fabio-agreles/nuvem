@@ -13,7 +13,7 @@ falha, tire um print e salve o relatório de diagnóstico (passo 7).
 | --- | --- |
 | Versão do Windows | `winver` (anote; 10 22H2 e 11 24H2 são os alvos) |
 | WebView2 instalado | Configurações → Aplicativos → "Microsoft Edge WebView2 Runtime". **Se não estiver, é bom sinal**: o instalador deve baixá-lo sozinho |
-| Nenhuma versão anterior do Nuvem | Configurações → Aplicativos; se houver, desinstale antes |
+| Nenhuma versão anterior do Nuvem Sync | Configurações → Aplicativos; se houver, desinstale antes |
 | Pacote | `Nuvem_1.1.0_x64-setup.exe` (23 MB) ou o zip portátil |
 
 ## 1. Instalação (NSIS)
@@ -24,8 +24,8 @@ falha, tire um print e salve o relatório de diagnóstico (passo 7).
    opção, é falha.)*
 3. Siga o assistente até o fim. **Falha** se: erro de download do WebView2, erro
    de permissão, ou o assistente travar.
-4. Confira: atalho no Menu Iniciar, item "Nuvem" em Configurações → Aplicativos,
-   e a pasta `%LOCALAPPDATA%\Nuvem` (ou `Programs\Nuvem`) com `Nuvem.exe` e
+4. Confira: atalho no Menu Iniciar, item "Nuvem Sync" em Configurações → Aplicativos,
+   e a pasta `%LOCALAPPDATA%\Nuvem Sync` (ou `Programs\Nuvem Sync`) com `Nuvem.exe` e
    `resources\rclone.exe`.
 
 ## 2. Primeira abertura
@@ -34,7 +34,7 @@ falha, tire um print e salve o relatório de diagnóstico (passo 7).
 2. Confira a barra lateral: **"rclone conectado v1.75.2"**.
    **Falha** se disser "Motor indisponível" — significa que o `rclone.exe`
    embutido não foi encontrado.
-3. Abra **Ajustes** e confira "Nuvem 1.1.0" no cartão Sobre.
+3. Abra **Ajustes** e confira "Nuvem Sync 1.1.0" no cartão Sobre.
 
 ## 3. Bandeja do sistema
 
@@ -48,7 +48,7 @@ falha, tire um print e salve o relatório de diagnóstico (passo 7).
 ## 4. Fechar e reabrir
 
 1. Feche a janela pelo **X**. *(Esperado: some a janela, o app continua na
-   bandeja — os ícones "Nuvem" e "rclone" seguem no Gerenciador de Tarefas.)*
+   bandeja — os ícones "Nuvem Sync" e "rclone" seguem no Gerenciador de Tarefas.)*
 2. Abra de novo pelo Menu Iniciar: a janela volta, **sem** um segundo processo
    `Nuvem.exe` no Gerenciador de Tarefas (instância única).
    **Falha** se aparecerem dois processos ou a janela não voltar.
@@ -91,11 +91,11 @@ falha, tire um print e salve o relatório de diagnóstico (passo 7).
 
 ### 8a. Cota do Google
 
-1. Ajustes → **Avançado · Google Drive**: o selo deve dizer **"projeto do Nuvem"**
+1. Ajustes → **Avançado · Google Drive**: o selo deve dizer **"projeto do Nuvem Sync"**
    e "Projeto em uso" deve trazer um `client_id` terminando em
    `.apps.googleusercontent.com`. *(Falha se disser "projeto do rclone": esse
    pacote foi compilado sem as credenciais do projeto.)*
-2. Em **Contas**, a conta Google deve mostrar **"cota do Nuvem"** — ou
+2. Em **Contas**, a conta Google deve mostrar **"cota do Nuvem Sync"** — ou
    **"projeto antigo · reconectar"** se foi autorizada numa versão anterior
    (sincroniza igual, mas na cota do rclone).
 3. Com a conta conectada, crie 3 arquivos pequenos numa pasta sincronizada e
@@ -114,7 +114,7 @@ falha, tire um print e salve o relatório de diagnóstico (passo 7).
 
 ## 9. Desinstalação
 
-1. Configurações → Aplicativos → Nuvem → **Desinstalar**.
+1. Configurações → Aplicativos → Nuvem Sync → **Desinstalar**.
 2. Confira: pasta de instalação removida, atalhos removidos, item fora da lista.
 3. Confirme que **os dados ficam**: `%APPDATA%\app.nuvem.Nuvem` (perfis,
    atividade, ajustes) e `%APPDATA%\rclone\rclone.conf` (tokens).

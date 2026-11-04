@@ -100,7 +100,7 @@ pub async fn list_accounts_inner(state: &AppState) -> AppResult<Vec<Account>> {
                 .unwrap_or("desconhecido")
                 .to_string();
             // Quem autorizou a conta: sem `client_id` é o projeto compartilhado
-            // do rclone; igual ao do build é o projeto do Nuvem; qualquer outro
+            // do rclone; igual ao do build é o projeto do Nuvem Sync; qualquer outro
             // é o par que a pessoa colou em Ajustes → Avançado.
             let client_origem = oauth::fonte_da_conta(
                 config.get("client_id").and_then(Value::as_str),
@@ -233,7 +233,7 @@ pub async fn list_accounts(state: State<'_, AppState>) -> AppResult<Vec<Account>
 /// de ser a do projeto compartilhado do rclone (que vive estourada) e passa a ser
 /// a de um projeto que só ele usa. A conta é autorizada de novo no navegador.
 ///
-/// Precedência: credenciais do usuário (Ajustes → Avançado) > projeto do Nuvem
+/// Precedência: credenciais do usuário (Ajustes → Avançado) > projeto do Nuvem Sync
 /// embutido no build > projeto compartilhado do rclone.
 async fn parametros_do_provedor(state: &AppState, provider: &str) -> AppResult<Value> {
     if provider != "drive" {
@@ -249,7 +249,7 @@ async fn parametros_do_provedor(state: &AppState, provider: &str) -> AppResult<V
     };
 
     // Par do usuário incompleto é erro (ele começou a preencher e parou no meio);
-    // par ausente cai para o projeto do Nuvem, se o build tiver um.
+    // par ausente cai para o projeto do Nuvem Sync, se o build tiver um.
     match (id.is_empty(), secret.is_empty()) {
         (true, true) => Ok(oauth::efetivas(("", "")).como_json()),
         (false, false) => {
@@ -261,7 +261,7 @@ async fn parametros_do_provedor(state: &AppState, provider: &str) -> AppResult<V
             Ok(json!({ "client_id": id, "client_secret": secret }))
         }
         _ => Err(AppError::new(
-            "preencha o client_id e o client_secret do Google — ou deixe os dois em branco para usar o projeto do Nuvem.",
+            "preencha o client_id e o client_secret do Google — ou deixe os dois em branco para usar o projeto do Nuvem Sync.",
         )),
     }
 }
@@ -1269,7 +1269,8 @@ pub async fn scan_conflicts(state: State<'_, AppState>) -> AppResult<Vec<Conflic
     Ok(scan_conflicts_inner(&state).await)
 }
 
-/// Resolve uma cópia do conflito. A versão descartada vai para a lixeira do Nuvem,
+/// Resolve uma cópia do conflito. A versão descartada vai para a lixeira do
+/// Nuvem Sync,
 /// nunca é apagada; a escolhida volta ao nome original.
 #[tauri::command]
 pub async fn resolve_conflict(
@@ -1308,7 +1309,7 @@ pub async fn resolve_conflict(
     };
     if !owned {
         return Err(AppError::new(
-            "a pasta não pertence a nenhuma sincronização do Nuvem",
+            "a pasta não pertence a nenhuma sincronização do Nuvem Sync",
         ));
     }
 
@@ -1794,7 +1795,7 @@ fn montar_relatorio(ctx: &ContextoRelatorio<'_>) -> String {
         recuperacao,
     } = *ctx;
     let mut texto = String::new();
-    texto.push_str(&format!("Nuvem {versao_app}\n"));
+    texto.push_str(&format!("Nuvem Sync {versao_app}\n"));
     texto.push_str(&format!("Sistema: {sistema}\n"));
     match rclone {
         Some((versao, caminho)) => {
@@ -1957,7 +1958,7 @@ pub async fn check_update() -> AppResult<Option<UpdateInfo>> {
     let resposta = cliente
         .get(URL)
         // A API do GitHub recusa requisição sem User-Agent.
-        .header("User-Agent", format!("Nuvem/{}", env!("CARGO_PKG_VERSION")))
+        .header("User-Agent", format!("Nuvem-Sync/{}", env!("CARGO_PKG_VERSION")))
         .header("Accept", "application/vnd.github+json")
         .send()
         .await
@@ -2054,7 +2055,7 @@ mod tests {
             texto.contains("client_id: 1234-abc.apps.googleusercontent.com"),
             "client_id (público) deveria aparecer para o suporte"
         );
-        assert!(texto.contains("Nuvem 1.0.0"));
+        assert!(texto.contains("Nuvem Sync 1.0.0"));
         assert!(texto.contains("pessoal (Google Drive)"));
     }
 

@@ -31,7 +31,7 @@ Pré-requisitos que ainda faltam (ver `docs/oauth-google.md` e `flatpak/README.m
 
 ## Descrição (para o PR)
 
-**Nuvem** é um aplicativo de desktop (Tauri + rclone) que mantém pastas locais em
+**Nuvem Sync** é um aplicativo de desktop (Tauri + rclone) que mantém pastas locais em
 sincronização bidirecional contínua com o Google Drive e o OneDrive, com foco em
 interface simples: visão geral do estado, conflitos lado a lado e atividade por
 arquivo. É a alternativa em pt-BR ao Insync — escolha de pastas pela lista da
@@ -59,7 +59,7 @@ nuvem, cota por conta, bandeja, início automático e relatório de diagnóstico
 
 | Permissão | Motivo |
 | --- | --- |
-| `--share=network` | falar com as APIs do Google/Microsoft; não há backend do Nuvem |
+| `--share=network` | falar com as APIs do Google/Microsoft; não há backend do Nuvem Sync |
 | `--socket=wayland`, `--socket=fallback-x11`, `--share=ipc`, `--device=dri` | janela e aceleração gráfica |
 | `--filesystem=home` | **funcionalidade principal**: o app sincroniza pastas que o usuário escolhe, onde elas estiverem. Sem isso, só funcionaria dentro de uma pasta fixa |
 | `--talk-name=org.freedesktop.Notifications` | avisos de conflito e falha de sincronização |
@@ -95,7 +95,7 @@ validado — pendência assumida na submissão.
 
 O Google cobra a cota de requisições por minuto no *projeto OAuth* usado na
 autorização, não na conta. O projeto compartilhado do rclone vive estourado; o
-Nuvem embute no binário um projeto próprio (`client_id`/`client_secret` de
+Nuvem Sync embute no binário um projeto próprio (`client_id`/`client_secret` de
 aplicativo instalado) por variável de ambiente na compilação. Como
 `flatpak-builder` não tem `--env`, o Flathub receberia o par via
 `build-options.env` do manifesto.

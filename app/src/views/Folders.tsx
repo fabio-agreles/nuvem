@@ -63,7 +63,7 @@ export function Folders({
             </div>
             <h3>Nenhuma pasta ainda</h3>
             <p>
-              Escolha uma pasta na nuvem e uma pasta local. O Nuvem mantém as duas
+              Escolha uma pasta na nuvem e uma pasta local. O Nuvem Sync mantém as duas
               iguais, nos dois sentidos.
             </p>
             <button className="btn primary" onClick={onAddFolder} disabled={accounts.length === 0}>
@@ -203,7 +203,7 @@ export function Folders({
         >
           <p style={{ fontSize: 13, color: "var(--text-soft)" }}>
             A pasta local <strong>{confirming.localPath}</strong> não será apagada nem
-            enviada. Apenas o par de sincronização sai do Nuvem.
+            enviada. Apenas o par de sincronização sai do Nuvem Sync.
           </p>
         </Modal>
       ) : null}

@@ -439,7 +439,7 @@ export function Dashboard({
           }
         >
           <p style={{ fontSize: 13, color: "var(--text-soft)" }}>
-            O Nuvem apaga as credenciais desta conta do rclone neste computador. Nada é
+            O Nuvem Sync apaga as credenciais desta conta do rclone neste computador. Nada é
             apagado na nuvem nem no disco.
           </p>
           {profiles.some((profile) => profile.account === removendo.name) ? (

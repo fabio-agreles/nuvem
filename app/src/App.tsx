@@ -328,7 +328,7 @@ export default function App() {
         // (dentro do Flatpak quem escreve o arquivo é o portal).
         const value = await api.setAutostart(enabled);
         setAutostart(value);
-        notify(value ? "Nuvem abrirá junto com o sistema." : "Início automático desativado.", "ok");
+        notify(value ? "Nuvem Sync abrirá junto com o sistema." : "Início automático desativado.", "ok");
       } catch (cause) {
         notify(errorMessage(cause), "error");
         setAutostart(await api.autostartEnabled().catch(() => enabled));
@@ -475,7 +475,7 @@ export default function App() {
       },
       {
         id: "quit",
-        label: "Sair do Nuvem",
+        label: "Sair do Nuvem Sync",
         group: "Sistema",
         icon: "x",
         run: () => void api.quitApp(),
@@ -675,13 +675,13 @@ function AddAccountModal({
           disabled={busy}
         />
         <span className="hint">
-          É o nome que aparece no Nuvem e no rclone. Pode ser qualquer apelido.
+          É o nome que aparece no Nuvem Sync e no rclone. Pode ser qualquer apelido.
         </span>
       </div>
 
       <div className="banner info">
         <Icon name="shield" size={16} />
-        A autorização acontece no navegador. O Nuvem nunca vê sua senha.
+        A autorização acontece no navegador. O Nuvem Sync nunca vê sua senha.
       </div>
 
       {error ? (

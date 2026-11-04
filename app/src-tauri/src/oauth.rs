@@ -1,11 +1,11 @@
 //! Credenciais OAuth do Google.
 //!
 //! O rclone usa, por padrão, um projeto compartilhado por todos os usuários dele
-//! — e a cota de requisições por minuto desse projeto vive estourada. O Nuvem
-//! pode embutir no binário o **seu próprio** projeto (o do aplicativo) e, por
+//! — e a cota de requisições por minuto desse projeto vive estourada. O
+//! Nuvem Sync pode embutir no binário o **seu próprio** projeto (o do app) e, por
 //! cima disso, o usuário pode colar as credenciais dele em Ajustes → Avançado.
 //!
-//! Precedência: usuário > projeto do Nuvem > projeto do rclone.
+//! Precedência: usuário > projeto do Nuvem Sync > projeto do rclone.
 //!
 //! De onde vêm as credenciais do build, em ordem:
 //! 1. variável de ambiente em tempo de execução (`NUVEM_GOOGLE_CLIENT_ID` e
@@ -25,7 +25,7 @@ pub const SUFIXO_CLIENT_ID: &str = ".apps.googleusercontent.com";
 pub enum Fonte {
     /// O usuário colou o par dele em Ajustes → Avançado.
     Usuario,
-    /// Projeto OAuth embutido no build (o do próprio Nuvem).
+    /// Projeto OAuth embutido no build (o do próprio Nuvem Sync).
     Nuvem,
     /// Projeto compartilhado do rclone (sem `client_id` nenhum).
     Rclone,
@@ -45,7 +45,7 @@ impl Fonte {
     pub fn descricao(self) -> &'static str {
         match self {
             Fonte::Usuario => "credenciais próprias do usuário",
-            Fonte::Nuvem => "projeto do Nuvem",
+            Fonte::Nuvem => "projeto do Nuvem Sync",
             Fonte::Rclone => "projeto compartilhado do rclone",
         }
     }
@@ -169,7 +169,7 @@ mod testes {
     }
 
     /// Roda de verdade quando NUVEM_GOOGLE_CLIENT_ID/_SECRET estão no ambiente
-    /// (é o teste que prova o par real do projeto do Nuvem); em CI, sem as
+    /// (é o teste que prova o par real do projeto do Nuvem Sync); em CI, sem as
     /// variáveis, ele não tem o que conferir e passa sem fazer nada.
     #[test]
     fn ambiente_com_o_par_do_projeto_vira_fonte_nuvem() {
@@ -202,7 +202,7 @@ mod testes {
 
     #[test]
     fn sem_nada_o_app_fica_no_projeto_do_rclone() {
-        // O ambiente de teste não define as variáveis do projeto do Nuvem e o
+        // O ambiente de teste não define as variáveis do projeto do Nuvem Sync e o
         // binário de teste não foi compilado com elas.
         if do_build().is_none() {
             let credenciais = efetivas(("", ""));

@@ -3,7 +3,7 @@ export type Account = {
   provider: string;
   label: string;
   /** Projeto OAuth que autorizou a conta: o do rclone (cota estourada), o do
-   *  Nuvem (embutido no build) ou o do próprio usuário. */
+   *  Nuvem Sync (embutido no build) ou o do próprio usuário. */
   clientOrigem: "rclone" | "nuvem" | "usuario";
 };
 

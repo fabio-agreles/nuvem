@@ -3,7 +3,8 @@
 #
 # O Tauri gera o `.exe` sem problema (cargo-xwin + MSVC no alvo), mas o
 # instalador NSIS usa `makensis.exe` — ou seja, só é gerado no próprio Windows.
-# O que sai daqui é o pacote **portátil**: `Nuvem.exe` + `rclone.exe` na mesma
+# O que sai daqui é o pacote **portátil**: `Nuvem.exe` (nome do binário, o
+# mesmo desde a 1.0) + `rclone.exe` na mesma
 # pasta, que é exatamente onde o app procura o motor de sincronização.
 #
 # Pré-requisitos (Linux):
@@ -33,16 +34,16 @@ rclone_exe="$recursos/rclone.exe"
 alvo="x86_64-pc-windows-msvc"
 # A versão vem do package.json: assim o zip nunca sai com nome de versão velha.
 versao="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["version"])' "$root/package.json")"
-produto="Nuvem-$versao-windows-x64"
+produto="Nuvem-Sync-$versao-windows-x64"
 
-# O par do projeto OAuth do Nuvem entra embutido (`option_env!`) quando existe:
+# O par do projeto OAuth do Nuvem Sync entra embutido (`option_env!`) quando existe:
 # sem ele o portátil sai com o projeto do rclone, mais lento e sujeito a
 # "Rate limited". Mesmo padrão do build-flatpak.sh, e o .env.oauth não é
 # versionado.
 if [[ -f "$root/.env.oauth" ]]; then
   # shellcheck disable=SC1091
   set -a; source "$root/.env.oauth"; set +a
-  echo "build-windows: par OAuth do Nuvem embutido (${NUVEM_GOOGLE_CLIENT_ID:0:20}…)"
+  echo "build-windows: par OAuth do Nuvem Sync embutido (${NUVEM_GOOGLE_CLIENT_ID:0:20}…)"
 else
   echo "build-windows: sem .env.oauth — o portátil vai usar o projeto do rclone." >&2
 fi
@@ -72,14 +73,14 @@ cp "$rclone_exe" "$destino/rclone.exe"
 # A licença viaja junto: o pacote é o que o usuário recebe, não o repositório.
 cp "$root/../LICENSE" "$destino/LICENSE"
 cat > "$destino/LEIA-ME.txt" <<'TXT'
-Nuvem — pacote portátil para Windows
+Nuvem Sync — pacote portátil para Windows
 ====================================
 
 Como usar
 ---------
-1. Extraia esta pasta em qualquer lugar (ex.: C:\Program Files\Nuvem ou
-   %LOCALAPPDATA%\Nuvem).
-2. Execute Nuvem.exe.
+1. Extraia esta pasta em qualquer lugar (ex.: C:\Program Files\Nuvem Sync
+   ou %LOCALAPPDATA%\Nuvem Sync).
+2. Execute Nuvem.exe (o binário mantém o nome curto).
 
 Não precisa instalar o rclone: o rclone.exe desta pasta é o motor de
 sincronização e o Nuvem o encontra sozinho. Se quiser usar outro, defina a

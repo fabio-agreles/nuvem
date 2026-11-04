@@ -40,7 +40,7 @@ O site responde corretamente (`/nuvem/` 200, `/nuvem` 301 → `/nuvem/`, arquivo
 verificação 200). Em 31/10 às 20:36 o Search Console confirmou
 **"Você é um proprietário verificado"**, método *Arquivo HTML*, na propriedade
 `https://fabio-agreles.github.io/nuvem/` — ou seja, do lado do site e do Search
-Console está tudo certo. Em 31/10 às 20:43 o IAM do projeto "Nuvem" confirmou
+Console está tudo certo. Em 31/10 às 20:43 o IAM do projeto "Nuvem Sync" confirmou
 `fabioagreles@gmail.com` como **Owner** — a mesma conta do Search Console. As
 duas hipóteses de vínculo estão descartadas; resta a sincronização das 24 h
 (verificar às ~19h de 01/11 e reenviar). Verificar, nesta ordem: (a) a conta logada no Search Console é a
@@ -105,6 +105,10 @@ mesma análise e gasta tempo. Ou se troca o domínio, ou se convive com o aviso.
 
 #### Caminho A — domínio próprio (destrava marca + escopo restrito)
 
+> **Escolhido em 04/11/2026: `nuvem-sync.app.br`** (R$ 40/ano no Registro.br,
+> livre na conferência). O passo a passo completo, na ordem certa e com os
+> registros DNS, está em [`dominio-proprio.md`](dominio-proprio.md).
+
 Custo/tempo: ~R$ 40/ano (`.com.br` no Registro.br) ou ~US$ 12/ano (`.app`,
 `.dev`, `.com`); 20 minutos de configuração, mais as 24 h de propagação e a
 análise do Google.
@@ -145,13 +149,13 @@ para o domínio novo, e o `docs/.nojekyll` + `CNAME` convivem sem problema.
 #### Caminho B — ficar como está (custo zero)
 
 O app **funciona** hoje assim: o projeto está "Em produção", com o par OAuth do
-Nuvem embutido, cota própria e sem expiração de 7 dias. O que se perde:
+Nuvem Sync embutido, cota própria e sem expiração de 7 dias. O que se perde:
 
 - a tela de consentimento mostra o aviso **"O Google não verificou este
   aplicativo"** e um link "avançado" para continuar — atrito real para quem não
   é técnico;
 - o teto de **100 usuários na vida** (3 usados) continua valendo;
-- o nome/logo do Nuvem não aparecem como marca verificada.
+- o nome/logo do Nuvem Sync não aparecem como marca verificada.
 
 Para uma ferramenta de código aberto com poucos usuários, é defensável. Para
 publicar de verdade, o Caminho A é o único que passa.
@@ -162,7 +166,7 @@ publicar de verdade, o Caminho A é o único que passa.
 - Não usar "Acredito que os problemas encontrados estão incorretos": com a
   documentação dizendo "domínio que você possui", a contestação não tem base.
 - Não trocar o escopo `drive` por `drive.file` só para escapar da verificação: o
-  `drive.file` só vê arquivos criados pelo próprio app, e o Nuvem existe para
+  `drive.file` só vê arquivos criados pelo próprio app, e o Nuvem Sync existe para
   sincronizar pastas que **já existem**.
 
 ### Passo a passo do Search Console (o que destrava a marca)
@@ -204,30 +208,32 @@ console do Google Cloud é a **mesma** que verificou o site no Search Console.
 
 | Campo | Valor |
 | --- | --- |
-| Nome do app | `Nuvem` |
+| Nome do app | `Nuvem Sync` (o nome no Cloud também: renomeie o **nome de exibição** do projeto; o *project id* não muda) |
 | E-mail de suporte | o e-mail do mantenedor |
-| Página inicial | `https://fabio-agreles.github.io/nuvem/` |
-| Política de privacidade | `https://fabio-agreles.github.io/nuvem/privacidade.html` |
+| Página inicial | `https://nuvem-sync.app.br/` |
+| Política de privacidade | `https://nuvem-sync.app.br/privacidade.html` |
 | Termos de serviço | (opcional; licença MIT em `LICENSE`) |
-| Domínio autorizado | `fabio-agreles.github.io` |
+| Domínio autorizado | `nuvem-sync.app.br` |
 | Logo | 120×120 — `app/src-tauri/icons/128x128@2x.png` reduzido |
 | Tipo de app | Público / Externo |
 | Categoria | "Utilitário" ou "Produtividade" |
 
-**Domínio autorizado exige verificação de propriedade.** No
-[Search Console](https://search.google.com/search-console), crie uma propriedade
-do tipo *Prefixo de URL* com `https://fabio-agreles.github.io/nuvem/`, escolha
-verificação por **arquivo HTML** e coloque o arquivo baixado em `docs/` (ele é
-publicado junto com o site em alguns minutos). `github.io` é sufixo público, por
-isso se verifica o subdomínio `fabio-agreles.github.io`, não `github.io`.
+**Domínio autorizado exige verificação de propriedade.** Com domínio próprio a
+verificação é a propriedade de **Domínio** no
+[Search Console](https://search.google.com/search-console), por registro **TXT**
+(`google-site-verification=…`) na zona DNS — é a única que o validador de marca
+reconhece. A tabela acima já reflete o domínio `nuvem-sync.app.br`; o histórico
+das tentativas com `github.io` está na §04/11 e o passo a passo em
+[`dominio-proprio.md`](dominio-proprio.md).
 
-### Estado (31/10/2026)
+### Estado
 
 - [x] Propriedade `https://fabio-agreles.github.io/nuvem/` verificada no Search
-      Console pelo arquivo `docs/googlee37fbd119c4e6022.html` (publicado em
-      <https://fabio-agreles.github.io/nuvem/googlee37fbd119c4e6022.html>).
+      Console (31/10/2026) pelo arquivo `docs/googlee37fbd119c4e6022.html`.
       **Esse arquivo não pode ser apagado**: o Search Console revalida de tempos
       em tempos e, sem ele, a verificação do domínio cai.
+- [ ] Propriedade de **Domínio** `nuvem-sync.app.br` (TXT) — domínio em registro
+      em 04/11/2026; é o que substitui a verificação acima para efeito de marca.
 
 ## 3. Acesso a dados (Data Access)
 
@@ -243,7 +249,7 @@ https://www.googleapis.com/auth/drive
 
 ### Justificativa (em inglês, como o formulário pede)
 
-> Nuvem is an open-source desktop application (MIT) that keeps a folder on the
+> Nuvem Sync is an open-source desktop application (MIT) that keeps a folder on the
 > user's computer in **two-way sync** with a folder of their own Google Drive,
 > using the local `rclone bisync` engine. There is no server component: the OAuth
 > token and the file contents stay on the user's machine.
@@ -265,9 +271,9 @@ https://www.googleapis.com/auth/drive
 
 ### Roteiro do vídeo (2–3 min, sem cortes)
 
-1. Abrir o Nuvem (mostrar o nome e a tela inicial).
+1. Abrir o Nuvem Sync (mostrar o nome e a tela inicial).
 2. Adicionar conta → escolher **Google Drive** → o navegador abre a tela de
-   consentimento com o nome **Nuvem** e o escopo do Drive visível.
+   consentimento com o nome **Nuvem Sync** e o escopo do Drive visível.
 3. Aceitar. Voltar ao app: a conta aparece com nome, e-mail e cota.
 4. Adicionar uma pasta: escolher uma pasta existente do Drive (mostrar a lista).
 5. Criar um arquivo na pasta local → ele sobe (mostrar a linha de atividade).

@@ -56,7 +56,7 @@ fn ativo(text: &str) -> bool {
 }
 
 fn pedir_ao_portal(enable: bool) -> AppResult<()> {
-    let reason = "Mantém as pastas sincronizadas mesmo com a janela do Nuvem fechada.";
+    let reason = "Mantém as pastas sincronizadas mesmo com a janela do Nuvem Sync fechada.";
     let token = format!("nuvem_autostart_{}", if enable { "on" } else { "off" });
 
     let connection = zbus::blocking::Connection::session()
@@ -147,7 +147,7 @@ pub async fn request(enable: bool) -> AppResult<bool> {
             return Ok(true);
         }
         return Err(AppError::new(
-            "o sistema não autorizou o início automático. Tente de novo e confirme o pedido do Nuvem.",
+            "o sistema não autorizou o início automático. Tente de novo e confirme o pedido do Nuvem Sync.",
         ));
     }
 
@@ -166,7 +166,7 @@ pub async fn request(enable: bool) -> AppResult<bool> {
     }
 
     Err(AppError::new(
-        "não foi possível desligar o início automático. Remova o Nuvem dos aplicativos de inicialização do sistema.",
+        "não foi possível desligar o início automático. Remova o Nuvem Sync dos aplicativos de inicialização do sistema.",
     ))
 }
 
@@ -185,7 +185,7 @@ mod tests {
 
     #[test]
     fn hidden_desativa() {
-        let padrao = "[Desktop Entry]\nType=Application\nName=Nuvem\nExec=flatpak run app.nuvem.Nuvem\n";
+        let padrao = "[Desktop Entry]\nType=Application\nName=Nuvem Sync\nExec=flatpak run app.nuvem.Nuvem\n";
         assert!(ativo(padrao));
         assert!(!ativo(&format!("{padrao}Hidden=true\n")));
         // Espaços e maiúsculas não mudam a leitura.

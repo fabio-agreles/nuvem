@@ -15,13 +15,13 @@ const RESOLUTIONS: Record<
     label: "Manter da nuvem",
     title: "Manter a versão da nuvem?",
     description:
-      "A cópia deste computador vai para a pasta “conflitos-resolvidos” da configuração do Nuvem. Nada é apagado, e a versão da nuvem volta ao nome original.",
+      "A cópia deste computador vai para a pasta “conflitos-resolvidos” da configuração do Nuvem Sync. Nada é apagado, e a versão da nuvem volta ao nome original.",
   },
   local: {
     label: "Manter a minha",
     title: "Manter a versão deste computador?",
     description:
-      "A cópia da nuvem vai para a pasta “conflitos-resolvidos” da configuração do Nuvem. Nada é apagado, e a versão local volta ao nome original.",
+      "A cópia da nuvem vai para a pasta “conflitos-resolvidos” da configuração do Nuvem Sync. Nada é apagado, e a versão local volta ao nome original.",
   },
   both: {
     label: "Manter as duas",
@@ -105,7 +105,7 @@ export function Conflicts({
             </div>
             <h3>{loading ? "Verificando…" : "Nenhum conflito"}</h3>
             <p>
-              Quando o mesmo arquivo muda dos dois lados, o Nuvem avisa aqui em vez de
+              Quando o mesmo arquivo muda dos dois lados, o Nuvem Sync avisa aqui em vez de
               escolher sozinho.
             </p>
             {!loading ? (
@@ -220,7 +220,7 @@ export function Conflicts({
           <div className="banner info">
             <Icon name="shield" size={16} />
             A versão descartada fica guardada em “conflitos-resolvidos” dentro da
-            configuração do Nuvem.
+            configuração do Nuvem Sync.
           </div>
           <p className="mono" style={{ fontSize: 11.5, color: "var(--muted)" }}>
             {pending.conflict.baseName}

@@ -1,7 +1,7 @@
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Type=Application
-Name=Nuvem
+Name=Nuvem Sync
 GenericName=Sincronização em nuvem
 Comment=Sincronize o Google Drive e o OneDrive com pastas deste computador
 Exec=nuvem
@@ -10,4 +10,4 @@ Terminal=false
 Categories=Network;FileTransfer;
 Keywords=drive;onedrive;sync;sincronizacao;nuvem;backup;rclone;
 StartupNotify=true
-StartupWMClass=Nuvem
+StartupWMClass=nuvem

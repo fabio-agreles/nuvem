@@ -1,6 +1,6 @@
 use std::{
     path::PathBuf,
-    sync::atomic::{AtomicU8, Ordering},
+    sync::atomic::{AtomicBool, AtomicU8, AtomicU16, Ordering},
 };
 use tauri::{
     image::Image,
@@ -9,12 +9,50 @@ use tauri::{
     App, AppHandle, Emitter, Manager, Theme,
 };
 
-/// Ícones simbólicos embutidos no binário: nada para procurar em disco — e o
+/// Ícones da bandeja embutidos no binário: nada para procurar em disco — e o
 /// Flatpak não deixaria o app ler os ícones fora do sandbox.
 ///
-/// São só traço, na cor do tema: preto nos painéis claros, branco nos escuros.
-const SIMBOLICO_CLARO: &[u8] = include_bytes!("../icons/tray/tray-black.png");
-const SIMBOLICO_ESCURO: &[u8] = include_bytes!("../icons/tray/tray-white.png");
+/// São dois desenhos (traço escuro para painel claro, traço branco para painel
+/// escuro) em seis estados: parado, sincronizando, em dia, pausado, erro e
+/// offline. O painel do KDE/GNOME não recolore ícone de bandeja, então a cor e o
+/// estado vêm daqui.
+const LIGHT_IDLE: &[u8] = include_bytes!("../icons/tray/light-idle-64.png");
+const LIGHT_SYNCING: &[u8] = include_bytes!("../icons/tray/light-syncing-64.png");
+const LIGHT_SYNCED: &[u8] = include_bytes!("../icons/tray/light-synced-64.png");
+const LIGHT_PAUSED: &[u8] = include_bytes!("../icons/tray/light-paused-64.png");
+const LIGHT_ERROR: &[u8] = include_bytes!("../icons/tray/light-error-64.png");
+const LIGHT_OFFLINE: &[u8] = include_bytes!("../icons/tray/light-offline-64.png");
+const DARK_IDLE: &[u8] = include_bytes!("../icons/tray/dark-idle-64.png");
+const DARK_SYNCING: &[u8] = include_bytes!("../icons/tray/dark-syncing-64.png");
+const DARK_SYNCED: &[u8] = include_bytes!("../icons/tray/dark-synced-64.png");
+const DARK_PAUSED: &[u8] = include_bytes!("../icons/tray/dark-paused-64.png");
+const DARK_ERROR: &[u8] = include_bytes!("../icons/tray/dark-error-64.png");
+const DARK_OFFLINE: &[u8] = include_bytes!("../icons/tray/dark-offline-64.png");
+
+/// O que a bandeja está mostrando. `Erro` e `Offline` só aparecem quando o
+/// monitor percebe a condição — não são estados da interface.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Estado {
+    Parado = 0,
+    Sincronizando = 1,
+    EmDia = 2,
+    Pausado = 3,
+    Erro = 4,
+    Offline = 5,
+}
+
+impl Estado {
+    fn de_u8(valor: u8) -> Self {
+        match valor {
+            1 => Self::Sincronizando,
+            2 => Self::EmDia,
+            3 => Self::Pausado,
+            4 => Self::Erro,
+            5 => Self::Offline,
+            _ => Self::Parado,
+        }
+    }
+}
 
 /// Pasta onde o ícone é gravado para o painel ler.
 ///
@@ -34,46 +72,71 @@ fn pasta_dos_icones() -> PathBuf {
     dir
 }
 
-/// Última cor aplicada: 0 = preto, 1 = branco, 2 = ainda nenhuma.
-static APLICADO: AtomicU8 = AtomicU8::new(2);
+/// Tema em uso (true = escuro) e estado atual. O front-end manda o tema ao
+/// montar; o monitor manda o estado a cada varredura.
+static ESCURO: AtomicBool = AtomicBool::new(false);
+static ESTADO_U8: AtomicU8 = AtomicU8::new(0);
+/// Combinação já aplicada (estado × tema) para não reescrever o PNG à toa: o
+/// painel pisca quando o arquivo é regravado sem mudança.
+static APLICADO: AtomicU16 = AtomicU16::new(u16::MAX);
 
-fn guardar_cor(escuro: bool) {
-    APLICADO.store(u8::from(escuro), Ordering::Relaxed);
+fn bytes(escuro: bool, estado: Estado) -> &'static [u8] {
+    match (escuro, estado) {
+        (false, Estado::Sincronizando) => LIGHT_SYNCING,
+        (false, Estado::EmDia) => LIGHT_SYNCED,
+        (false, Estado::Pausado) => LIGHT_PAUSED,
+        (false, Estado::Erro) => LIGHT_ERROR,
+        (false, Estado::Offline) => LIGHT_OFFLINE,
+        (false, Estado::Parado) => LIGHT_IDLE,
+        (true, Estado::Sincronizando) => DARK_SYNCING,
+        (true, Estado::EmDia) => DARK_SYNCED,
+        (true, Estado::Pausado) => DARK_PAUSED,
+        (true, Estado::Erro) => DARK_ERROR,
+        (true, Estado::Offline) => DARK_OFFLINE,
+        (true, Estado::Parado) => DARK_IDLE,
+    }
 }
 
-fn icone(escuro: bool) -> Option<Image<'static>> {
-    let bytes = if escuro { SIMBOLICO_ESCURO } else { SIMBOLICO_CLARO };
-    match Image::from_bytes(bytes) {
+fn icone(escuro: bool, estado: Estado) -> Option<Image<'static>> {
+    match Image::from_bytes(bytes(escuro, estado)) {
         Ok(icon) => Some(icon),
         Err(error) => {
-            eprintln!("bandeja: ícone simbólico inválido: {error}");
+            eprintln!("bandeja: ícone inválido ({estado:?}): {error}");
             None
         }
     }
 }
 
-/// Troca o ícone da bandeja conforme o tema em uso.
-///
-/// O painel do KDE/GNOME não recolore ícones de bandeja, então a cor vem daqui:
-/// preto para o tema claro, branco para o escuro.
-pub fn apply_theme(app: &AppHandle, escuro: bool) {
-    // O front-end avisa o tema ao montar; se for o mesmo já escolhido pelo
-    // sistema, não vale reescrever o PNG (o painel pisca à toa).
-    if APLICADO.swap(u8::from(escuro), Ordering::Relaxed) == u8::from(escuro) {
+fn aplicar(app: &AppHandle, escuro: bool, estado: Estado) {
+    let chave = (estado as u16) * 2 + u16::from(escuro);
+    if APLICADO.swap(chave, Ordering::Relaxed) == chave {
         return;
     }
     let Some(tray) = app.tray_by_id("main") else {
         return;
     };
-    if let Some(icon) = icone(escuro) {
+    if let Some(icon) = icone(escuro, estado) {
         if let Err(error) = tray.set_icon(Some(icon)) {
             eprintln!("bandeja: não foi possível trocar o ícone: {error}");
         }
     }
 }
 
+/// Troca o ícone da bandeja conforme o tema em uso (preto no painel claro,
+/// branco no escuro).
+pub fn apply_theme(app: &AppHandle, escuro: bool) {
+    ESCURO.store(escuro, Ordering::Relaxed);
+    aplicar(app, escuro, Estado::de_u8(ESTADO_U8.load(Ordering::Relaxed)));
+}
+
+/// Troca o ícone conforme o estado da sincronização, mantendo o tema.
+pub fn apply_estado(app: &AppHandle, estado: Estado) {
+    ESTADO_U8.store(estado as u8, Ordering::Relaxed);
+    aplicar(app, ESCURO.load(Ordering::Relaxed), estado);
+}
+
 pub fn init(app: &mut App) -> tauri::Result<()> {
-    let open = MenuItem::with_id(app, "open", "Abrir Nuvem", true, None::<&str>)?;
+    let open = MenuItem::with_id(app, "open", "Abrir Nuvem Sync", true, None::<&str>)?;
     let sync = MenuItem::with_id(app, "sync", "Sincronizar agora", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Sair", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&open, &sync, &quit])?;
@@ -88,7 +151,7 @@ pub fn init(app: &mut App) -> tauri::Result<()> {
 
     let mut builder = TrayIconBuilder::with_id("main")
         .temp_dir_path(pasta_dos_icones())
-        .tooltip("Nuvem")
+        .tooltip("Nuvem Sync")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id().as_ref() {
@@ -124,10 +187,12 @@ pub fn init(app: &mut App) -> tauri::Result<()> {
             }
         });
 
-    if let Some(icon) = icone(escuro) {
+    if let Some(icon) = icone(escuro, Estado::Parado) {
         builder = builder.icon(icon);
     }
-    guardar_cor(escuro);
+    ESCURO.store(escuro, Ordering::Relaxed);
+    ESTADO_U8.store(Estado::Parado as u8, Ordering::Relaxed);
+    APLICADO.store(u16::from(escuro), Ordering::Relaxed);
 
     builder.build(app)?;
     Ok(())
@@ -135,19 +200,54 @@ pub fn init(app: &mut App) -> tauri::Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::icone;
+    use super::{bytes, icone, Estado};
 
-    /// Os dois PNGs viajam embutidos: se um deles quebrar (ou sumir do
+    /// Os doze PNGs viajam embutidos: se um deles quebrar (ou sumir do
     /// repositório), o `cargo test` avisa antes de o app abrir sem ícone.
     #[test]
-    fn icones_simbolicos_carregam() {
+    fn icones_da_bandeja_carregam() {
+        let estados = [
+            Estado::Parado,
+            Estado::Sincronizando,
+            Estado::EmDia,
+            Estado::Pausado,
+            Estado::Erro,
+            Estado::Offline,
+        ];
         for escuro in [false, true] {
-            let icon = icone(escuro).expect("ícone simbólico embutido");
-            assert_eq!(icon.width(), 64);
-            assert_eq!(icon.height(), 64);
-            // O Tauri só aceita o ícone se o buffer RGBA tiver o tamanho exato;
-            // caso contrário descarta em silêncio e a bandeja usa o ícone do app.
-            assert_eq!(icon.rgba().len(), 64 * 64 * 4);
+            for estado in estados {
+                let icon = icone(escuro, estado).expect("ícone embutido");
+                assert_eq!((icon.width(), icon.height()), (64, 64));
+                // O Tauri só aceita o ícone se o buffer RGBA tiver o tamanho
+                // exato; caso contrário descarta em silêncio e a bandeja cai no
+                // ícone do aplicativo.
+                assert_eq!(icon.rgba().len(), 64 * 64 * 4);
+            }
+        }
+    }
+
+    /// Cada estado tem um desenho próprio: dois estados iguais seriam um erro de
+    /// empacotamento que passa despercebido na tela.
+    #[test]
+    fn cada_estado_tem_desenho_proprio() {
+        let estados = [
+            Estado::Parado,
+            Estado::Sincronizando,
+            Estado::EmDia,
+            Estado::Pausado,
+            Estado::Erro,
+            Estado::Offline,
+        ];
+        for escuro in [false, true] {
+            let mut vistos: Vec<&[u8]> = Vec::new();
+            for estado in estados {
+                let desenho = bytes(escuro, estado);
+                assert!(
+                    !vistos.iter().any(|outro| *outro == desenho),
+                    "estado {estado:?} repete o desenho de outro (tema escuro: {escuro})"
+                );
+                vistos.push(desenho);
+            }
         }
     }
 }

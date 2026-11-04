@@ -1,6 +1,8 @@
 import { Icon, type IconName } from "./Icons";
 import type { EngineStatus, ViewId } from "../lib/types";
 import { isDesktop } from "../lib/bridge";
+import { NOME } from "../lib/marca";
+import logo from "../assets/logo.png";
 
 type NavItem = {
   id: ViewId;
@@ -34,11 +36,9 @@ export function Sidebar({
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="brand-mark">
-          <Icon name="cloud" size={20} />
-        </div>
+        <img className="brand-mark" src={logo} alt="" width={36} height={36} />
         <div className="brand-text">
-          <div className="brand-name">Nuvem</div>
+          <div className="brand-name">{NOME}</div>
           <div className="brand-sub">sincronização simples</div>
         </div>
       </div>

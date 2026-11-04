@@ -1,4 +1,4 @@
-# Nuvem
+# Nuvem Sync
 
 Aplicativo desktop de sincronização (Google Drive + OneDrive) com foco em clareza
 visual e poucos cliques. Fases 1, 2 e 3 implementadas: contas, pastas, bisync real
@@ -47,7 +47,7 @@ o rclone embutido.
 | Aba Arquivos mantém a conta e o caminho ao trocar de aba | ✅ |
 | Transferências ajustadas para o limite do Google (3× mais rápido no teste) | ✅ |
 | Credenciais OAuth próprias do Google em **Ajustes → Avançado** | ✅ |
-| Projeto OAuth do próprio Nuvem embutido no build (usuário > Nuvem > rclone) | ✅ código e script; falta o par do projeto |
+| Projeto OAuth do próprio Nuvem Sync embutido no build (usuário > Nuvem Sync > rclone) | ✅ código e script; falta o par do projeto |
 | Painel RC do rclone com senha sorteada a cada execução (HTTP Basic) | ✅ |
 | Estado gravado com `0600` e recuperação automática de arquivo corrompido | ✅ |
 | Licença MIT (`LICENSE`) e repositório git versionado | ✅ |
@@ -57,6 +57,7 @@ o rclone embutido.
 | Aviso de nova versão publicada (consulta a última Release) | ✅ |
 | Trava contra apagar tudo: um dos lados vazio e o outro cheio **barra** a sincronização | ✅ |
 | Nenhum subprocesso abre janela de console no Windows (`CREATE_NO_WINDOW` em todos) | ✅ |
+| Bandeja mostra o estado (parado/sincronizando/em dia/pausado/erro/offline) e troca a cor do traço com o tema | ✅ |
 
 ## Prévia
 
@@ -70,7 +71,7 @@ metainfo do Flatpak são as mesmas, em 2480×1800:
 | ![Ajustes](docs/previews/preview-settings.png) | ![Credenciais próprias do Google em Ajustes → Avançado](docs/previews/preview-settings-advanced.png) |
 | ![Atividade com histórico por arquivo](docs/previews/preview-activity.png) | ![Limpar a atividade](docs/previews/preview-activity-clear.png) |
 | ![Adicionar pasta escolhendo na nuvem](docs/previews/preview-add-folder.png) | ![Paleta de comandos](docs/previews/preview-palette.png) |
-| ![Tema escuro](docs/previews/preview-dark.png) | ![Nuvem no Flatpak, com conta real](docs/previews/flatpak.png) |
+| ![Tema escuro](docs/previews/preview-dark.png) | ![Nuvem Sync no Flatpak, com conta real](docs/previews/flatpak.png) |
 
 Para refazer o conjunto (o script esconde o selo *Modo demonstração* e usa
 1240×900 @2x):
@@ -136,7 +137,7 @@ A busca do motor (`Rclone::find_binary`) tenta, em ordem: `NUVEM_RCLONE`, a cóp
 ao lado do executável (`rclone` ou `rclone.exe`, conforme o sistema) e em
 `resources/`, `lib/Nuvem/rclone` e `lib/nuvem/rclone` (pacotes), `PATH`,
 `/app/bin`, `/usr/bin`, `/usr/local/bin` e `~/.local/bin`. No Windows ainda
-aparecem `%LOCALAPPDATA%\Nuvem` e `%LOCALAPPDATA%\Programs\Nuvem`. Por isso o
+aparecem `%LOCALAPPDATA%\Nuvem Sync` e `%LOCALAPPDATA%\Programs\Nuvem Sync`. Por isso o
 `.deb`, o AppImage e o `.exe` funcionam numa máquina sem rclone instalado.
 
 ```bash
@@ -195,7 +196,7 @@ gh release upload v1.2.2 src-tauri/target/x86_64-pc-windows-msvc/release/bundle/
 ```
 
 O script lê a versão do `package.json` (o nome do zip acompanha sozinho) e, se
-`app/.env.oauth` existir, embute o par do projeto OAuth do Nuvem — sem ele o
+`app/.env.oauth` existir, embute o par do projeto OAuth do Nuvem Sync — sem ele o
 portátil sai apontando para o projeto compartilhado do rclone. Confira com
 `strings` no `Nuvem.exe` de dentro do zip se o `client_id` está lá.
 
@@ -224,7 +225,7 @@ início automático.
 O que muda no código por causa do Windows:
 
 - **`rclone.exe`**: o nome do binário tem sufixo (`RCLONE` em `rclone.rs`), e a
-  busca ganha `%LOCALAPPDATA%\Nuvem` e `%LOCALAPPDATA%\Programs\Nuvem`.
+  busca ganha `%LOCALAPPDATA%\Nuvem Sync` e `%LOCALAPPDATA%\Programs\Nuvem Sync`.
 - **`CREATE_NO_WINDOW`** ao subir o daemon: sem isso, cada sincronização abriria
   uma janela de console preta piscando.
 - **Abrir pasta**: `explorer` no lugar de `xdg-open`.
@@ -278,11 +279,11 @@ pendências (`$HOME` apenas, `aarch64`, metainfo), veja
 4. Acompanhe em **Visão geral** (fila, velocidade, ETA) e **Atividade**.
 5. Ao mudar conta ou caminhos de uma pasta, a próxima execução ressincroniza
    automaticamente.
-6. Em **Ajustes → Abrir com o sistema**, o Nuvem passa a iniciar minimizado na
+6. Em **Ajustes → Abrir com o sistema**, o Nuvem Sync passa a iniciar minimizado na
    bandeja junto com a sessão. Dentro do Flatpak quem escreve o item de
    inicialização é o sistema (portal), não o app.
 7. Para desconectar uma conta: **Visão geral → Contas**, passe o mouse na conta e
-   use a lixeira. Se ainda houver pasta usando a conta, o Nuvem pede para removê-la
+   use a lixeira. Se ainda houver pasta usando a conta, o Nuvem Sync pede para removê-la
    antes (e leva você para **Pastas**). Nada é apagado na nuvem nem no disco.
 8. **Limpar a atividade**: em **Atividade**, o botão *Limpar* (à direita dos filtros)
    pede confirmação e apaga o histórico deste computador — os arquivos não são
@@ -355,7 +356,7 @@ O daemon sobe com um ajuste pensado no limite do Google (em `rclone.rs`):
 Medido neste ambiente (link de ~10 MB/s de subida, mesma conta e mesmos arquivos,
 antes → depois):
 
-| Carga | Antes (padrões do rclone) | Depois (ajustes de transferência) | Com o projeto OAuth do Nuvem |
+| Carga | Antes (padrões do rclone) | Depois (ajustes de transferência) | Com o projeto OAuth do Nuvem Sync |
 | --- | --- | --- | --- |
 | 1 arquivo de 64 MiB | 121 s (uma vez) / 27 s | **9 s** (~7,5 MB/s) | — |
 | 100 arquivos de 200 KiB | 349 s | **242 s** | — |
@@ -373,11 +374,11 @@ sua. O cartão mostra o estado de cada conta (*projeto do rclone* / *cota própr
 avisa que contas antigas precisam ser removidas e conectadas de novo (o token vale
 para o projeto que o emitiu).
 
-O caminho definitivo é o **projeto do Nuvem**, embutido no build: com ele todo
+O caminho definitivo é o **projeto do Nuvem Sync**, embutido no build: com ele todo
 mundo que instala já usa uma cota do aplicativo, sem criar projeto nenhum. O par
 entra pelas variáveis `NUVEM_GOOGLE_CLIENT_ID`/`NUVEM_GOOGLE_CLIENT_SECRET` na
 compilação (ou em tempo de execução, sem recompilar) e a precedência é
-**usuário > Nuvem > rclone** — Ajustes → Avançado mostra qual está em vigor e o
+**usuário > Nuvem Sync > rclone** — Ajustes → Avançado mostra qual está em vigor e o
 `client_id` em uso. Para criar o projeto e embutir o par:
 [`docs/oauth-google.md`](../docs/oauth-google.md) e `scripts/oauth-google.sh`.
 
@@ -532,6 +533,20 @@ escopo `drive` terminar.
   daemon; faltava em `config dump` (que roda a cada tela de contas), no
   `rclone version` e no `explorer`. Hoje tudo passa pelo trait `SemConsole`
   (`rclone.rs`), que é no-op no Linux/macOS. Ao criar um subprocesso novo, use-o.
+- **Renomear o app sem quebrar quem já instalou**: o nome de exibição é "Nuvem
+  Sync", mas o identificador continua `app.nuvem.Nuvem` e o binário continua
+  `nuvem`. Mudar o identificador renomearia a pasta de configuração de todo mundo
+  (perfis, histórico, credenciais) e o `app-id` do Flatpak; mudar o binário
+  quebraria o `Exec` do `.desktop`, a busca do `rclone` ao lado do executável e o
+  `StartupWMClass`. O que muda com a marca é só o `productName` (nome dos
+  pacotes), os textos e os ícones. Como o `productName` entra no nome do pacote
+  Debian, o `.deb` declara `Conflicts`/`Replaces: nuvem (<< 1.3.0)` para o apt
+  trocar o pacote antigo em vez de acusar conflito de arquivo em `/usr/bin/nuvem`.
+- **Ícones da bandeja**: são 12 PNGs embutidos por `include_bytes!` (6 estados ×
+  2 temas). O painel do KDE/GNOME **não** recolore ícone de bandeja, então o
+  "tema claro/escuro" é escolhido no app (`set_tray_theme`, que o front-end chama
+  ao montar) e o estado vem do `monitor`. `cada_estado_tem_desenho_proprio`
+  falha se dois estados apontarem para o mesmo arquivo.
 - **Um lado vazio apaga o outro**: o bisync propaga exclusões nos dois sentidos.
   Quando a pasta na nuvem foi esvaziada (lixeira do Drive) e a local estava cheia,
   a rodada apagaria os arquivos do computador — e o `maxDelete=50` do app não
@@ -695,8 +710,8 @@ NSIS do Windows (`pacotes.yml`).
 2. **Validações que faltam**: conta OneDrive real, conflito real (edição simultânea
    nos dois lados), login de verdade para conferir o item de autostart, e instalar o
    `.deb` com `dpkg` numa máquina limpa.
-3. **Projeto OAuth para distribuição**: o código já aceita o par do Nuvem embutido
-   (usuário > Nuvem > rclone) e o guia está em
+3. **Projeto OAuth para distribuição**: o código já aceita o par do Nuvem Sync embutido
+   (usuário > Nuvem Sync > rclone) e o guia está em
    [`docs/oauth-google.md`](../docs/oauth-google.md). Falta o projeto existir: criar
    no Google Cloud, publicar (senão o refresh token expira em 7 dias), colar o par
    nos segredos do repositório e submeter à verificação do escopo `drive` — sem ela

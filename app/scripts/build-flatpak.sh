@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build do Flatpak com o projeto OAuth do Nuvem embutido.
+# Build do Flatpak com o projeto OAuth do Nuvem Sync embutido.
 #
 # `flatpak-builder` não tem `--env`: o par só entra no build pelo
 # `build-options.env` do manifesto. Este script gera um manifesto temporário
@@ -17,7 +17,7 @@ temporario="$raiz/flatpak/app.nuvem.Nuvem.build.json"
 repo="$raiz/../flatpak-repo"
 builddir="$raiz/../builddir"
 versao="$(python3 -c 'import json;print(json.load(open("'"$raiz"'/package.json"))["version"])')"
-bundle="$raiz/../Nuvem-$versao-x86_64.flatpak"
+bundle="$raiz/../Nuvem-Sync-$versao-x86_64.flatpak"
 
 limpar() { rm -f "$temporario"; }
 trap limpar EXIT

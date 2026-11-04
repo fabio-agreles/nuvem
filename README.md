@@ -1,17 +1,17 @@
-# Nuvem
+# Nuvem Sync
 
 Sincronização bidirecional entre pastas deste computador e **Google Drive** ou
 **OneDrive** — com o visual cuidado e o uso simples, em vez de um painel cheio
 de opções. Feito com [Tauri 2](https://tauri.app) (Rust + React) e o motor
 [bisync do rclone](https://rclone.org/bisync/) embutido nos pacotes.
 
-![Nuvem no tema escuro](app/docs/previews/preview-dark.png)
+![Nuvem Sync no tema escuro](app/docs/previews/preview-dark.png)
 
 ## O que ele faz
 
 - **Bisync de verdade**: alterações locais e da nuvem descem e sobem sozinhas,
   sem sincronização em um sentido só.
-- **Google Drive e OneDrive**, contas via OAuth com o projeto do próprio Nuvem
+- **Google Drive e OneDrive**, contas via OAuth com o projeto do próprio Nuvem Sync
   (mais rápido que o projeto compartilhado do rclone) e possibilidade de usar as
   suas credenciais.
 - **Enviar e baixar arquivos avulsos**, navegar pela nuvem, ver conflitos lado a
@@ -29,10 +29,15 @@ Baixe em [Releases](https://github.com/fabio-agreles/nuvem/releases/latest):
 
 | Pacote | Para |
 | --- | --- |
-| `Nuvem_x.y.z_amd64.deb` | Debian, Ubuntu, Mint — `sudo apt install ./Nuvem_*.deb` |
-| `Nuvem_x.y.z_amd64.AppImage` | Qualquer Linux, sem instalar (usa o WebKitGTK do sistema) |
-| `Nuvem-x.y.z-x86_64.flatpak` | Flatpak/Flathub-style, isolado |
-| `Nuvem_x.y.z_x64-setup.exe` | Windows 10/11 (instalador NSIS, sem assinatura digital) |
+| `Nuvem Sync_x.y.z_amd64.deb` | Debian, Ubuntu, Mint — `sudo apt install ./*.deb` |
+| `Nuvem Sync_x.y.z_amd64.AppImage` | Qualquer Linux, sem instalar (usa o WebKitGTK do sistema) |
+| `Nuvem-Sync-x.y.z-x86_64.flatpak` | Flatpak, isolado |
+| `Nuvem Sync_x.y.z_x64-setup.exe` | Windows 10/11 (instalador NSIS, sem assinatura digital) |
+| `Nuvem-Sync-x.y.z-windows-x64.zip` | Windows 10/11 portátil, sem instalar |
+
+> A partir da 1.3.0 o pacote Debian mudou de nome (`nuvem` → `nuvem-sync`),
+> junto com a marca. O `.deb` novo declara `Conflicts`/`Replaces` do antigo,
+> então `sudo apt install ./*.deb` remove a versão velha sozinho.
 
 O rclone vai dentro de todos os pacotes: não é preciso instalá-lo.
 

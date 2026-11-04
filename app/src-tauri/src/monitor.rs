@@ -2,6 +2,7 @@ use crate::{
     commands::snapshot,
     models::{now_ms, FileChange},
     state::AppState,
+    tray::Estado,
 };
 use serde_json::{json, Value};
 use std::{
@@ -23,21 +24,30 @@ pub fn spawn(app: AppHandle) {
 async fn tick(app: &AppHandle) {
     let state = app.state::<AppState>();
     if state.paused.load(Ordering::SeqCst) {
-        set_tooltip(app, "pausado");
+        set_status(app, Estado::Pausado, "pausado");
         return;
     }
     if !state.rclone.is_running().await {
+        set_status(app, Estado::Offline, "motor parado");
         return;
     }
 
     // Nada em andamento: nenhuma chamada ao rclone, nenhum trabalho.
     let pending = state.pending_jobs().await;
     if pending.is_empty() {
-        set_tooltip(app, "tudo em dia");
+        let tem_erro = {
+            let perfis = state.profiles.lock().await;
+            perfis.iter().any(|perfil| perfil.last_error.is_some())
+        };
+        if tem_erro {
+            set_status(app, Estado::Erro, "uma pasta falhou");
+        } else {
+            set_status(app, Estado::EmDia, "tudo em dia");
+        }
         return;
     }
 
-    set_tooltip(app, "sincronizando");
+    set_status(app, Estado::Sincronizando, "sincronizando");
     let (notify_enabled, auto_retry) = {
         let settings = state.settings.lock().await;
         (settings.notifications, settings.auto_retry)
@@ -193,9 +203,9 @@ async fn tick(app: &AppHandle) {
         if notify_enabled && !silencioso {
             use tauri_plugin_notification::NotificationExt;
             let heading = if success {
-                "Nuvem — sincronização concluída"
+                "Nuvem Sync — sincronização concluída"
             } else {
-                "Nuvem — falha na sincronização"
+                "Nuvem Sync — falha na sincronização"
             };
             let _ = app
                 .notification()
@@ -397,7 +407,7 @@ fn moved_anything(log: &str) -> bool {
 fn friendly_error(error: &str) -> String {
     let lower = error.to_lowercase();
     if lower.contains("drive_id and drive_type") {
-        return "a conta OneDrive foi conectada sem escolher o drive. O Nuvem tenta completar isso sozinho — se a mensagem voltar, remova a conta em Visão geral → Contas e conecte de novo.".to_string();
+        return "a conta OneDrive foi conectada sem escolher o drive. O Nuvem Sync tenta completar isso sozinho — se a mensagem voltar, remova a conta em Visão geral → Contas e conecte de novo.".to_string();
     }
     if lower.contains("too many deletes") {
         // Proteção do bisync: ele recusa apagar muita coisa de uma vez para não
@@ -408,7 +418,7 @@ fn friendly_error(error: &str) -> String {
         // Trava deixada por uma execução interrompida (app fechado no meio). O app
         // remove sozinho na próxima tentativa; a mensagem não deve mandar o usuário
         // “esperar” por algo que não vai destravar sozinho.
-        return "uma execução anterior desta pasta não terminou (o Nuvem foi fechado no meio?). A trava é removida na próxima sincronização.".to_string();
+        return "uma execução anterior desta pasta não terminou (o Nuvem Sync foi fechado no meio?). A trava é removida na próxima sincronização.".to_string();
     }
     error.to_string()
 }
@@ -435,10 +445,13 @@ fn needs_resync(error: &str) -> bool {
     .any(|needle| lower.contains(needle))
 }
 
-fn set_tooltip(app: &AppHandle, status: &str) {
+/// Mostra o estado na dica da bandeja e no próprio ícone: quem olha o painel de
+/// relance vê se está sincronizando, em dia ou com erro, sem abrir a janela.
+fn set_status(app: &AppHandle, estado: Estado, status: &str) {
     if let Some(tray) = app.tray_by_id("main") {
-        let _ = tray.set_tooltip(Some(format!("Nuvem — {status}")));
+        let _ = tray.set_tooltip(Some(format!("Nuvem Sync — {status}")));
     }
+    crate::tray::apply_estado(app, estado);
 }
 
 #[cfg(test)]

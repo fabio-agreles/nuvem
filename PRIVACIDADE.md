@@ -1,10 +1,10 @@
-# Política de privacidade do Nuvem
+# Política de privacidade do Nuvem Sync
 
 Última atualização: 30 de outubro de 2026.
 
-O Nuvem é um aplicativo de desktop que mantém pastas deste computador em
+O Nuvem Sync é um aplicativo de desktop que mantém pastas deste computador em
 sincronização bidirecional com o Google Drive e o OneDrive. **Não existe servidor
-do Nuvem**: nada do seu conteúdo passa por máquinas nossas, porque não temos
+do Nuvem Sync**: nada do seu conteúdo passa por máquinas nossas, porque não temos
 nenhuma.
 
 ## Que dados o aplicativo acessa
@@ -22,7 +22,7 @@ conteúdo em lugar nenhum além do computador e da conta que você conectou.
 
 ## Escopo do Google Drive
 
-O Nuvem pede o escopo `https://www.googleapis.com/auth/drive` porque a
+O Nuvem Sync pede o escopo `https://www.googleapis.com/auth/drive` porque a
 sincronização precisa ler e gravar arquivos que **já existem** na sua conta —
 é o caso de uma pasta de trabalho que você quer manter igual nos dois lados. O
 escopo mais restrito (`drive.file`) só enxerga arquivos criados pelo próprio

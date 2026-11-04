@@ -217,15 +217,22 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
-- 💚 **1.4.0** (04/11): doações via Pix. Cartão "Ajude a manter o projeto" nos
-  Ajustes, logo antes de "Sobre", e um diálogo com o texto pedido, o QR code e o
-  botão "Copiar código Pix". O QR e o "copia e cola" saem do **mesmo BR Code
-  estático** (EMV, CRC16/CCITT): `scripts/gerar-pix.sh` monta o payload, desenha
-  o QR com o `qrencode` (`src/assets/pix-qr.svg`) e escreve `src/lib/pix.ts` com
-  a chave e o código — ida e volta conferida com `zbarimg` e CRC conferido com
-  implementação independente. Chave aleatória do projeto, recebedor "Fábio
-  Agreles Bezerra". Doação é voluntária e opcional: nenhum recurso do app
-  depende dela e nada sai do computador. Passo a passo em `docs/doacoes.md`.
+- ✅ **1.4.0 publicada** (tag `v1.4.0`, 04/11) — doações via Pix. Cartão "Ajude
+  a manter o projeto" nos Ajustes, logo antes de "Sobre", e um diálogo com o
+  texto pedido, o QR code e o botão "Copiar código Pix". O QR e o "copia e
+  cola" saem do **mesmo BR Code estático** (EMV, CRC16/CCITT):
+  `scripts/gerar-pix.sh` monta o payload, desenha o QR com o `qrencode`
+  (`src/assets/pix-qr.svg`) e escreve `src/lib/pix.ts` com a chave e o código —
+  ida e volta conferida com `zbarimg` e CRC conferido com implementação
+  independente. Chave aleatória do projeto, recebedor "Fábio Agreles Bezerra".
+  Doação é voluntária e opcional: nenhum recurso do app depende dela e nada sai
+  do computador. Passo a passo em `docs/doacoes.md`.
+  **Os 5 pacotes saíram**: `.deb` e AppImage do CI (ubuntu-22.04), NSIS do job
+  do Windows, Flatpak e zip portátil gerados aqui e anexados com
+  `gh release upload`. Conferido: `.deb` com `Version: 1.4.0` + `Depends` limpo,
+  AppImage do CI (108 MB) e o local (131 MB — ICU 78 empacota o
+  `lib64/webkit2gtk-4.1`; por isso o oficial é o do CI), `flatpak info` →
+  1.4.0, `nuvem.exe` do NSIS e do zip com o par OAuth e o asset `pix-qr-`.
 - ✅ **1.3.0** (04/11): o app virou **Nuvem Sync**, com o pacote de ícones novo
   (`NuvemSync_Desktop_Assets.zip`): ícone do app/no .deb/Flatpak/NSIS, logo do
   site, logo 120×120 da marca no Google e **12 ícones de bandeja** (6 estados ×

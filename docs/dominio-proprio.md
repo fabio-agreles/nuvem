@@ -84,11 +84,20 @@ O `AAAA` é opcional (só acelera onde há IPv6), mas o `A` é obrigatório. Rem
 qualquer registro `A`/`CNAME` padrão que o painel tenha criado (página
 "estacionada") — se ficar, o domínio responde no lugar do GitHub.
 
-Conferir a propagação (deve responder os 4 IPs `185.199.10x.153`):
+O `TXT` com `v=spf1 -all` que o Registro.br cria sozinho **fica** (é o padrão
+dele, diz que o domínio não manda e-mail). Se o painel não aceitar dois `TXT`
+no apex, junte os dois valores num registro só — `"v=spf1 -all"
+"google-site-verification=…"` —, que o Search Console lê do mesmo jeito.
+
+Conferir a propagação:
 
 ```bash
-dig +short A nuvem-sync.app.br
+dig +short A nuvem-sync.app.br          # se não tiver dig instalado:
+scripts/checar-dominio.sh               # confere A, AAAA, www, TXT do Google e do GitHub
 ```
+
+O script sai com código 1 enquanto faltar algum registro e diz exatamente qual.
+Ele fala DNS direto com o 1.1.1.1, então não depende de `dig` instalado.
 
 ## 4. Search Console: propriedade de **domínio**
 

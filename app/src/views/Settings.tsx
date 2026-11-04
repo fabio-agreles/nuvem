@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { NOME, VERSAO } from "../lib/marca";
+import { Doacoes } from "../components/Doacoes";
 import { Icon } from "../components/Icons";
 import { api, errorMessage, isDesktop } from "../lib/bridge";
 import type { Account, EngineStatus, OAuthInfo, Settings as SettingsModel } from "../lib/types";
@@ -556,6 +557,8 @@ export function Settings({
           </div>
         </div>
       </section>
+
+      <Doacoes notify={notify} />
 
       <section className="card">
         <div className="card-head">

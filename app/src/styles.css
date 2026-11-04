@@ -1846,6 +1846,123 @@ a {
   background: var(--accent-soft);
 }
 
+/* ---------- doações (Pix) ---------- */
+
+.doacao {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-color: rgba(79, 109, 245, 0.28);
+  background:
+    radial-gradient(120% 160% at 0% 0%, var(--accent-soft), transparent 62%),
+    var(--surface);
+}
+
+.doacao-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.doacao-text {
+  min-width: 0;
+}
+
+.doacao-title {
+  font-size: 13.5px;
+  font-weight: 650;
+  letter-spacing: -0.1px;
+}
+
+.doacao-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.doacao-texto p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.doacao-texto p:first-child {
+  font-weight: 550;
+  color: var(--text);
+}
+
+.pix {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+/* O QR precisa de fundo branco nos dois temas — leitor de QR não perdoa
+   contraste invertido no escuro. */
+.pix-qr {
+  flex: none;
+  width: 176px;
+  height: 176px;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+}
+
+.pix-qr img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pix-info {
+  min-width: 0;
+}
+
+.pix-label {
+  font-size: 10.5px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.pix-chave {
+  margin-top: 3px;
+  font-size: 12.5px;
+  word-break: break-all;
+  color: var(--text);
+}
+
+.pix-dica {
+  margin-top: 10px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.pix-dica strong {
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+@media (max-width: 560px) {
+  .doacao {
+    flex-wrap: wrap;
+  }
+
+  .pix {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 /* ---------- modal / palette ---------- */
 
 .overlay {

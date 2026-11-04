@@ -22,6 +22,8 @@ de opções. Feito com [Tauri 2](https://tauri.app) (Rust + React) e o motor
   regras de ignorar, tema claro/escuro, relatório de diagnóstico sem segredos.
 - **pt-BR**, sem telemetria: nada sai do computador além do tráfego direto para
   Google/Microsoft.
+- **Doações opcionais via Pix** em Ajustes, para quem quiser ajudar a manter o
+  projeto — com QR code e "copia e cola". Nada do app depende disso.
 
 ## Instalar
 
@@ -55,6 +57,8 @@ O rclone vai dentro de todos os pacotes: não é preciso instalá-lo.
 - [`docs/oauth-google.md`](docs/oauth-google.md) — projeto OAuth próprio no
   Google Cloud (e por que ele importa para a cota).
 - [`docs/flathub-pr.md`](docs/flathub-pr.md) — submissão ao Flathub.
+- [`docs/doacoes.md`](docs/doacoes.md) — doações via Pix: como o QR é gerado e
+  como trocar a chave.
 - [`PRIVACIDADE.md`](PRIVACIDADE.md) — política de privacidade.
 - [`PLANO.md`](PLANO.md) — o que já foi feito e o que falta.
 

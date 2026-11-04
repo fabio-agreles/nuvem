@@ -68,6 +68,20 @@
   </screenshots>
 
   <releases>
+    <release version="1.4.0" date="2026-11-04">
+      <description>
+        <p>
+          Doações via Pix, para quem quiser ajudar a manter o projeto.
+        </p>
+        <ul>
+          <li>Em Ajustes, o cartão "Ajude a manter o projeto" abre um diálogo com
+            o QR code do Pix e o botão de copiar o código para colar no app do
+            banco.</li>
+          <li>A contribuição é voluntária: nenhum recurso do app depende dela, e
+            nenhum dado sai do computador por causa disso.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.3.0" date="2026-11-04">
       <description>
         <p>

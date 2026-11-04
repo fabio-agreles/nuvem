@@ -37,7 +37,9 @@ type IconName =
   | "info"
   | "clock"
   | "drive"
-  | "onedrive";
+  | "onedrive"
+  | "heart"
+  | "copy";
 
 const STROKE: Record<IconName, string[]> = {
   dashboard: [
@@ -85,6 +87,13 @@ const STROKE: Record<IconName, string[]> = {
   clock: ["M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z", "M12 7v5l3 2"],
   drive: ["M8 3h8l6 10-4 6H6l-4-6z", "M8 3l6 10", "M16 3l-6 10", "M2 13h14"],
   onedrive: ["M4 15a4 4 0 0 1 .8-7.9 6 6 0 0 1 11.5-1.4A4.5 4.5 0 0 1 20 15z"],
+  heart: [
+    "M12 20.5s-8.5-5.3-8.5-11A4.9 4.9 0 0 1 12 6.4a4.9 4.9 0 0 1 8.5 3.1c0 5.7-8.5 11-8.5 11z",
+  ],
+  copy: [
+    "M9 9h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1z",
+    "M15 6V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1",
+  ],
 };
 
 const FILLED: IconName[] = ["play", "zap"];

@@ -213,6 +213,14 @@ Alternativas descartadas por ora:
   pessoal saiu do README. Com isso a política de privacidade
   (`.../blob/main/PRIVACIDADE.md`) e as 6 capturas do metainfo respondem 200;
   destrava a publicação do projeto OAuth no Google e a submissão ao Flathub.
+- ⛔ **Marca do Google reprovada 4 vezes** (04/11): o erro "o site ... não está
+  registrado para você" não é atraso de 24 h — o Google exige **domínio que você
+  possui** e desaconselha explicitamente homepage em plataforma de terceiros
+  (`github.io` é sufixo público). Enquanto não houver domínio próprio com
+  propriedade de **domínio** no Search Console (TXT), marca e escopo restrito
+  ficam parados. Caminhos, custos e candidatos livres em
+  `docs/verificacao-google.md` (§04/11). O app segue funcionando sem verificação:
+  aviso "não verificado" na tela de consentimento + teto de 100 usuários.
 - ✅ **1.2.2** (02/11): saiu o avatar decorativo "N" do canto superior direito —
   ele parecia um perfil de usuário, mas o Nuvem não tem conta e o círculo não
   fazia nada. `scripts/build-windows.sh` passou a ler a versão do `package.json`

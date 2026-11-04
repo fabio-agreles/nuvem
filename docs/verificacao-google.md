@@ -79,6 +79,92 @@ Se depois disso o erro persistir, os caminhos são: contestar com
 painéis do Google) ou registrar um domínio próprio e verificar por DNS TXT, que
 é a única forma de ter uma propriedade de **domínio** de verdade.
 
+### 04/11/2026 — causa encontrada: `github.io` não é aceito
+
+Status em 04/11 às 13:43: exatamente a mesma tela ("Sua marca não está
+aparecendo para os usuários"), sem mudança. **Não é mais questão de espera nem
+de Search Console.** A regra está escrita na própria documentação do Google
+([App Homepage](https://support.google.com/cloud/answer/13807376)):
+
+> your app homepage must … be **hosted on a verified domain you own**
+>
+> Your homepage and privacy policy **should not be hosted on a third-party
+> platform where you can't verify that you own your subdomain**. For example:
+> Google Sites, Facebook, Instagram, Twitter.
+
+`fabio-agreles.github.io` é justamente isso: um subdomínio de um sufixo público
+(`github.io` está na Public Suffix List) dentro de uma plataforma de terceiros.
+O Search Console aceita verificar esse prefixo por arquivo HTML — e foi o que
+fizemos nas duas propriedades —, mas o validador de marca **não** trata isso como
+"domínio registrado em seu nome". Todos os relatos com o mesmo texto são de
+hospedagem gratuita (`vercel.app`, `github.io`, `pages.dev`), e a resposta
+recorrente é a mesma: domínio próprio, verificado por **DNS**.
+
+Consequência: **não reenviar mais com a URL `github.io`.** Cada reenvio repete a
+mesma análise e gasta tempo. Ou se troca o domínio, ou se convive com o aviso.
+
+#### Caminho A — domínio próprio (destrava marca + escopo restrito)
+
+Custo/tempo: ~R$ 40/ano (`.com.br` no Registro.br) ou ~US$ 12/ano (`.app`,
+`.dev`, `.com`); 20 minutos de configuração, mais as 24 h de propagação e a
+análise do Google.
+
+Disponibilidade conferida por DNS em 04/11 (NXDOMAIN = livre):
+
+| Livre | Já registrado |
+| --- | --- |
+| `getnuvem.app`, `nuvemsync.com`, `nuvem-sync.com`, `nuvembisync.com`, `nuvembisync.com.br` | `nuvem.app`, `getnuvem.com`, `nuvem.io`, `nuvemapp.com.br`, `nuvemsync.com.br` |
+
+Depois de registrar (exemplo `getnuvem.app`):
+
+1. **GitHub Pages com domínio próprio.** No repositório `nuvem`:
+   *Settings → Pages → Custom domain* = `nuvem.getnuvem.app` (ou o apex
+   `getnuvem.app`). O GitHub cria um arquivo `CNAME` em `docs/` — ele precisa ir
+   para o git. Ligue **Enforce HTTPS** (o GitHub emite o certificado; `.app` e
+   `.dev` só funcionam em HTTPS, então isso não é opcional).
+2. **DNS no registrador.** Para subdomínio: `CNAME nuvem → fabio-agreles.github.io`.
+   Para apex: quatro `A` para `185.199.108.153`, `185.199.109.153`,
+   `185.199.110.153`, `185.199.111.153` (+ `AAAA` equivalente, opcional).
+3. **Search Console — propriedade de DOMÍNIO.** *Adicionar propriedade → Domínio*
+   = `getnuvem.app`, método **DNS TXT**: crie o registro `TXT` que o Google
+   mostrar (`google-site-verification=…`) no registrador e clique em Verificar.
+   É a verificação que o validador de marca reconhece.
+4. **Atualizar a marca** em <https://console.cloud.google.com/auth/branding>:
+   página inicial `https://nuvem.getnuvem.app/`, política de privacidade
+   `https://nuvem.getnuvem.app/privacidade.html`, termos
+   `https://nuvem.getnuvem.app/termos.html`, e o **domínio autorizado** trocado
+   para `getnuvem.app` (o `github.io` pode sair).
+5. **Esperar 24 h** e reenviar. Só então vale pedir a verificação do escopo
+   `drive` com o vídeo.
+
+Pendências do lado do código quando isso acontecer: o site fala em
+`fabio-agreles.github.io/nuvem` em `docs/index.html`, `README.md`, no metainfo do
+Flatpak, em `docs/oauth-google.md` e nas capturas — tudo isso passa a apontar
+para o domínio novo, e o `docs/.nojekyll` + `CNAME` convivem sem problema.
+
+#### Caminho B — ficar como está (custo zero)
+
+O app **funciona** hoje assim: o projeto está "Em produção", com o par OAuth do
+Nuvem embutido, cota própria e sem expiração de 7 dias. O que se perde:
+
+- a tela de consentimento mostra o aviso **"O Google não verificou este
+  aplicativo"** e um link "avançado" para continuar — atrito real para quem não
+  é técnico;
+- o teto de **100 usuários na vida** (3 usados) continua valendo;
+- o nome/logo do Nuvem não aparecem como marca verificada.
+
+Para uma ferramenta de código aberto com poucos usuários, é defensável. Para
+publicar de verdade, o Caminho A é o único que passa.
+
+#### O que não fazer
+
+- Não reenviar a marca com `fabio-agreles.github.io` (reprovou 4 vezes).
+- Não usar "Acredito que os problemas encontrados estão incorretos": com a
+  documentação dizendo "domínio que você possui", a contestação não tem base.
+- Não trocar o escopo `drive` por `drive.file` só para escapar da verificação: o
+  `drive.file` só vê arquivos criados pelo próprio app, e o Nuvem existe para
+  sincronizar pastas que **já existem**.
+
 ### Passo a passo do Search Console (o que destrava a marca)
 
 O erro "não está registrado para você" só desaparece quando a conta que abre o

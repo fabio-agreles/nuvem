@@ -152,6 +152,13 @@ sai dessa conta).
       (31/10/2026, via `docs/googlee37fbd119c4e6022.html`). Falta preencher a
       marca: página inicial, política de privacidade, domínio autorizado, logo
       120×120 e e-mail de suporte.
+- [ ] **Domínio próprio** (04/11/2026): a marca foi reprovada 4 vezes com "o site
+      ... não está registrado para você" porque `github.io` é subdomínio de
+      plataforma de terceiros — o Google exige *domínio verificado e possuído*
+      ([App Homepage](https://support.google.com/cloud/answer/13807376)).
+      Enquanto não houver domínio próprio verificado por DNS TXT, marca e
+      escopo restrito não passam. Detalhes e candidatos livres em
+      [`verificacao-google.md`](verificacao-google.md).
 - [ ] Enviar a verificação do escopo restrito em
       <https://console.cloud.google.com/auth/verification>: justificativa do
       `drive`, motivo de `drive.file` não servir, vídeo do fluxo completo e

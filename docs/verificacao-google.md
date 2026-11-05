@@ -228,8 +228,11 @@ O *project id* (`nuvem-…`, o que aparece em `rclone about` e na URL do console
    `github.io` porque trocar antes do DNS responder reprova por "página inicial
    sem resposta". **Agora que o domínio responde e está verificado**, os quatro
    campos trocam juntos para `nuvem-sync.app.br` (valores na §2).
-5. **Salvar** e, no fim da página, **Publicar marca** — sem isso o nome antigo
-   continua na tela de consentimento.
+5. **Salvar**. No console novo (Auth Platform) é o único botão dessa página — o
+   antigo *Publicar marca* / *PUBLISH APP* não existe mais, e nem haveria o que
+   publicar: o app já está **Em produção** (§0). A alteração de marca num app
+   publicado fica pendente de revisão, e é o próprio reenvio de verificação que
+   a leva para a tela de consentimento.
 
 Depois, no passo 7 de [`dominio-proprio.md`](dominio-proprio.md), as três URLs e
 o domínio autorizado trocam juntos, e só então se reenvia a verificação.

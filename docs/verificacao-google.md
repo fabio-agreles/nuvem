@@ -224,9 +224,10 @@ O *project id* (`nuvem-…`, o que aparece em `rclone about` e na URL do console
 2. **Nome do app**: `Nuvem Sync`. Regras do Google: 30 caracteres, sem emoji, e
    precisa ser o nome que aparece na página inicial (é o que o site mostra).
 3. **Logo**: envie `app/docs/logo-120.png` (120×120 PNG, fundo transparente).
-4. Deixe **página inicial/política/termos e domínio autorizado** como estão
-   (`github.io`) **até o domínio existir** — trocar para `nuvem-sync.app.br`
-   antes do DNS responder reprova por "página inicial sem resposta".
+4. **Página inicial/política/termos e domínio autorizado**: até 04/11 ficavam em
+   `github.io` porque trocar antes do DNS responder reprova por "página inicial
+   sem resposta". **Agora que o domínio responde e está verificado**, os quatro
+   campos trocam juntos para `nuvem-sync.app.br` (valores na §2).
 5. **Salvar** e, no fim da página, **Publicar marca** — sem isso o nome antigo
    continua na tela de consentimento.
 
@@ -267,8 +268,12 @@ das tentativas com `github.io` está na §04/11 e o passo a passo em
       Console (31/10/2026) pelo arquivo `docs/googlee37fbd119c4e6022.html`.
       **Esse arquivo não pode ser apagado**: o Search Console revalida de tempos
       em tempos e, sem ele, a verificação do domínio cai.
-- [ ] Propriedade de **Domínio** `nuvem-sync.app.br` (TXT) — domínio em registro
-      em 04/11/2026; é o que substitui a verificação acima para efeito de marca.
+- [x] Propriedade de **Domínio** `nuvem-sync.app.br` (TXT `google-site-verification=…`)
+      **verificada em 04/11/2026, 21:00** — é a que vale para o validador de marca.
+      O domínio também foi verificado na conta do GitHub (_github-pages-challenge_)
+      e está servindo o site em HTTPS.
+- [x] DNS completo (4 A + 4 AAAA + `CNAME www` + os dois TXT) e **Enforce HTTPS**
+      ligado no GitHub Pages — detalhes em [`dominio-proprio.md`](dominio-proprio.md).
 
 ## 3. Acesso a dados (Data Access)
 

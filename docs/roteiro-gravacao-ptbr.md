@@ -149,7 +149,69 @@ Cada passo tem: o que fazer, o que deve aparecer, e qual áudio tocar.
 
 ---
 
-## 4. Planos B (o que costuma dar errado)
+## 4. Gravar mudo e colar o áudio depois (recomendado)
+
+Grave a tela **sem narração**, no seu ritmo, e ponha os MP3 numa faixa de áudio
+depois. Isso é permitido e é o caminho mais confortável — mas só funciona se
+três regras forem respeitadas:
+
+1. **Não corte o vídeo.** Nada de remover o trecho em que você hesitou, nem
+   emendar. O Google pede vídeo contínuo; corte é o motivo nº 1 de reprovação.
+2. **Não acelere nem desacelere o vídeo.** Se a narração não couber, ajuste o
+   áudio (`RITMO=+8%`) ou regrave — nunca a imagem.
+3. **O áudio é trilha separada.** Ele pode sobrepor a gravação; não pode
+   substituir a demonstração (nada de tela parada com locução explicando o que
+   deveria estar sendo feito).
+
+### Caminho A — editor de vídeo
+
+Serve qualquer um: **Kdenlive** (recomendado no KDE), Shotcut, OpenShot, DaVinci
+Resolve.
+
+1. Importe a gravação na **trilha de vídeo** — e não mexa nela.
+2. Importe `01.mp3` … `10.mp3` na **trilha de áudio**, cada um começando no
+   instante em que a ação correspondente começa na tela.
+3. Deixe 0,5–1 s de silêncio antes e depois de cada trecho.
+4. Exporte **MP4 H.264 + AAC**. No Kdenlive, em *Configurações do projeto*, use
+   "copiar" o stream de vídeo quando a opção existir — assim o vídeo não é
+   recodificado e você pode provar que não houve edição.
+
+### Caminho B — script (sem abrir editor, sem reencodar)
+
+```bash
+bash app/scripts/montar-audio-video.sh gravacao.mp4 tempos.txt [saida.mp4]
+```
+
+`tempos.txt` tem uma linha por trecho (o modelo está em
+`~/Downloads/nuvem-video/tempos-exemplo.txt`, já com os tempos do roteiro):
+
+```
+0:02   ~/Downloads/nuvem-video/narracao/01.mp3
+0:33   ~/Downloads/nuvem-video/narracao/03.mp3
+```
+
+O script:
+
+- **copia o vídeo** (`-c:v copy`): nada de reencode, corte ou mudança de
+  velocidade — o arquivo de saída tem o mesmo stream de vídeo do original;
+- atrasa cada trecho até o instante indicado e mistura as faixas;
+- completa o resto com silêncio e corta no último quadro, então **a duração
+  continua a da gravação**;
+- avisa no fim a duração final e as dimensões, para conferência.
+
+Testado com os dez trechos: o primeiro entra em 0:02 e o silêncio entre eles é
+exatamente o que a lista manda.
+
+### Conferência final (30 s)
+
+1. Toque o resultado inteiro uma vez.
+2. A narração cai no momento certo? Nenhum trecho em cima do outro?
+3. A duração final é a mesma da gravação? (`ffprobe` mostra.)
+4. O vídeo continua sem cortes do começo ao fim?
+
+---
+
+## 5. Planos B (o que costuma dar errado)
 
 | Sintoma | Causa | O que fazer |
 | --- | --- | --- |
@@ -163,7 +225,7 @@ Cada passo tem: o que fazer, o que deve aparecer, e qual áudio tocar.
 
 ---
 
-## 5. Checklist final
+## 6. Checklist final
 
 - [ ] Tela de consentimento **apareceu** e o nome `Nuvem Sync` está legível
 - [ ] O escopo do Drive aparece **visível** na tela de consentimento

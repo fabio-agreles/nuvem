@@ -9,6 +9,11 @@ escopo restrito `drive`. É o vídeo que falta.
 
 ---
 
+> **Roteiro em português, clique por clique:** [`roteiro-gravacao-ptbr.md`](roteiro-gravacao-ptbr.md).
+> Narração em inglês (texto e áudio): [`narracao-video-en.md`](narracao-video-en.md).
+
+---
+
 ## Antes de gravar (15 min)
 
 | Item | Por quê |

@@ -271,8 +271,16 @@ das tentativas com `github.io` está na §04/11 e o passo a passo em
       Console (31/10/2026) pelo arquivo `docs/googlee37fbd119c4e6022.html`.
       **Esse arquivo não pode ser apagado**: o Search Console revalida de tempos
       em tempos e, sem ele, a verificação do domínio cai.
+- [x] **Marca verificada e publicada em 04/11/2026, 21:10** — o *Centro de
+      verificação* passou a mostrar "Sua marca foi verificada e está aparecendo
+      para os usuários". A publicação (`Publicar branding`) é obrigatória em até
+      7 dias depois da aprovação, senão o resultado expira.
 - [x] Propriedade de **Domínio** `nuvem-sync.app.br` (TXT `google-site-verification=…`)
       **verificada em 04/11/2026, 21:00** — é a que vale para o validador de marca.
+- [ ] **Escopo restrito `drive`**: pendente de envio — falta só o vídeo
+      ([`video-verificacao.md`](video-verificacao.md)). O centro de verificação
+      confirma: "a verificação é obrigatória porque seu app solicita escopos
+      sensíveis ou restritos".
       O domínio também foi verificado na conta do GitHub (_github-pages-challenge_)
       e está servindo o site em HTTPS.
 - [x] DNS completo (4 A + 4 AAAA + `CNAME www` + os dois TXT) e **Enforce HTTPS**
@@ -313,6 +321,10 @@ https://www.googleapis.com/auth/drive
 > interface before the browser opens.
 
 ### Roteiro do vídeo (2–3 min, sem cortes)
+
+> Roteiro completo, com pré-requisitos, marcação de tempo e narração em inglês:
+> [`video-verificacao.md`](video-verificacao.md). A pasta de demonstração sai de
+> `scripts/demo-video.sh`.
 
 1. Abrir o Nuvem Sync (mostrar o nome e a tela inicial).
 2. Adicionar conta → escolher **Google Drive** → o navegador abre a tela de

@@ -243,6 +243,13 @@ Alternativas descartadas por ora:
   `nuvem` para `nuvem-sync`, com `Conflicts`/`Replaces` do antigo. 52 testes
   (novo: cada estado da bandeja tem desenho próprio). Capturas do README e do
   metainfo regeradas com a marca nova.
+- ✅ **Marca do Google verificada e publicada** (04/11, 21:10): o domínio próprio
+  destravou o que `github.io` reprovou 4 vezes. O Centro de verificação mostra
+  "Sua marca foi verificada e está aparecendo para os usuários"; o botão
+  `Publicar branding` só aparece depois da aprovação e tem prazo de 7 dias.
+  **Falta só o escopo restrito `drive`**: o vídeo de 2–3 min, com roteiro em
+  `docs/video-verificacao.md` e a pasta de demonstração gerada por
+  `scripts/demo-video.sh`.
 - ✅ **`nuvem-sync.app.br` no ar** (04/11, 20:51): DNS completo no Registro.br —
   4 A + 4 AAAA + `CNAME www` + TXT do desafio do GitHub + TXT
   `google-site-verification` —, branch `dominio-cname` mesclada (CNAME +

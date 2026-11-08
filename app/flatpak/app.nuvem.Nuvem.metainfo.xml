@@ -68,6 +68,18 @@
   </screenshots>
 
   <releases>
+    <release version="1.6.1" date="2026-11-08">
+      <description>
+        <p>
+          Correção: conectar uma conta Google volta a funcionar.
+        </p>
+        <ul>
+          <li>A troca do código de autorização falhava com "error sending request for url": o cliente HTTP do app estava compilado sem suporte a HTTPS.</li>
+          <li>As raízes de confiança agora viajam dentro do binário, então o HTTPS funciona também dentro do sandbox do Flatpak.</li>
+          <li>Os erros da autorização passam a seguir o idioma do app e a mostrar a causa real (DNS, TLS, rede) em vez de só "error sending request".</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.6.0" date="2026-11-08">
       <description>
         <p>

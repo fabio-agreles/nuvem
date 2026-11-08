@@ -22,7 +22,7 @@ de 3 minutos.
 - [ ] Pasta **`Nuvem-demo`** criada no Drive dessa conta, com os três arquivos de
       `~/Downloads/nuvem-demo-video/` (`nota.txt`, `planilha-demo.csv`,
       `exemplo.md`) — confira abrindo o Drive na web.
-- [ ] Nuvem Sync **1.6.0** aberto na tela **Visão geral**, sem conta conectada.
+- [ ] Nuvem Sync **1.6.1** aberto na tela **Visão geral**, sem conta conectada.
 - [ ] Gerenciador de arquivos aberto em `~/Downloads/nuvem-demo-video`.
 - [ ] Pasta `~/Downloads/nuvem-video/narracao/` aberta (vai tocar os MP3).
 - [ ] Drive web aberto **noutra aba**, já na conta reserva, mostrando a pasta

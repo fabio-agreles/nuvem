@@ -188,7 +188,7 @@ pub fn aplicar_idioma(app: &AppHandle) {
 }
 
 pub fn init(app: &mut App) -> tauri::Result<()> {
-    let menu = montar_menu(&app.handle())?;
+    let menu = montar_menu(app.handle())?;
 
     // Antes de a janela carregar o tema, usa o do sistema. O front-end confirma
     // (ou corrige) assim que monta, pelo comando `set_tray_theme`.

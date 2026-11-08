@@ -1,6 +1,6 @@
 [package]
 name = "nuvem"
-version = "1.6.0"
+version = "1.6.1"
 description = "Sincronização visual de Google Drive e OneDrive"
 authors = ["Nuvem contributors"]
 license = "MIT"
@@ -30,7 +30,12 @@ tauri-plugin-notification = "2.8"
 tauri-plugin-single-instance = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-reqwest = { version = "0.12", default-features = false, features = ["json"] }
+# `rustls-tls` (e não `default-tls`) porque as raízes de confiança viajam
+# dentro do binário: a autorização do Google precisa de HTTPS também dentro do
+# sandbox do Flatpak, sem depender do armazenamento de certificados do sistema.
+# Sem um recurso de TLS o reqwest não fala `https://` nenhum — era por isso que
+# a troca do código falhava com "error sending request".
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 # Sorteio da senha do painel RC do rclone a cada execução (ver `rclone::credenciais`).
 getrandom = "0.3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "process", "time", "sync", "fs"] }

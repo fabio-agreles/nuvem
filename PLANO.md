@@ -217,6 +217,22 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
+- ✅ **1.6.1 publicada** (tag `v1.6.1`, 08/11) — a 1.6.0 quebrou o conectar
+  conta: a troca do código morria em `error sending request for url
+  (https://oauth2.googleapis.com/token)`. Causa: `reqwest` estava em
+  `default-features = false, features = ["json"]`, ou seja, **sem nenhum
+  backend de TLS** — nenhuma URL `https://` funcionava (o `check_update`
+  também falhava, em silêncio, desde sempre). Os testes não pegaram porque o
+  "Google de mentira" dos testes falava `http://` em `127.0.0.1`. Correção:
+  `features = ["json", "rustls-tls"]` — as raízes de confiança (webpki) vão
+  dentro do binário, então o HTTPS funciona também no sandbox do Flatpak, sem
+  depender do armazenamento de certificados do sistema, e o build por
+  `cargo-xwin` não precisa de OpenSSL. Junto: as mensagens da autorização
+  passaram a seguir o idioma do app e a trazer a cadeia de causas do `reqwest`
+  (DNS/TLS/rede) em vez de só "error sending request". Prova nova, `#[ignore]`
+  (depende de rede): `cargo test --lib -- --ignored fala_https_com_o_google`
+  confere HTTPS de verdade e que o par do projeto responde `invalid_grant` a um
+  código falso. 67 testes + 1 ignorado. Pacotes regerados (os 5) e 1.6.0 mantida.
 - ✅ **1.6.0 — autorização com a cara do app (08/11)** — a última página da
   autorização do Google era do rclone ("All done. Please go back to rclone.",
   template Go embutido no binário dele). Agora o laço de retorno é do próprio

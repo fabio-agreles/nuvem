@@ -34,6 +34,31 @@ const PRAZO_DO_NAVEGADOR: Duration = Duration::from_secs(600);
 const URL_AUTORIZACAO: &str = "https://accounts.google.com/o/oauth2/auth";
 const URL_TOKEN: &str = "https://oauth2.googleapis.com/token";
 
+/// Erro que segue o idioma do app: estas mensagens aparecem na janela de
+/// conectar conta, então precisam falar a mesma língua da interface.
+fn falha(portugues: &str, ingles: &str) -> AppError {
+    AppError::new(crate::idioma::escolhe(
+        portugues.to_string(),
+        ingles.to_string(),
+    ))
+}
+
+/// O `reqwest` esconde o motivo real (DNS, TLS, rede) na cadeia de `source`.
+/// Sem ela, uma falha de transporte vira só "error sending request for url".
+fn motivo(erro: &reqwest::Error) -> String {
+    let mut texto = erro.to_string();
+    let mut fonte = std::error::Error::source(erro);
+    while let Some(causa) = fonte {
+        let causa_texto = causa.to_string();
+        if !texto.contains(&causa_texto) {
+            texto.push_str(" · ");
+            texto.push_str(&causa_texto);
+        }
+        fonte = causa.source();
+    }
+    texto
+}
+
 /// Autoriza uma conta Google e devolve o token no formato que o `rclone.conf`
 /// guarda (o mesmo JSON que o `rclone authorize` produziria).
 pub async fn autorizar(client_id: &str, client_secret: &str) -> AppResult<Value> {
@@ -44,9 +69,10 @@ pub async fn autorizar(client_id: &str, client_secret: &str) -> AppResult<Value>
 
     // O navegador é aberto pelo app: é ele que recebe o retorno.
     crate::commands::abrir_no_sistema(&endereco).map_err(|erro| {
-        AppError::new(format!(
-            "não foi possível abrir o navegador para autorizar a conta: {erro}"
-        ))
+        falha(
+            &format!("não foi possível abrir o navegador para autorizar a conta: {erro}"),
+            &format!("could not open the browser to authorize the account: {erro}"),
+        )
     })?;
 
     let codigo = esperar_codigo(ouvinte, &estado).await?;
@@ -72,9 +98,10 @@ async fn abrir_porta() -> AppResult<(TcpListener, u16)> {
         Ok(ouvinte) => Ok((ouvinte, PORTA_PREFERIDA)),
         Err(_) => {
             let ouvinte = TcpListener::bind(("127.0.0.1", 0)).await.map_err(|erro| {
-                AppError::new(format!(
-                    "não foi possível abrir o retorno da autorização em 127.0.0.1: {erro}"
-                ))
+                falha(
+                    &format!("não foi possível abrir o retorno da autorização em 127.0.0.1: {erro}"),
+                    &format!("could not open the authorization return server on 127.0.0.1: {erro}"),
+                )
             })?;
             let porta = ouvinte
                 .local_addr()
@@ -90,7 +117,10 @@ async fn esperar_codigo(ouvinte: TcpListener, estado: &str) -> AppResult<String>
     let espera = async {
         loop {
             let (mut fluxo, _) = ouvinte.accept().await.map_err(|erro| {
-                AppError::new(format!("falha ao esperar o retorno da autorização: {erro}"))
+                falha(
+                    &format!("falha ao esperar o retorno da autorização: {erro}"),
+                    &format!("failed while waiting for the authorization return: {erro}"),
+                )
             })?;
 
             let pedido = ler_pedido(&mut fluxo).await;
@@ -125,12 +155,17 @@ async fn esperar_codigo(ouvinte: TcpListener, estado: &str) -> AppResult<String>
                     ),
                 )
                 .await;
-                return Err(AppError::new(if recusou {
-                    "a autorização foi cancelada no navegador — nada foi alterado."
-                        .to_string()
+                return Err(if recusou {
+                    falha(
+                        "a autorização foi cancelada no navegador — nada foi alterado.",
+                        "the authorization was cancelled in the browser — nothing was changed.",
+                    )
                 } else {
-                    format!("o Google recusou a autorização ({erro}).")
-                }));
+                    falha(
+                        &format!("o Google recusou a autorização ({erro})."),
+                        &format!("Google refused the authorization ({erro})."),
+                    )
+                });
             }
 
             if campo(&campos, "state").as_deref() != Some(estado) {
@@ -140,8 +175,9 @@ async fn esperar_codigo(ouvinte: TcpListener, estado: &str) -> AppResult<String>
                     &pagina_de_erro("Tentativa antiga", "Outdated attempt"),
                 )
                 .await;
-                return Err(AppError::new(
+                return Err(falha(
                     "a resposta do Google não confere com esta tentativa de conexão — tente de novo.",
+                    "Google's answer does not match this connection attempt — try again.",
                 ));
             }
 
@@ -152,8 +188,9 @@ async fn esperar_codigo(ouvinte: TcpListener, estado: &str) -> AppResult<String>
                     &pagina_de_erro("Faltou o código", "The code is missing"),
                 )
                 .await;
-                return Err(AppError::new(
+                return Err(falha(
                     "o Google respondeu sem o código de autorização — tente de novo.",
+                    "Google answered without the authorization code — try again.",
                 ));
             };
 
@@ -164,8 +201,9 @@ async fn esperar_codigo(ouvinte: TcpListener, estado: &str) -> AppResult<String>
 
     match tokio::time::timeout(PRAZO_DO_NAVEGADOR, espera).await {
         Ok(resultado) => resultado,
-        Err(_) => Err(AppError::new(
-            "a autorização não terminou a tempo. Abra a conta de novo e conclua no navegador.",
+        Err(_) => Err(falha(
+            "a autorização não terminou a tempo. Comece de novo e conclua no navegador.",
+            "the authorization did not finish in time. Start again and complete it in the browser.",
         )),
     }
 }
@@ -202,14 +240,24 @@ async fn trocar_codigo_em(
         .send()
         .await
         .map_err(|erro| {
-            AppError::new(format!(
-                "não foi possível falar com o Google para concluir a autorização: {erro}"
-            ))
+            falha(
+                &format!(
+                    "não foi possível falar com o Google para concluir a autorização: {}",
+                    motivo(&erro)
+                ),
+                &format!(
+                    "could not reach Google to finish the authorization: {}",
+                    motivo(&erro)
+                ),
+            )
         })?;
 
     let situacao = resposta.status();
     let corpo: Value = resposta.json().await.map_err(|erro| {
-        AppError::new(format!("o Google respondeu algo inesperado: {erro}"))
+        falha(
+            &format!("o Google respondeu algo inesperado: {}", motivo(&erro)),
+            &format!("Google answered something unexpected: {}", motivo(&erro)),
+        )
     })?;
 
     if !situacao.is_success() || corpo.get("access_token").is_none() {
@@ -221,23 +269,33 @@ async fn trocar_codigo_em(
             .get("error_description")
             .and_then(Value::as_str)
             .unwrap_or_default();
-        let explicacao = match erro {
-            "invalid_client" | "unauthorized_client" => {
-                "o Google não aceitou as credenciais do projeto OAuth — confira o client_id e o client_secret em Ajustes → Avançado."
-            }
-            "invalid_grant" => {
-                "o Google não aceitou o código devolvido (ele vale uma vez só e por poucos minutos) — tente de novo."
-            }
-            "redirect_uri_mismatch" => {
-                "o endereço de retorno não foi aceito pelo projeto OAuth — ele precisa ser do tipo “App para computador”."
-            }
-            _ => "não foi possível concluir a autorização com o Google.",
+        let (explicacao, explanation) = match erro {
+            "invalid_client" | "unauthorized_client" => (
+                "o Google não aceitou as credenciais do projeto OAuth — confira o client_id e o client_secret em Ajustes → Avançado.",
+                "Google did not accept the OAuth project credentials — check client_id and client_secret in Settings → Advanced.",
+            ),
+            "invalid_grant" => (
+                "o Google não aceitou o código devolvido (ele vale uma vez só e por poucos minutos) — tente de novo.",
+                "Google did not accept the returned code (it is single use and short lived) — try again.",
+            ),
+            "redirect_uri_mismatch" => (
+                "o endereço de retorno não foi aceito pelo projeto OAuth — ele precisa ser do tipo “App para computador”.",
+                "the return address was not accepted by the OAuth project — it must be a “Desktop app” client.",
+            ),
+            _ => (
+                "não foi possível concluir a autorização com o Google.",
+                "could not finish the authorization with Google.",
+            ),
         };
-        return Err(AppError::new(if detalhe.is_empty() {
-            format!("{explicacao} ({erro})")
+        let detalhe = if detalhe.is_empty() {
+            erro.to_string()
         } else {
-            format!("{explicacao} ({erro}: {detalhe})")
-        }));
+            format!("{erro}: {detalhe}")
+        };
+        return Err(falha(
+            &format!("{explicacao} ({detalhe})"),
+            &format!("{explanation} ({detalhe})"),
+        ));
     }
 
     let access_token = corpo
@@ -255,8 +313,9 @@ async fn trocar_codigo_em(
         // Sem refresh token a conta para de sincronizar em uma hora. Só acontece
         // se o Google já tinha dado o acesso a este app (ou se o pedido não pediu
         // acesso offline), e a saída é revogar o acesso e tentar de novo.
-        return Err(AppError::new(
+        return Err(falha(
             "o Google devolveu um acesso válido por uma hora só. Remova o acesso do Nuvem Sync em myaccount.google.com/permissions e conecte a conta de novo.",
+            "Google returned an access valid for one hour only. Remove Nuvem Sync's access at myaccount.google.com/permissions and connect the account again.",
         ));
     };
 
@@ -423,9 +482,10 @@ fn pagina(titulo: &str, texto: &str, cor: &str) -> String {
 fn sorteio(bytes: usize) -> AppResult<String> {
     let mut valores = vec![0u8; bytes];
     getrandom::fill(&mut valores).map_err(|erro| {
-        AppError::new(format!(
-            "não foi possível sortear o identificador da autorização: {erro}"
-        ))
+        falha(
+            &format!("não foi possível sortear o identificador da autorização: {erro}"),
+            &format!("could not draw the authorization identifier: {erro}"),
+        )
     })?;
     Ok(valores.iter().map(|byte| format!("{byte:02x}")).collect())
 }
@@ -650,6 +710,7 @@ mod testes {
     #[tokio::test]
     async fn retorno_com_state_errado_e_recusado() {
         let _trava = TRAVA.lock().unwrap_or_else(|erro| erro.into_inner());
+        crate::idioma::definir("pt");
         let ouvinte = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
         let porta = ouvinte.local_addr().unwrap().port();
         let espera = tokio::spawn(async move { esperar_codigo(ouvinte, "estado-1").await });
@@ -732,6 +793,8 @@ mod testes {
 
     #[tokio::test]
     async fn token_sem_refresh_vira_erro_explicado() {
+        let _trava = TRAVA.lock().unwrap_or_else(|erro| erro.into_inner());
+        crate::idioma::definir("pt");
         let endereco = google_de_mentira(
             200,
             r#"{"access_token":"ya29.teste","expires_in":3599,"token_type":"Bearer"}"#,
@@ -754,6 +817,8 @@ mod testes {
 
     #[tokio::test]
     async fn credenciais_recusadas_pelo_google_explicam_o_que_conferir() {
+        let _trava = TRAVA.lock().unwrap_or_else(|erro| erro.into_inner());
+        crate::idioma::definir("pt");
         let endereco = google_de_mentira(
             400,
             r#"{"error":"invalid_client","error_description":"Unauthorized"}"#,
@@ -772,6 +837,68 @@ mod testes {
         .to_string();
         assert!(erro.contains("Ajustes → Avançado"), "{erro}");
         assert!(erro.contains("invalid_client"), "{erro}");
+    }
+
+    /// A mensagem que aparece na janela segue o idioma do app — e leva a causa
+    /// real junto (o `reqwest` sozinho só diz "error sending request").
+    #[tokio::test]
+    async fn erro_de_transporte_sai_no_idioma_do_app() {
+        let _trava = TRAVA.lock().unwrap_or_else(|erro| erro.into_inner());
+        // Porta fechada de propósito: a conexão é recusada na hora.
+        let falhar = || {
+            trocar_codigo_em(
+                "http://127.0.0.1:9/token",
+                "4/0Ab",
+                "123-abc.apps.googleusercontent.com",
+                "GOCSPX-segredo",
+                "http://127.0.0.1:53682/",
+            )
+        };
+
+        crate::idioma::definir("pt");
+        let portugues = falhar().await.unwrap_err().to_string();
+        assert!(
+            portugues.contains("não foi possível falar com o Google"),
+            "{portugues}"
+        );
+        assert!(
+            portugues.contains("onnection refused"),
+            "a causa real precisa aparecer: {portugues}"
+        );
+
+        crate::idioma::definir("en");
+        let ingles = falhar().await.unwrap_err().to_string();
+        assert!(
+            ingles.contains("could not reach Google to finish the authorization"),
+            "{ingles}"
+        );
+
+        crate::idioma::definir("pt");
+    }
+
+    /// Prova de verdade que o HTTPS funciona (TLS ligado, raízes embutidas) e
+    /// que o par do projeto é aceito pelo Google: um código falso tem de voltar
+    /// como `invalid_grant`, e não como "error sending request" nem
+    /// `invalid_client`. Fica `#[ignore]` porque depende da rede e do par do
+    /// projeto no ambiente:
+    ///
+    /// ```text
+    /// cargo test --lib -- --ignored fala_https_com_o_google
+    /// ```
+    #[tokio::test]
+    #[ignore]
+    async fn fala_https_com_o_google() {
+        let Some((id, segredo)) = crate::oauth::do_build() else {
+            eprintln!("sem par OAuth no ambiente: nada para conferir");
+            return;
+        };
+        let erro = trocar_codigo_por_token("codigo-falso", &id, &segredo, "http://127.0.0.1:53682/")
+            .await
+            .unwrap_err()
+            .to_string();
+        assert!(!erro.contains("error sending request"), "{erro}");
+        assert!(!erro.contains("invalid_client"), "{erro}");
+        assert!(erro.contains("invalid_grant"), "{erro}");
     }
 
     #[test]

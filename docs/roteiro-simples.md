@@ -12,7 +12,7 @@ narração em inglês, em [`narracao-video-en.md`](narracao-video-en.md).
 
 ## Antes de gravar (5 minutos)
 
-- [ ] App **1.6.0** aberto na **Visão geral**, conta **desconectada**.
+- [ ] App **1.6.1** aberto na **Visão geral**, conta **desconectada**.
 - [ ] Conta Google reserva pronta (a que vai conectar), em outra janela do
       navegador **já logada** — assim a tela de consentimento aparece direto.
 - [ ] Pasta **Nuvem-demo** já existe no Drive dessa conta.

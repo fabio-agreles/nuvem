@@ -3,6 +3,7 @@ import { NOME, VERSAO } from "../lib/marca";
 import { Doacoes } from "../components/Doacoes";
 import { Icon } from "../components/Icons";
 import { api, errorMessage, isDesktop } from "../lib/bridge";
+import { IDIOMAS, useT } from "../lib/i18n";
 import type { Account, EngineStatus, OAuthInfo, Settings as SettingsModel } from "../lib/types";
 
 export function Settings({
@@ -30,6 +31,7 @@ export function Settings({
   onAddAccount: () => void;
   notify: (message: string, kind?: "info" | "ok" | "error") => void;
 }) {
+  const t = useT();
   const [up, setUp] = useState(settings.bandwidthUp);
   const [down, setDown] = useState(settings.bandwidthDown);
   const [newRule, setNewRule] = useState("");
@@ -66,7 +68,7 @@ export function Settings({
     usuario: "seu projeto",
     nuvem: "projeto do Nuvem Sync",
     rclone: "projeto do rclone",
-  }[fonteOauth];
+  }[fonteOauth]; // chave em português; traduzida em `t(rotuloOauth)`
   const driveConectado = accounts.some((account) => account.provider === "drive");
 
   const salvarCredenciais = () => {
@@ -74,22 +76,22 @@ export function Settings({
     const segredo = clientSecret.trim();
     if (!id !== !segredo) {
       notify(
-        "Preencha o client_id e o client_secret juntos — ou deixe os dois em branco.",
+        t("Preencha o client_id e o client_secret juntos — ou deixe os dois em branco."),
         "error",
       );
       return;
     }
     if (id && !id.endsWith(".apps.googleusercontent.com")) {
-      notify("O client_id do Google termina em .apps.googleusercontent.com.", "error");
+      notify(t("O client_id do Google termina em .apps.googleusercontent.com."), "error");
       return;
     }
     onUpdate({ driveClientId: id, driveClientSecret: segredo });
     notify(
       id
-        ? "Credenciais salvas. As contas conectadas agora precisam ser autorizadas de novo."
+        ? t("Credenciais salvas. As contas conectadas agora precisam ser autorizadas de novo.")
         : fonteOauth === "nuvem"
-          ? "Credenciais apagadas. O Google Drive volta a usar o projeto do Nuvem Sync."
-          : "Credenciais apagadas. O Google Drive volta a usar o projeto do rclone.",
+          ? t("Credenciais apagadas. O Google Drive volta a usar o projeto do Nuvem Sync.")
+          : t("Credenciais apagadas. O Google Drive volta a usar o projeto do rclone."),
       "ok",
     );
   };
@@ -98,7 +100,7 @@ export function Settings({
     const rule = newRule.trim();
     if (!rule) return;
     if (settings.ignoreRules.includes(rule)) {
-      notify("Essa regra já existe.", "info");
+      notify(t("Essa regra já existe."), "info");
       return;
     }
     onUpdate({ ignoreRules: [...settings.ignoreRules, rule] });
@@ -109,16 +111,16 @@ export function Settings({
     <div className="settings-grid">
       <section className="card">
         <div className="card-head">
-          <h2>Contas</h2>
+          <h2>{t("Contas")}</h2>
           <span className="spacer" />
           <button className="link" onClick={onAddAccount}>
-            Adicionar
+            {t("Adicionar")}
           </button>
         </div>
         <div className="card-body" style={{ paddingTop: 8 }}>
           {accounts.length === 0 ? (
             <p className="muted" style={{ fontSize: 12.5 }}>
-              Nenhuma conta conectada.
+              {t("Nenhuma conta conectada.")}
             </p>
           ) : (
             accounts.map((account) => (
@@ -133,23 +135,25 @@ export function Settings({
                 <div className="row-control">
                   {account.provider === "drive" ? (
                     account.clientOrigem === "usuario" ? (
-                      <span className="badge ok" title="Autorizada com o seu projeto OAuth">
-                        cota própria
+                      <span className="badge ok" title={t("Autorizada com o seu projeto OAuth")}>
+                        {t("cota própria")}
                       </span>
                     ) : account.clientOrigem === "nuvem" ? (
-                      <span className="badge ok" title="Autorizada com o projeto OAuth do Nuvem Sync">
-                        cota do Nuvem
+                      <span className="badge ok" title={t("Autorizada com o projeto OAuth do Nuvem Sync")}>
+                        {t("cota do Nuvem")}
                       </span>
                     ) : (
                       <span
                         className="badge muted"
-                        title="Autorizada no projeto OAuth compartilhado do rclone, de antes desta versão: reconecte a conta (em Avançado) para usar a cota do Nuvem Sync."
+                        title={t(
+                          "Autorizada no projeto OAuth compartilhado do rclone, de antes desta versão: reconecte a conta (em Avançado) para usar a cota do Nuvem Sync.",
+                        )}
                       >
-                        projeto antigo · reconectar
+                        {t("projeto antigo · reconectar")}
                       </span>
                     )
                   ) : (
-                    <span className="badge ok">conectada</span>
+                    <span className="badge ok">{t("conectada")}</span>
                   )}
                 </div>
               </div>
@@ -160,41 +164,41 @@ export function Settings({
 
       <section className="card">
         <div className="card-head">
-          <h2>Motor de sincronização</h2>
+          <h2>{t("Motor de sincronização")}</h2>
         </div>
         <div className="card-body" style={{ paddingTop: 8 }}>
           <div className="row">
             <div className="row-text">
               <div className="row-title">rclone</div>
-              <div className="row-desc mono">{engine?.binary ?? "não encontrado"}</div>
+              <div className="row-desc mono">{engine?.binary ?? t("não encontrado")}</div>
             </div>
             <div className="row-control">
               <span className={`badge ${engine?.available ? "ok" : "danger"}`}>
-                {engine?.version ?? "indisponível"}
+                {engine?.version ?? t("indisponível")}
               </span>
             </div>
           </div>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Modo bisync</div>
+              <div className="row-title">{t("Modo bisync")}</div>
               <div className="row-desc">
-                Duas vias, com ressincronização automática ao mudar caminhos.
+                {t("Duas vias, com ressincronização automática ao mudar caminhos.")}
               </div>
             </div>
             <div className="row-control">
-              <span className="badge muted">ativo</span>
+              <span className="badge muted">{t("ativo")}</span>
             </div>
           </div>
           {!isDesktop ? (
             <div className="banner info" style={{ marginTop: 8 }}>
               <Icon name="info" size={16} />
-              Você está no modo demonstração (navegador).
+              {t("Você está no modo demonstração (navegador).")}
             </div>
           ) : null}
           {engine && !engine.available ? (
             <div className="banner danger" style={{ marginTop: 8 }}>
               <Icon name="alert" size={16} />
-              Instale o rclone ou defina NUVEM_RCLONE.
+              {t("Instale o rclone ou defina NUVEM_RCLONE.")}
             </div>
           ) : null}
         </div>
@@ -202,13 +206,13 @@ export function Settings({
 
       <section className="card">
         <div className="card-head">
-          <h2>Banda e regras</h2>
+          <h2>{t("Banda e regras")}</h2>
         </div>
         <div className="card-body" style={{ paddingTop: 8 }}>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Limite de envio</div>
-              <div className="row-desc">Vazio = sem limite. Ex.: 5M, 800k.</div>
+              <div className="row-title">{t("Limite de envio")}</div>
+              <div className="row-desc">{t("Vazio = sem limite. Ex.: 5M, 800k.")}</div>
             </div>
             <div className="row-control">
               <input
@@ -216,14 +220,14 @@ export function Settings({
                 value={up}
                 placeholder="∞"
                 onChange={(event) => setUp(event.target.value)}
-                aria-label="Limite de envio"
+                aria-label={t("Limite de envio")}
               />
             </div>
           </div>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Limite de download</div>
-              <div className="row-desc">Aplicado na próxima sincronização.</div>
+              <div className="row-title">{t("Limite de download")}</div>
+              <div className="row-desc">{t("Aplicado na próxima sincronização.")}</div>
             </div>
             <div className="row-control">
               <input
@@ -231,7 +235,7 @@ export function Settings({
                 value={down}
                 placeholder="∞"
                 onChange={(event) => setDown(event.target.value)}
-                aria-label="Limite de download"
+                aria-label={t("Limite de download")}
               />
             </div>
           </div>
@@ -240,24 +244,24 @@ export function Settings({
               className="btn sm ghost"
               onClick={() => {
                 onUpdate({ bandwidthUp: up.trim(), bandwidthDown: down.trim() });
-                notify("Limites salvos.", "ok");
+                notify(t("Limites salvos."), "ok");
               }}
             >
-              Salvar limites
+              {t("Salvar limites")}
             </button>
           </div>
 
           <div className="divider" />
 
           <div className="row-title" style={{ fontSize: 12.5 }}>
-            Regras de ignorar
+            {t("Regras de ignorar")}
           </div>
           <div className="rules">
             {settings.ignoreRules.map((rule) => (
               <span className="rule" key={rule}>
                 {rule}
                 <button
-                  aria-label={`Remover regra ${rule}`}
+                  aria-label={t("Remover regra {regra}", { regra: rule })}
                   onClick={() =>
                     onUpdate({
                       ignoreRules: settings.ignoreRules.filter((item) => item !== rule),
@@ -273,12 +277,12 @@ export function Settings({
             <input
               className="input"
               value={newRule}
-              placeholder="nova regra, ex.: *.iso"
+              placeholder={t("nova regra, ex.: *.iso")}
               onChange={(event) => setNewRule(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter") addRule();
               }}
-              aria-label="Nova regra de ignorar"
+              aria-label={t("Nova regra de ignorar")}
             />
             <button className="btn sm ghost" onClick={addRule}>
               <Icon name="plus" size={14} />
@@ -289,41 +293,63 @@ export function Settings({
 
       <section className="card">
         <div className="card-head">
-          <h2>Sistema</h2>
+          <h2>{t("Sistema")}</h2>
         </div>
         <div className="card-body" style={{ paddingTop: 8 }}>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Tema</div>
-              <div className="row-desc">Segue sua preferência neste computador.</div>
+              <div className="row-title">{t("Idioma")}</div>
+              <div className="row-desc">{t("Vale na hora, sem reiniciar o app.")}</div>
+            </div>
+            <div className="row-control">
+              {IDIOMAS.map((item) => (
+                <button
+                  key={item.id}
+                  className={`chip ${
+                    (settings.language === "en" ? "en" : "pt") === item.id ? "active" : ""
+                  }`}
+                  onClick={() => onUpdate({ language: item.id })}
+                  title={t(item.nome)}
+                  aria-pressed={(settings.language === "en" ? "en" : "pt") === item.id}
+                >
+                  {t(item.nomeNativo)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="row-text">
+              <div className="row-title">{t("Tema")}</div>
+              <div className="row-desc">{t("Segue sua preferência neste computador.")}</div>
             </div>
             <div className="row-control">
               <button
                 className={`chip ${theme === "light" ? "active" : ""}`}
                 onClick={() => onTheme("light")}
               >
-                Claro
+                {t("Claro")}
               </button>
               <button
                 className={`chip ${theme === "dark" ? "active" : ""}`}
                 onClick={() => onTheme("dark")}
               >
-                Escuro
+                {t("Escuro")}
               </button>
             </div>
           </div>
 
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Notificações</div>
-              <div className="row-desc">Avisar sobre conflitos e falhas.</div>
+              <div className="row-title">{t("Notificações")}</div>
+              <div className="row-desc">{t("Avisar sobre conflitos e falhas.")}</div>
             </div>
             <div className="row-control">
               <button
                 className={`switch ${settings.notifications ? "on" : ""}`}
                 role="switch"
                 aria-checked={settings.notifications}
-                aria-label="Notificações"
+                aria-label={t("Notificações")}
                 onClick={() => onUpdate({ notifications: !settings.notifications })}
               />
             </div>
@@ -331,10 +357,11 @@ export function Settings({
 
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Sincronizar sozinho</div>
+              <div className="row-title">{t("Sincronizar sozinho")}</div>
               <div className="row-desc">
-                Verifica as pastas e envia mudanças locais sem você pedir. Reage a
-                arquivos novos em segundos e confere a nuvem no intervalo escolhido.
+                {t(
+                  "Verifica as pastas e envia mudanças locais sem você pedir. Reage a arquivos novos em segundos e confere a nuvem no intervalo escolhido.",
+                )}
               </div>
             </div>
             <div className="row-control">
@@ -342,7 +369,7 @@ export function Settings({
                 className={`switch ${settings.autoSync ? "on" : ""}`}
                 role="switch"
                 aria-checked={settings.autoSync}
-                aria-label="Sincronizar automaticamente"
+                aria-label={t("Sincronizar automaticamente")}
                 onClick={() => onUpdate({ autoSync: !settings.autoSync })}
               />
             </div>
@@ -350,37 +377,39 @@ export function Settings({
 
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Conferir a nuvem a cada</div>
+              <div className="row-title">{t("Conferir a nuvem a cada")}</div>
               <div className="row-desc">
-                Mudanças locais entram na hora; este intervalo pega o que mudou do
-                outro lado.
+                {t(
+                  "Mudanças locais entram na hora; este intervalo pega o que mudou do outro lado.",
+                )}
               </div>
             </div>
             <div className="row-control">
               <select
                 className="select"
-                aria-label="Intervalo da sincronização automática"
+                aria-label={t("Intervalo da sincronização automática")}
                 value={settings.syncIntervalMin}
                 disabled={!settings.autoSync}
                 onChange={(event) =>
                   onUpdate({ syncIntervalMin: Number(event.target.value) })
                 }
               >
-                <option value={1}>1 minuto</option>
-                <option value={5}>5 minutos</option>
-                <option value={15}>15 minutos</option>
-                <option value={30}>30 minutos</option>
-                <option value={60}>1 hora</option>
+                <option value={1}>{t("1 minuto")}</option>
+                <option value={5}>{t("5 minutos")}</option>
+                <option value={15}>{t("15 minutos")}</option>
+                <option value={30}>{t("30 minutos")}</option>
+                <option value={60}>{t("1 hora")}</option>
               </select>
             </div>
           </div>
 
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Tentar de novo sozinho</div>
+              <div className="row-title">{t("Tentar de novo sozinho")}</div>
               <div className="row-desc">
-                Repete a sincronização até 3 vezes (15 s, 60 s, 180 s) quando a falha
-                parece ser de rede ou de limite do provedor.
+                {t(
+                  "Repete a sincronização até 3 vezes (15 s, 60 s, 180 s) quando a falha parece ser de rede ou de limite do provedor.",
+                )}
               </div>
             </div>
             <div className="row-control">
@@ -388,7 +417,7 @@ export function Settings({
                 className={`switch ${settings.autoRetry ? "on" : ""}`}
                 role="switch"
                 aria-checked={settings.autoRetry}
-                aria-label="Repetir falhas transitórias"
+                aria-label={t("Repetir falhas transitórias")}
                 onClick={() => onUpdate({ autoRetry: !settings.autoRetry })}
               />
             </div>
@@ -396,9 +425,11 @@ export function Settings({
 
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Abrir com o sistema</div>
+              <div className="row-title">{t("Abrir com o sistema")}</div>
               <div className="row-desc">
-                {autostartBusy ? "Aguardando o sistema confirmar…" : "Inicia minimizado na bandeja."}
+                {autostartBusy
+                  ? t("Aguardando o sistema confirmar…")
+                  : t("Inicia minimizado na bandeja.")}
               </div>
             </div>
             <div className="row-control">
@@ -406,7 +437,7 @@ export function Settings({
                 className={`switch ${autostart ? "on" : ""}`}
                 role="switch"
                 aria-checked={autostart}
-                aria-label="Iniciar com o sistema"
+                aria-label={t("Iniciar com o sistema")}
                 aria-busy={autostartBusy}
                 disabled={autostartBusy}
                 onClick={() => onAutostart(!autostart)}
@@ -416,8 +447,8 @@ export function Settings({
 
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Configuração</div>
-              <div className="row-desc">Perfis e histórico do Nuvem Sync.</div>
+              <div className="row-title">{t("Configuração")}</div>
+              <div className="row-desc">{t("Perfis e histórico do Nuvem Sync.")}</div>
             </div>
             <div className="row-control">
               <button
@@ -425,20 +456,20 @@ export function Settings({
                 onClick={() => {
                   void api
                     .openConfigFolder()
-                    .then((path) => notify(`Abrindo ${path}`, "info"))
+                    .then((path) => notify(t("Abrindo {caminho}", { caminho: path }), "info"))
                     .catch((cause) => notify(errorMessage(cause), "error"));
                 }}
               >
                 <Icon name="folder-open" size={14} />
-                Abrir
+                {t("Abrir")}
               </button>
             </div>
           </div>
 
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Sair do Nuvem Sync</div>
-              <div className="row-desc">Interrompe a sincronização até abrir de novo.</div>
+              <div className="row-title">{t("Sair do Nuvem Sync")}</div>
+              <div className="row-desc">{t("Interrompe a sincronização até abrir de novo.")}</div>
             </div>
             <div className="row-control">
               <button
@@ -447,7 +478,7 @@ export function Settings({
                   void api.quitApp();
                 }}
               >
-                Sair
+                {t("Sair")}
               </button>
             </div>
           </div>
@@ -456,57 +487,64 @@ export function Settings({
 
       <section className="card" style={{ gridColumn: "1 / -1" }}>
         <div className="card-head">
-          <h2>Avançado · Google Drive</h2>
+          <h2>{t("Avançado · Google Drive")}</h2>
           <span className="spacer" />
           <span className={`badge ${fonteOauth === "rclone" ? "muted" : "ok"}`}>
-            {rotuloOauth}
+            {t(rotuloOauth)}
           </span>
         </div>
         <div className="card-body" style={{ paddingTop: 10 }}>
           <div className="advanced">
             <div>
               <p className="muted" style={{ fontSize: 12.5 }}>
-                O Google cobra a cota de <strong>requisições por minuto</strong> no
-                projeto OAuth usado na autorização. O projeto compartilhado do rclone é
-                usado por todos os usuários dele e vive estourado — daí a sincronização
-                arrastar mesmo com banda sobrando.
+                {t(
+                  "O Google cobra a cota de requisições por minuto no projeto OAuth usado na autorização. O projeto compartilhado do rclone é usado por todos os usuários dele e vive estourado — daí a sincronização arrastar mesmo com banda sobrando.",
+                )}
               </p>
               <div className="row" style={{ padding: "10px 0", borderBottom: "none" }}>
                 <div className="row-text">
-                  <div className="row-title">Projeto em uso</div>
+                  <div className="row-title">{t("Projeto em uso")}</div>
                   <div className="row-desc mono" style={{ fontSize: 11.5, wordBreak: "break-all" }}>
-                    {oauth?.clientId ?? "sem client_id (projeto compartilhado do rclone)"}
+                    {oauth?.clientId ?? t("sem client_id (projeto compartilhado do rclone)")}
                   </div>
                 </div>
               </div>
               <p className="muted" style={{ fontSize: 12.5 }}>
                 {fonteOauth === "nuvem"
-                  ? "Este build já usa o projeto OAuth do próprio Nuvem Sync: a cota é do aplicativo e não a do rclone. Preencha os campos abaixo só se quiser usar um projeto seu."
+                  ? t(
+                      "Este build já usa o projeto OAuth do próprio Nuvem Sync: a cota é do aplicativo e não a do rclone. Preencha os campos abaixo só se quiser usar um projeto seu.",
+                    )
                   : fonteOauth === "usuario"
-                    ? "As contas Google deste computador usam o projeto que você colou abaixo."
-                    : "Sem projeto próprio, a cota é a do projeto compartilhado do rclone. Crie o seu para a fila ser só sua."}
+                    ? t("As contas Google deste computador usam o projeto que você colou abaixo.")
+                    : t(
+                        "Sem projeto próprio, a cota é a do projeto compartilhado do rclone. Crie o seu para a fila ser só sua.",
+                      )}
               </p>
               <p className="muted" style={{ fontSize: 12.5, marginTop: 8 }}>
-                1. Crie um projeto no Google Cloud, ative a <em>Drive API</em> e
-                configure a tela de consentimento. 2. Em <em>Credenciais</em>, crie um
-                ID do cliente OAuth do tipo <em>app para computador</em>. 3. Cole aqui
-                os dois valores.
+                {t(
+                  "1. Crie um projeto no Google Cloud, ative a Drive API e configure a tela de consentimento. 2. Em Credenciais, crie um ID do cliente OAuth do tipo app para computador. 3. Cole aqui os dois valores.",
+                )}
               </p>
 
               {driveConectado ? (
                 <div className="banner warn" style={{ marginTop: 12 }}>
                   <Icon name="info" size={16} />
                   {credenciaisProprias
-                    ? "As contas Google já conectadas continuam no projeto do rclone: remova as pastas que usam a conta, remova a conta em Visão geral → Contas e conecte de novo. O navegador pede a autorização uma vez."
-                    : "Contas conectadas antes desta mudança só passam a usar as credenciais novas depois de removidas e conectadas de novo."}
+                    ? t(
+                        "As contas Google já conectadas continuam no projeto do rclone: remova as pastas que usam a conta, remova a conta em Visão geral → Contas e conecte de novo. O navegador pede a autorização uma vez.",
+                      )
+                    : t(
+                        "Contas conectadas antes desta mudança só passam a usar as credenciais novas depois de removidas e conectadas de novo.",
+                      )}
                 </div>
               ) : null}
 
               <p className="muted" style={{ fontSize: 11.5, marginTop: 10 }}>
-                Fica salvo em <span className="mono">settings.json</span>, neste
-                computador, do mesmo jeito que o rclone guarda os tokens. Projeto no
-                modo <em>Testing</em> do Google expira a autorização em 7 dias; publicar
-                o app evita reautorizar toda semana.
+                {t("Fica salvo em")}{" "}
+                <span className="mono">settings.json</span>
+                {t(
+                  ", neste computador, do mesmo jeito que o rclone guarda os tokens. Projeto no modo Testing do Google expira a autorização em 7 dias; publicar o app evita reautorizar toda semana.",
+                )}
               </p>
             </div>
 
@@ -540,17 +578,17 @@ export function Settings({
                   <button
                     className="btn sm ghost"
                     type="button"
-                    aria-label={mostrarSegredo ? "Ocultar segredo" : "Mostrar segredo"}
+                    aria-label={mostrarSegredo ? t("Ocultar segredo") : t("Mostrar segredo")}
                     onClick={() => setMostrarSegredo(!mostrarSegredo)}
                   >
-                    {mostrarSegredo ? "Ocultar" : "Mostrar"}
+                    {mostrarSegredo ? t("Ocultar") : t("Mostrar")}
                   </button>
                 </div>
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 12 }}>
                 <button className="btn sm ghost" onClick={salvarCredenciais}>
-                  Salvar credenciais
+                  {t("Salvar credenciais")}
                 </button>
               </div>
             </div>
@@ -562,7 +600,7 @@ export function Settings({
 
       <section className="card">
         <div className="card-head">
-          <h2>Sobre</h2>
+          <h2>{t("Sobre")}</h2>
         </div>
         <div className="card-body" style={{ paddingTop: 8 }}>
           <div className="row">
@@ -576,11 +614,11 @@ export function Settings({
           </div>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Atualizações</div>
+              <div className="row-title">{t("Atualizações")}</div>
               <div className="row-desc">
                 {atualizacao
-                  ? `A versão ${atualizacao.version} já está publicada.`
-                  : "Consulta a última versão publicada no repositório do projeto."}
+                  ? t("A versão {versao} já está publicada.", { versao: atualizacao.version })
+                  : t("Consulta a última versão publicada no repositório do projeto.")}
               </div>
             </div>
             <div className="row-control">
@@ -594,7 +632,7 @@ export function Settings({
                   }}
                 >
                   <Icon name="download" size={14} />
-                  Baixar
+                  {t("Baixar")}
                 </button>
               ) : null}
               <button
@@ -608,8 +646,10 @@ export function Settings({
                       setAtualizacao(info);
                       notify(
                         info
-                          ? `A versão ${info.version} está disponível.`
-                          : "Você está na versão mais nova.",
+                          ? t("A versão {versao} está disponível.", {
+                              versao: info.version,
+                            })
+                          : t("Você está na versão mais nova."),
                         info ? "info" : "ok",
                       );
                     })
@@ -618,16 +658,17 @@ export function Settings({
                 }}
               >
                 <Icon name="refresh" size={14} />
-                {procurandoAtualizacao ? "Procurando…" : "Verificar"}
+                {procurandoAtualizacao ? t("Procurando…") : t("Verificar")}
               </button>
             </div>
           </div>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Relatório de diagnóstico</div>
+              <div className="row-title">{t("Relatório de diagnóstico")}</div>
               <div className="row-desc">
-                Contas, pastas, ajustes e os últimos erros num arquivo de texto — sem
-                senhas nem tokens. Útil ao abrir um problema no projeto.
+                {t(
+                  "Contas, pastas, ajustes e os últimos erros num arquivo de texto — sem senhas nem tokens. Útil ao abrir um problema no projeto.",
+                )}
               </div>
             </div>
             <div className="row-control">
@@ -636,21 +677,22 @@ export function Settings({
                 onClick={() => {
                   void api
                     .saveDiagnostics()
-                    .then((path) => notify(`Relatório salvo em ${path}`, "ok"))
+                    .then((path) => notify(t("Relatório salvo em {caminho}", { caminho: path }), "ok"))
                     .catch((cause) => notify(errorMessage(cause), "error"));
                 }}
               >
                 <Icon name="file" size={14} />
-                Salvar
+                {t("Salvar")}
               </button>
             </div>
           </div>
           <div className="row">
             <div className="row-text">
-              <div className="row-title">Privacidade</div>
+              <div className="row-title">{t("Privacidade")}</div>
               <div className="row-desc">
-                Credenciais ficam na configuração local do rclone. O Nuvem Sync não envia
-                dados para servidores próprios.
+                {t(
+                  "Credenciais ficam na configuração local do rclone. O Nuvem Sync não envia dados para servidores próprios.",
+                )}
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { Icon } from "../components/Icons";
 import { Modal } from "../components/Modal";
 import { resumoTexto } from "../lib/files";
 import { formatBytes, formatEta, formatSpeed, relativeTime } from "../lib/format";
+import { useT } from "../lib/i18n";
 import type { Account, AccountUsage, ActivityEntry, Profile, Snapshot } from "../lib/types";
 
 function activityIcon(kind: string) {
@@ -53,6 +54,7 @@ export function Dashboard({
   onSyncProfile: (id: string) => void;
   onDeleteAccount: (account: string) => Promise<void>;
 }) {
+  const t = useT();
   const enabled = profiles.filter((profile) => profile.enabled);
   const [removendo, setRemovendo] = useState<Account | null>(null);
   const pending = snapshot.transfers.filter((transfer) => transfer.percent < 100);
@@ -66,17 +68,20 @@ export function Dashboard({
 
   const heroClass = snapshot.paused ? "paused" : snapshot.running ? "" : "idle";
   const title = snapshot.paused
-    ? "Sincronização pausada"
+    ? t("Sincronização pausada")
     : snapshot.running
-      ? "Sincronizando agora"
-      : "Tudo em dia";
+      ? t("Sincronizando agora")
+      : t("Tudo em dia");
   const subtitle = snapshot.paused
-    ? "Nada foi perdido: retome quando quiser."
+    ? t("Nada foi perdido: retome quando quiser.")
     : snapshot.running
-      ? `${snapshot.jobs} tarefa${snapshot.jobs === 1 ? "" : "s"} em andamento · ${formatSpeed(snapshot.speed)}`
+      ? `${t(
+          snapshot.jobs === 1 ? "{n} tarefa em andamento" : "{n} tarefas em andamento",
+          { n: snapshot.jobs },
+        )} · ${formatSpeed(snapshot.speed)}`
       : lastSync > 0
-        ? `Última verificação ${relativeTime(lastSync)}`
-        : "Adicione uma pasta para começar.";
+        ? t("Última verificação {tempo}", { tempo: relativeTime(lastSync) })
+        : t("Adicione uma pasta para começar.");
 
   return (
     <div>
@@ -93,33 +98,33 @@ export function Dashboard({
             {!snapshot.running && !snapshot.paused ? (
               <button className="btn light" onClick={onSyncAll} disabled={enabled.length === 0}>
                 <Icon name="refresh" size={16} />
-                Sincronizar agora
+                {t("Sincronizar agora")}
               </button>
             ) : null}
             <button className="btn on-hero" onClick={onTogglePause}>
               <Icon name={snapshot.paused ? "play" : "pause"} size={15} />
-              {snapshot.paused ? "Retomar" : "Pausar tudo"}
+              {snapshot.paused ? t("Retomar") : t("Pausar tudo")}
             </button>
           </div>
         </div>
 
         <div className="hero-stats">
           <div>
-            <div className="hero-stat-label">Velocidade</div>
+            <div className="hero-stat-label">{t("Velocidade")}</div>
             <div className="hero-stat-value">
               {snapshot.running ? formatSpeed(snapshot.speed) : "—"}
             </div>
           </div>
           <div>
-            <div className="hero-stat-label">Transferido</div>
+            <div className="hero-stat-label">{t("Transferido")}</div>
             <div className="hero-stat-value">
               {snapshot.running ? formatBytes(snapshot.bytes) : "0 B"}
             </div>
           </div>
           <div>
-            <div className="hero-stat-label">Pastas ativas</div>
+            <div className="hero-stat-label">{t("Pastas ativas")}</div>
             <div className="hero-stat-value">
-              {enabled.length} de {profiles.length}
+              {t("{a} de {b}", { a: enabled.length, b: profiles.length })}
             </div>
           </div>
         </div>
@@ -138,11 +143,14 @@ export function Dashboard({
         <div className="stack">
           <section className="card">
             <div className="card-head">
-              <h2>Na fila</h2>
+              <h2>{t("Na fila")}</h2>
               <span className="spacer" />
               {snapshot.running ? (
                 <span className="muted" style={{ fontSize: 12 }}>
-                  {formatBytes(snapshot.bytes)} de {formatBytes(snapshot.totalBytes)}
+                  {t("{a} de {b}", {
+                    a: formatBytes(snapshot.bytes),
+                    b: formatBytes(snapshot.totalBytes),
+                  })}
                 </span>
               ) : null}
             </div>
@@ -152,16 +160,16 @@ export function Dashboard({
                   <div className="empty-art">
                     <Icon name="check" size={26} />
                   </div>
-                  <h3>Nada para transferir</h3>
+                  <h3>{t("Nada para transferir")}</h3>
                   <p>
                     {snapshot.paused
-                      ? "A sincronização está pausada."
-                      : "Todas as pastas ativas estão atualizadas."}
+                      ? t("A sincronização está pausada.")
+                      : t("Todas as pastas ativas estão atualizadas.")}
                   </p>
                   {enabled.length > 0 && !snapshot.running ? (
                     <button className="btn sm ghost" onClick={onSyncAll}>
                       <Icon name="refresh" size={14} />
-                      Verificar novamente
+                      {t("Verificar novamente")}
                     </button>
                   ) : null}
                 </div>
@@ -177,12 +185,15 @@ export function Dashboard({
                       </div>
                       <div className="transfer-meta">
                         <span>
-                          {formatBytes(transfer.bytes)} de {formatBytes(transfer.size)}
+                          {t("{a} de {b}", {
+                            a: formatBytes(transfer.bytes),
+                            b: formatBytes(transfer.size),
+                          })}
                         </span>
                         <span>·</span>
                         <span>{formatSpeed(transfer.speed)}</span>
                         <span>·</span>
-                        <span>faltam {formatEta(transfer.eta)}</span>
+                        <span>{t("faltam {tempo}", { tempo: formatEta(transfer.eta) })}</span>
                       </div>
                       <div className="progress" style={{ marginTop: 7 }}>
                         <span style={{ width: `${Math.round(transfer.percent)}%` }} />
@@ -197,16 +208,16 @@ export function Dashboard({
 
           <section className="card">
             <div className="card-head">
-              <h2>Atividade recente</h2>
+              <h2>{t("Atividade recente")}</h2>
               <span className="spacer" />
               <button className="link" onClick={onOpenActivity}>
-                Ver tudo
+                {t("Ver tudo")}
               </button>
             </div>
             <div className="card-body" style={{ paddingTop: 6 }}>
               {activity.length === 0 ? (
                 <p className="muted" style={{ fontSize: 12.5, padding: "10px 0" }}>
-                  Nada por aqui ainda.
+                  {t("Nada por aqui ainda.")}
                 </p>
               ) : (
                 <div className="mini-activity">
@@ -216,8 +227,8 @@ export function Dashboard({
                         <Icon name={activityIcon(entry.kind)} size={14} />
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <div className="mini-title">{entry.title}</div>
-                        <div className="mini-detail">{entry.detail}</div>
+                        <div className="mini-title">{t(entry.title)}</div>
+                        <div className="mini-detail">{t(entry.detail)}</div>
                         {entry.files && entry.files.length > 0 ? (
                           <div className="mini-files">{resumoTexto(entry.files)}</div>
                         ) : null}
@@ -234,10 +245,10 @@ export function Dashboard({
         <div className="stack">
           <section className="card">
             <div className="card-head">
-              <h2>Contas</h2>
+              <h2>{t("Contas")}</h2>
               <span className="spacer" />
               <button className="link" onClick={onAddAccount}>
-                Adicionar
+                {t("Adicionar")}
               </button>
             </div>
             <div className="card-body" style={{ paddingTop: 8 }}>
@@ -253,17 +264,24 @@ export function Dashboard({
                       <div style={{ minWidth: 0 }}>
                         <div className="account-name">{account.name}</div>
                         <div className="account-meta">
-                          {account.label} · {linked.length} pasta{linked.length === 1 ? "" : "s"}
+                          {account.label} ·{" "}
+                          {linked.length === 1
+                            ? t("1 pasta")
+                            : t("{n} pastas", { n: linked.length })}
                         </div>
                       </div>
                       <div className="account-status">
                         <span className={`dot ${failing ? "danger" : linked.length ? "ok" : ""}`} />
-                        {failing ? "atenção" : linked.length ? "conectada" : "sem pasta"}
+                        {failing
+                          ? t("atenção")
+                          : linked.length
+                            ? t("conectada")
+                            : t("sem pasta")}
                       </div>
                       <button
                         className="tiny-btn account-remove"
-                        title="Remover conta"
-                        aria-label={`Remover a conta ${account.name}`}
+                        title={t("Remover conta")}
+                        aria-label={t("Remover a conta {nome}", { nome: account.name })}
                         onClick={() => setRemovendo(account)}
                       >
                         <Icon name="trash" size={14} />
@@ -276,11 +294,11 @@ export function Dashboard({
                     <div className="empty-art">
                       <Icon name="cloud" size={24} />
                     </div>
-                    <h3>Nenhuma conta ainda</h3>
-                    <p>Conecte o Google Drive ou o OneDrive para começar.</p>
+                    <h3>{t("Nenhuma conta ainda")}</h3>
+                    <p>{t("Conecte o Google Drive ou o OneDrive para começar.")}</p>
                     <button className="btn sm primary" onClick={onAddAccount}>
                       <Icon name="plus" size={14} />
-                      Conectar conta
+                      {t("Conectar conta")}
                     </button>
                   </div>
                 ) : null}
@@ -290,14 +308,14 @@ export function Dashboard({
 
           <section className="card">
             <div className="card-head">
-              <h2>Armazenamento</h2>
+              <h2>{t("Armazenamento")}</h2>
             </div>
             <div className="card-body" style={{ paddingTop: 8 }}>
               {usage.length === 0 ? (
                 <p className="muted" style={{ fontSize: 12.5, padding: "6px 0" }}>
                   {accounts.length === 0
-                    ? "Conecte uma conta para ver a cota."
-                    : "Lendo a cota…"}
+                    ? t("Conecte uma conta para ver a cota.")
+                    : t("Lendo a cota…")}
                 </p>
               ) : (
                 usage.map((item) => {
@@ -312,10 +330,13 @@ export function Dashboard({
                         <span className="quota-name">{item.account}</span>
                         <span className="quota-value">
                           {temNumeros
-                            ? `${formatBytes(item.used!)} de ${formatBytes(item.total!)}`
+                            ? t("{a} de {b}", {
+                                a: formatBytes(item.used!),
+                                b: formatBytes(item.total!),
+                              })
                             : item.error
-                              ? "não consegui ler agora"
-                              : "lendo…"}
+                              ? t("não consegui ler agora")
+                              : t("lendo…")}
                         </span>
                       </div>
                       <div className="progress" style={{ marginTop: 6 }}>
@@ -327,15 +348,15 @@ export function Dashboard({
                           item.stale ? (
                             // A leitura falhou, mas o número anterior continua valendo.
                             <span className="badge warn" title={item.error}>
-                              desatualizada
+                              {t("desatualizada")}
                             </span>
                           ) : (
                             <button className="link" title={item.error} onClick={onRefreshUsage}>
-                              tentar de novo
+                              {t("tentar de novo")}
                             </button>
                           )
                         ) : (
-                          <span>{percent}% usado</span>
+                          <span>{t("{n}% usado", { n: percent })}</span>
                         )}
                       </div>
                     </div>
@@ -347,16 +368,16 @@ export function Dashboard({
 
           <section className="card">
             <div className="card-head">
-              <h2>Pastas</h2>
+              <h2>{t("Pastas")}</h2>
               <span className="spacer" />
               <button className="link" onClick={onOpenFolders}>
-                Gerenciar
+                {t("Gerenciar")}
               </button>
             </div>
             <div className="card-body" style={{ paddingTop: 6 }}>
               {enabled.length === 0 ? (
                 <p className="muted" style={{ fontSize: 12.5, padding: "8px 0" }}>
-                  Nenhuma pasta ativa.
+                  {t("Nenhuma pasta ativa.")}
                 </p>
               ) : (
                 enabled.slice(0, 5).map((profile) => (
@@ -381,17 +402,19 @@ export function Dashboard({
                       }}
                     >
                       {profile.lastError ? (
-                        <span className="badge danger">erro</span>
+                        <span className="badge danger">{t("erro")}</span>
                       ) : profile.resyncNeeded ? (
-                        <span className="badge warn">ressincronizar</span>
+                        <span className="badge warn">{t("ressincronizar")}</span>
                       ) : (
-                        <span className="badge ok">em dia</span>
+                        <span className="badge ok">{t("em dia")}</span>
                       )}
                       <button
                         className="tiny-btn"
                         onClick={() => onSyncProfile(profile.id)}
-                        title="Sincronizar esta pasta"
-                        aria-label={`Sincronizar ${profile.remotePath}`}
+                        title={t("Sincronizar esta pasta")}
+                        aria-label={t("Sincronizar {pasta}", {
+                          pasta: profile.remotePath || profile.account,
+                        })}
                       >
                         <Icon name="refresh" size={14} />
                       </button>
@@ -406,7 +429,7 @@ export function Dashboard({
 
       {removendo ? (
         <Modal
-          title={`Remover ${removendo.name}?`}
+          title={t("Remover {nome}?", { nome: removendo.name })}
           onClose={() => setRemovendo(null)}
           footer={
             removendo &&
@@ -418,12 +441,12 @@ export function Dashboard({
                   onOpenFolders();
                 }}
               >
-                Abrir Pastas
+                {t("Abrir Pastas")}
               </button>
             ) : (
               <>
                 <button className="btn ghost" onClick={() => setRemovendo(null)}>
-                  Cancelar
+                  {t("Cancelar")}
                 </button>
                 <button
                   className="btn danger"
@@ -432,25 +455,28 @@ export function Dashboard({
                     setRemovendo(null);
                   }}
                 >
-                  Remover conta
+                  {t("Remover conta")}
                 </button>
               </>
             )
           }
         >
           <p style={{ fontSize: 13, color: "var(--text-soft)" }}>
-            O Nuvem Sync apaga as credenciais desta conta do rclone neste computador. Nada é
-            apagado na nuvem nem no disco.
+            {t(
+              "O Nuvem Sync apaga as credenciais desta conta do rclone neste computador. Nada é apagado na nuvem nem no disco.",
+            )}
           </p>
           {profiles.some((profile) => profile.account === removendo.name) ? (
             <p style={{ fontSize: 12.5, color: "var(--warn)", marginTop: 10 }}>
-              Esta conta ainda tem pasta configurada. Remova a pasta antes para não
-              deixar um par de sincronização apontando para uma conta que não existe.
+              {t(
+                "Esta conta ainda tem pasta configurada. Remova a pasta antes para não deixar um par de sincronização apontando para uma conta que não existe.",
+              )}
             </p>
           ) : (
             <p style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 10 }}>
-              Para voltar depois, é só conectar de novo (o navegador abre para a
-              autorização).
+              {t(
+                "Para voltar depois, é só conectar de novo (o navegador abre para a autorização).",
+              )}
             </p>
           )}
         </Modal>

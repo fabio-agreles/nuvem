@@ -3,6 +3,7 @@ import { Icon } from "../components/Icons";
 import { Modal } from "../components/Modal";
 import { clock, dayLabel, relativeTime } from "../lib/format";
 import { grupos, resumo } from "../lib/files";
+import { locale, useT } from "../lib/i18n";
 import type { ActivityEntry } from "../lib/types";
 
 const FILTERS = [
@@ -11,7 +12,7 @@ const FILTERS = [
   { id: "download", label: "Downloads" },
   { id: "conflict", label: "Conflitos" },
   { id: "error", label: "Erros" },
-];
+]; // rótulos em português; traduzidos na hora de desenhar
 
 /// Quantos nomes cabem antes do “+N”.
 const VISIVEIS = 8;
@@ -43,6 +44,7 @@ export function Activity({
   /// Apaga o histórico de vez (memória + arquivo em disco).
   onClear: () => Promise<void>;
 }) {
+  const t = useT();
   const [filter, setFilter] = useState("all");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [limpando, setLimpando] = useState(false);
@@ -80,7 +82,7 @@ export function Activity({
             className={`chip ${filter === item.id ? "active" : ""}`}
             onClick={() => setFilter(item.id)}
           >
-            {item.label}
+            {t(item.label)}
             {item.id !== "all" ? (
               <span style={{ marginLeft: 6, opacity: 0.7 }}>
                 {entries.filter((entry) => entry.kind === item.id).length}
@@ -89,9 +91,9 @@ export function Activity({
           </button>
         ))}
         {entries.length > 0 ? (
-          <button className="chip clear" onClick={() => setLimpando(true)} title="Apagar todo o histórico">
+          <button className="chip clear" onClick={() => setLimpando(true)} title={t("Apagar todo o histórico")}>
             <Icon name="trash" size={13} />
-            Limpar
+            {t("Limpar")}
           </button>
         ) : null}
       </div>
@@ -102,8 +104,8 @@ export function Activity({
             <div className="empty-art">
               <Icon name="activity" size={28} />
             </div>
-            <h3>Nada registrado</h3>
-            <p>As sincronizações, conflitos e erros aparecem aqui em ordem.</p>
+            <h3>{t("Nada registrado")}</h3>
+            <p>{t("As sincronizações, conflitos e erros aparecem aqui em ordem.")}</p>
           </div>
         </section>
       ) : (
@@ -126,35 +128,35 @@ export function Activity({
                     </span>
                     <span style={{ minWidth: 0 }}>
                       <span className="feed-title" style={{ display: "block" }}>
-                        {entry.title}
+                        {t(entry.title)}
                       </span>
                       <span className="feed-detail" style={{ display: "block" }}>
-                        {entry.detail}
+                        {t(entry.detail)}
                       </span>
                       {files.length > 0 ? (
                         <span className="file-summary">
                           {resumo(files).map((item) => (
                             <span key={item.action} className={`file-tag ${item.action}`}>
-                              {item.quantos} {item.quantos === 1 ? item.um : item.varios}
+                              {item.quantos} {t(item.quantos === 1 ? item.um : item.varios)}
                             </span>
                           ))}
-                          <span className="file-hint">{aberto ? "ocultar" : "ver arquivos"}</span>
+                          <span className="file-hint">{aberto ? t("ocultar") : t("ver arquivos")}</span>
                         </span>
                       ) : null}
                     </span>
-                    <span className="feed-time" title={new Date(entry.at).toLocaleString("pt-BR")}>
+                    <span className="feed-time" title={new Date(entry.at).toLocaleString(locale())}>
                       {clock(entry.at)}
                     </span>
                     {aberto ? (
                       <span className="feed-expanded">
                         <strong>{relativeTime(entry.at)}</strong> ·{" "}
-                        {new Date(entry.at).toLocaleString("pt-BR")}
+                        {new Date(entry.at).toLocaleString(locale())}
                         <br />
-                        {entry.detail}
+                        {t(entry.detail)}
                         {entry.profile ? (
                           <>
                             <br />
-                            Pasta: <span className="mono">{entry.profile}</span>
+                            {t("Pasta:")} <span className="mono">{entry.profile}</span>
                           </>
                         ) : null}
                         {files.length > 0 ? (
@@ -163,7 +165,7 @@ export function Activity({
                               <span className="file-group" key={grupo.action}>
                                 <span className="file-group-title">
                                   <span className={`file-dot ${grupo.action}`} />
-                                  {grupo.itens.length === 1 ? grupo.um : grupo.varios}
+                                  {t(grupo.itens.length === 1 ? grupo.um : grupo.varios)}
                                   <em>{grupo.itens.length}</em>
                                 </span>
                                 <span className="file-names">
@@ -194,12 +196,12 @@ export function Activity({
 
       {limpando ? (
         <Modal
-          title="Limpar a atividade?"
+          title={t("Limpar a atividade?")}
           onClose={() => setLimpando(false)}
           footer={
             <>
               <button className="btn ghost" onClick={() => setLimpando(false)} disabled={busy}>
-                Cancelar
+                {t("Cancelar")}
               </button>
               <button
                 className="btn danger"
@@ -215,18 +217,23 @@ export function Activity({
                   }
                 }}
               >
-                {busy ? "Limpando…" : "Limpar tudo"}
+                {busy ? t("Limpando…") : t("Limpar tudo")}
               </button>
             </>
           }
         >
           <p style={{ fontSize: 13, color: "var(--text-soft)" }}>
-            O histórico de envios, downloads, conflitos e erros é apagado deste
-            computador. Os arquivos não são tocados — nem aqui, nem na nuvem.
+            {t(
+              "O histórico de envios, downloads, conflitos e erros é apagado deste computador. Os arquivos não são tocados — nem aqui, nem na nuvem.",
+            )}
           </p>
           <p style={{ fontSize: 12.5, color: "var(--muted)" }}>
-            São {entries.length} {entries.length === 1 ? "registro" : "registros"}. As
-            próximas sincronizações voltam a aparecer normalmente.
+            {entries.length === 1
+              ? t("São 1 registro. As próximas sincronizações voltam a aparecer normalmente.")
+              : t(
+                  "São {n} registros. As próximas sincronizações voltam a aparecer normalmente.",
+                  { n: entries.length },
+                )}
           </p>
         </Modal>
       ) : null}

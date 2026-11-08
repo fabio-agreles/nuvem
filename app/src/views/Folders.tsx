@@ -3,6 +3,7 @@ import { Icon } from "../components/Icons";
 import { Modal } from "../components/Modal";
 import { api, errorMessage } from "../lib/bridge";
 import { relativeTime } from "../lib/format";
+import { useT } from "../lib/i18n";
 import type { Account, Profile } from "../lib/types";
 
 /// Erros do rclone são longos ("bisync aborted", "a pasta na nuvem está
@@ -30,28 +31,29 @@ export function Folders({
   onSync: (id: string, resync?: boolean) => void;
   notify: (message: string, kind?: "info" | "ok" | "error") => void;
 }) {
+  const t = useT();
   const [confirming, setConfirming] = useState<Profile | null>(null);
 
   return (
     <div>
       <div className="toolbar">
         <div>
-          <strong style={{ fontSize: 13.5 }}>Pastas sincronizadas</strong>
+          <strong style={{ fontSize: 13.5 }}>{t("Pastas sincronizadas")}</strong>
           <div className="muted" style={{ fontSize: 12 }}>
-            Cada pasta liga uma pasta da nuvem a uma pasta local.
+            {t("Cada pasta liga uma pasta da nuvem a uma pasta local.")}
           </div>
         </div>
         <span style={{ flex: 1 }} />
         <button className="btn primary" onClick={onAddFolder} disabled={accounts.length === 0}>
           <Icon name="plus" size={16} />
-          Adicionar pasta
+          {t("Adicionar pasta")}
         </button>
       </div>
 
       {accounts.length === 0 ? (
         <div className="banner info" style={{ marginBottom: 14 }}>
           <Icon name="info" size={16} />
-          Conecte uma conta antes de escolher pastas.
+          {t("Conecte uma conta antes de escolher pastas.")}
         </div>
       ) : null}
 
@@ -61,14 +63,15 @@ export function Folders({
             <div className="empty-art">
               <Icon name="layers" size={28} />
             </div>
-            <h3>Nenhuma pasta ainda</h3>
+            <h3>{t("Nenhuma pasta ainda")}</h3>
             <p>
-              Escolha uma pasta na nuvem e uma pasta local. O Nuvem Sync mantém as duas
-              iguais, nos dois sentidos.
+              {t(
+                "Escolha uma pasta na nuvem e uma pasta local. O Nuvem Sync mantém as duas iguais, nos dois sentidos.",
+              )}
             </p>
             <button className="btn primary" onClick={onAddFolder} disabled={accounts.length === 0}>
               <Icon name="plus" size={16} />
-              Adicionar pasta
+              {t("Adicionar pasta")}
             </button>
           </div>
         ) : (
@@ -86,7 +89,7 @@ export function Folders({
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <strong title={`${profile.account}:${profile.remotePath}`}>
-                    {profile.remotePath || "Raiz da conta"}
+                    {profile.remotePath || t("Raiz da conta")}
                   </strong>
                   <div className="folder-path" title={profile.localPath}>
                     {profile.account} → {profile.localPath}
@@ -111,21 +114,24 @@ export function Folders({
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                     }}
-                    title={`${profile.lastError}\n\nClique para Ressincronizar: aceita o estado atual das duas pastas e refaz a base de comparação.`}
-                    aria-label={`${profile.lastError} — Ressincronizar ${profile.remotePath}`}
+                    title={`${profile.lastError}\n\n${t("Clique para Ressincronizar: aceita o estado atual das duas pastas e refaz a base de comparação.")}`}
+                    aria-label={t("{erro} — Ressincronizar {pasta}", {
+                      erro: profile.lastError,
+                      pasta: profile.remotePath || profile.account,
+                    })}
                     onClick={() => onSync(profile.id, true)}
                   >
                     <Icon name="alert" size={12} />
                     {resumoDoErro(profile.lastError)}
                   </button>
                 ) : !profile.enabled ? (
-                  <span className="badge muted">desativada</span>
+                  <span className="badge muted">{t("desativada")}</span>
                 ) : profile.resyncNeeded ? (
-                  <span className="badge warn">precisa ressincronizar</span>
+                  <span className="badge warn">{t("precisa ressincronizar")}</span>
                 ) : (
                   <span className="badge ok">
                     <Icon name="check" size={12} />
-                    em dia · {relativeTime(profile.lastSync)}
+                    {t("em dia · {tempo}", { tempo: relativeTime(profile.lastSync) })}
                   </span>
                 )}
               </div>
@@ -133,8 +139,8 @@ export function Folders({
               <div className="folder-actions">
                 <button
                   className="tiny-btn"
-                  title="Abrir pasta local"
-                  aria-label={`Abrir ${profile.localPath}`}
+                  title={t("Abrir pasta local")}
+                  aria-label={t("Abrir {caminho}", { caminho: profile.localPath })}
                   onClick={() => {
                     void api
                       .revealPath(profile.localPath)
@@ -145,8 +151,10 @@ export function Folders({
                 </button>
                 <button
                   className="tiny-btn"
-                  title="Sincronizar agora"
-                  aria-label={`Sincronizar ${profile.remotePath}`}
+                  title={t("Sincronizar agora")}
+                  aria-label={t("Sincronizar {pasta}", {
+                    pasta: profile.remotePath || profile.account,
+                  })}
                   disabled={!profile.enabled}
                   onClick={() => onSync(profile.id, profile.resyncNeeded)}
                 >
@@ -156,14 +164,16 @@ export function Folders({
                   className={`switch ${profile.enabled ? "on" : ""}`}
                   role="switch"
                   aria-checked={profile.enabled}
-                  title={profile.enabled ? "Desativar" : "Ativar"}
-                  aria-label={profile.enabled ? "Desativar pasta" : "Ativar pasta"}
+                  title={profile.enabled ? t("Desativar") : t("Ativar")}
+                  aria-label={profile.enabled ? t("Desativar pasta") : t("Ativar pasta")}
                   onClick={() => onUpdate({ ...profile, enabled: !profile.enabled })}
                 />
                 <button
                   className="tiny-btn"
-                  title="Remover"
-                  aria-label={`Remover ${profile.remotePath}`}
+                  title={t("Remover")}
+                  aria-label={t("Remover {pasta}", {
+                    pasta: profile.remotePath || profile.account,
+                  })}
                   onClick={() => setConfirming(profile)}
                 >
                   <Icon name="trash" size={15} />
@@ -176,18 +186,20 @@ export function Folders({
       </section>
 
       <p className="muted" style={{ fontSize: 11.5, marginTop: 10 }}>
-        O modo <strong>bisync</strong> compara os dois lados e propaga as mudanças. Ao
-        alterar caminhos, a próxima execução faz uma ressincronização completa.
+        {t("O modo")} <strong>bisync</strong>{" "}
+        {t(
+          "compara os dois lados e propaga as mudanças. Ao alterar caminhos, a próxima execução faz uma ressincronização completa.",
+        )}
       </p>
 
       {confirming ? (
         <Modal
-          title="Remover pasta?"
+          title={t("Remover pasta?")}
           onClose={() => setConfirming(null)}
           footer={
             <>
               <button className="btn ghost" onClick={() => setConfirming(null)}>
-                Cancelar
+                {t("Cancelar")}
               </button>
               <button
                 className="btn danger"
@@ -196,14 +208,16 @@ export function Folders({
                   setConfirming(null);
                 }}
               >
-                Remover
+                {t("Remover")}
               </button>
             </>
           }
         >
           <p style={{ fontSize: 13, color: "var(--text-soft)" }}>
-            A pasta local <strong>{confirming.localPath}</strong> não será apagada nem
-            enviada. Apenas o par de sincronização sai do Nuvem Sync.
+            {t("A pasta local")} <strong>{confirming.localPath}</strong>{" "}
+            {t(
+              "não será apagada nem enviada. Apenas o par de sincronização sai do Nuvem Sync.",
+            )}
           </p>
         </Modal>
       ) : null}

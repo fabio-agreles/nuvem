@@ -7,6 +7,7 @@ import {
   DOACAO_TITULO,
   PIX_COPIA_E_COLA,
 } from "../lib/doacoes";
+import { useT } from "../lib/i18n";
 import { Icon } from "./Icons";
 import { Modal } from "./Modal";
 
@@ -47,14 +48,15 @@ export function Doacoes({
 }: {
   notify: (message: string, kind?: "info" | "ok" | "error") => void;
 }) {
+  const t = useT();
   const [aberto, setAberto] = useState(false);
 
   const copiar = async () => {
     const copiou = await copiarTexto(PIX_COPIA_E_COLA);
     notify(
       copiou
-        ? "Código Pix copiado. Cole no app do banco."
-        : "Não foi possível copiar o código Pix.",
+        ? t("Código Pix copiado. Cole no app do banco.")
+        : t("Não foi possível copiar o código Pix."),
       copiou ? "ok" : "error",
     );
   };
@@ -66,50 +68,51 @@ export function Doacoes({
           <Icon name="heart" size={20} />
         </div>
         <div className="doacao-text">
-          <div className="doacao-title">{DOACAO_TITULO}</div>
-          <div className="row-desc">{DOACAO_RESUMO}</div>
+          <div className="doacao-title">{t(DOACAO_TITULO)}</div>
+          <div className="row-desc">{t(DOACAO_RESUMO)}</div>
         </div>
         <div className="row-control">
           <button className="btn sm primary" onClick={() => setAberto(true)}>
             <Icon name="heart" size={14} />
-            Doar com Pix
+            {t("Doar com Pix")}
           </button>
         </div>
       </section>
 
       {aberto ? (
         <Modal
-          title={DOACAO_TITULO}
+          title={t(DOACAO_TITULO)}
           onClose={() => setAberto(false)}
           footer={
             <>
               <button className="btn sm ghost" onClick={() => setAberto(false)}>
-                Fechar
+                {t("Fechar")}
               </button>
               <button className="btn sm primary" onClick={() => void copiar()}>
                 <Icon name="copy" size={14} />
-                Copiar código Pix
+                {t("Copiar código Pix")}
               </button>
             </>
           }
         >
           <div className="doacao-texto">
             {DOACAO_PARAGRAFOS.map((paragrafo) => (
-              <p key={paragrafo}>{paragrafo}</p>
+              <p key={paragrafo}>{t(paragrafo)}</p>
             ))}
           </div>
 
           <div className="pix">
             <div className="pix-qr">
-              <img src={qrPix} alt="QR code para doação via Pix" />
+              <img src={qrPix} alt={t("QR code para doação via Pix")} />
             </div>
             <div className="pix-info">
-              <div className="pix-label">Chave Pix</div>
+              <div className="pix-label">{t("Chave Pix")}</div>
               <div className="pix-chave mono">{CHAVE_PIX}</div>
               <p className="pix-dica">
-                Aponte a câmera do celular para o QR ou use o botão abaixo para
-                copiar o código e colar no app do banco em{" "}
-                <strong>Pix → Pix copia e cola</strong>.
+                {t(
+                  "Aponte a câmera do celular para o QR ou use o botão abaixo para copiar o código e colar no app do banco em",
+                )}{" "}
+                <strong>{t("Pix → Pix copia e cola")}</strong>.
               </p>
             </div>
           </div>

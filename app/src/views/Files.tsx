@@ -3,6 +3,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { Icon } from "../components/Icons";
 import { api, errorMessage, isDesktop } from "../lib/bridge";
 import { formatBytes, joinPath, parentPath } from "../lib/format";
+import { locale, useT } from "../lib/i18n";
 import type { Account, FolderSize, RemoteEntry } from "../lib/types";
 
 export function Files({
@@ -23,6 +24,7 @@ export function Files({
   onAddAccount: () => void;
   notify: (message: string, kind?: "info" | "ok" | "error") => void;
 }) {
+  const t = useT();
   const [entries, setEntries] = useState<RemoteEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export function Files({
       if (isDesktop) {
         const picked = await open({
           multiple: true,
-          title: "Enviar arquivos para a nuvem",
+          title: t("Enviar arquivos para a nuvem"),
         });
         const files = Array.isArray(picked) ? picked : picked ? [picked] : [];
         if (files.length === 0) return;
@@ -70,8 +72,12 @@ export function Files({
         }
         notify(
           files.length === 1
-            ? `Enviado para ${account}:${path || "/"}.`
-            : `${files.length} arquivos enviados para ${account}:${path || "/"}.`,
+            ? t("Enviado para {conta}:{caminho}.", { conta: account, caminho: path || "/" })
+            : t("{n} arquivos enviados para {conta}:{caminho}.", {
+                n: files.length,
+                conta: account,
+                caminho: path || "/",
+              }),
           "ok",
         );
       } else {
@@ -80,7 +86,7 @@ export function Files({
           path,
           `/tmp/demonstracao/arquivo-${Date.now()}.txt`,
         );
-        notify(`Demonstração: ${remote} entrou na lista.`, "ok");
+        notify(t("Demonstração: {caminho} entrou na lista.", { caminho: remote }), "ok");
       }
       await load();
     } catch (cause) {
@@ -99,13 +105,13 @@ export function Files({
         if (isDesktop) {
           const picked = await open({
             directory: true,
-            title: "Escolha a pasta para baixar",
+            title: t("Escolha a pasta para baixar"),
           });
           if (typeof picked !== "string") return;
           target = picked;
         }
         const saved = await api.downloadFile(account, entry.path, target);
-        notify(`Baixado para ${saved}`, "ok");
+        notify(t("Baixado para {caminho}", { caminho: saved }), "ok");
       } catch (cause) {
         notify(errorMessage(cause), "error");
       } finally {
@@ -134,11 +140,11 @@ export function Files({
           <div className="empty-art">
             <Icon name="cloud" size={28} />
           </div>
-          <h3>Conecte uma conta para navegar</h3>
-          <p>Seus arquivos aparecem aqui sem precisar baixar nada antes.</p>
+          <h3>{t("Conecte uma conta para navegar")}</h3>
+          <p>{t("Seus arquivos aparecem aqui sem precisar baixar nada antes.")}</p>
           <button className="btn primary" onClick={onAddAccount}>
             <Icon name="plus" size={16} />
-            Conectar conta
+            {t("Conectar conta")}
           </button>
         </div>
       </section>
@@ -155,7 +161,7 @@ export function Files({
             onAccount(event.target.value);
             onPath("");
           }}
-          aria-label="Conta"
+          aria-label={t("Conta")}
         >
           {accounts.map((item) => (
             <option key={item.name} value={item.name}>
@@ -169,7 +175,7 @@ export function Files({
             onClick={() => onPath("")}
             className={segments.length === 0 ? "current" : undefined}
           >
-            Início
+            {t("Início")}
           </button>
           {segments.map((segment, index) => {
             const target = segments.slice(0, index + 1).join("/");
@@ -195,8 +201,8 @@ export function Files({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Filtrar nesta pasta"
-            aria-label="Filtrar arquivos"
+            placeholder={t("Filtrar nesta pasta")}
+            aria-label={t("Filtrar arquivos")}
           />
         </label>
 
@@ -204,17 +210,17 @@ export function Files({
           className="btn primary small"
           onClick={() => void upload()}
           disabled={busy === "upload"}
-          title="Enviar arquivos desta pasta do computador"
+          title={t("Enviar arquivos desta pasta do computador")}
         >
           <Icon name={busy === "upload" ? "refresh" : "upload"} size={15} className={busy === "upload" ? "spin" : undefined} />
-          Enviar
+          {t("Enviar")}
         </button>
 
         <button
           className="icon-btn"
           onClick={() => void load()}
-          title="Atualizar"
-          aria-label="Atualizar listagem"
+          title={t("Atualizar")}
+          aria-label={t("Atualizar listagem")}
         >
           <Icon name="refresh" size={17} className={loading ? "spin" : undefined} />
         </button>
@@ -227,9 +233,10 @@ export function Files({
         </span>
         {size ? (
           <span className="muted">
-            {size.count} {size.count === 1 ? "item" : "itens"} · {formatBytes(size.bytes)}
+            {size.count === 1 ? t("1 item") : t("{n} itens", { n: size.count })} ·{" "}
+            {formatBytes(size.bytes)}
             {size.sizeless > 0
-              ? ` · ${size.sizeless} sem tamanho informado`
+              ? t(" · {n} sem tamanho informado", { n: size.sizeless })
               : ""}
           </span>
         ) : null}
@@ -248,29 +255,29 @@ export function Files({
             <div className="empty-art">
               <Icon name="refresh" size={26} className="spin" />
             </div>
-            <h3>Lendo a nuvem…</h3>
-            <p>Listando {account}:{path || "/"}</p>
+            <h3>{t("Lendo a nuvem…")}</h3>
+            <p>{t("Listando {conta}:{caminho}", { conta: account, caminho: path || "/" })}</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="empty">
             <div className="empty-art">
               <Icon name={query ? "search" : "folder-open"} size={26} />
             </div>
-            <h3>{query ? "Nada encontrado" : "Pasta vazia"}</h3>
+            <h3>{query ? t("Nada encontrado") : t("Pasta vazia")}</h3>
             <p>
               {query
-                ? `Nenhum item corresponde a “${query}”.`
-                : "Esta pasta não tem arquivos na nuvem. Você pode enviar um agora."}
+                ? t("Nenhum item corresponde a “{busca}”.", { busca: query })
+                : t("Esta pasta não tem arquivos na nuvem. Você pode enviar um agora.")}
             </p>
           </div>
         ) : (
           <table className="file-table">
             <thead>
               <tr>
-                <th>Nome</th>
-                <th>Tamanho</th>
-                <th>Modificado</th>
-                <th aria-label="Ações" />
+                <th>{t("Nome")}</th>
+                <th>{t("Tamanho")}</th>
+                <th>{t("Modificado")}</th>
+                <th aria-label={t("Ações")} />
               </tr>
             </thead>
             <tbody>
@@ -304,7 +311,7 @@ export function Files({
                   <td>{entry.isDir ? "—" : formatBytes(entry.size)}</td>
                   <td>
                     {entry.modified
-                      ? new Date(entry.modified).toLocaleDateString("pt-BR")
+                      ? new Date(entry.modified).toLocaleDateString(locale())
                       : "—"}
                   </td>
                   <td>
@@ -312,8 +319,8 @@ export function Files({
                       {!entry.isDir ? (
                         <button
                           className="tiny-btn"
-                          title="Baixar para o computador"
-                          aria-label="Baixar arquivo"
+                          title={t("Baixar para o computador")}
+                          aria-label={t("Baixar arquivo")}
                           onClick={(event) => {
                             event.stopPropagation();
                             void download(entry);
@@ -328,8 +335,8 @@ export function Files({
                       ) : null}
                       <button
                         className="tiny-btn"
-                        title={entry.isDir ? "Abrir" : "Copiar caminho"}
-                        aria-label={entry.isDir ? "Abrir pasta" : "Copiar caminho"}
+                        title={entry.isDir ? t("Abrir") : t("Copiar caminho")}
+                        aria-label={entry.isDir ? t("Abrir pasta") : t("Copiar caminho")}
                         onClick={(event) => {
                           event.stopPropagation();
                           if (entry.isDir) {
@@ -338,8 +345,8 @@ export function Files({
                           } else {
                             void navigator.clipboard
                               ?.writeText(`${account}:${joinPath(path, entry.name)}`)
-                              .then(() => notify("Caminho copiado.", "ok"))
-                              .catch(() => notify("Não foi possível copiar.", "error"));
+                              .then(() => notify(t("Caminho copiado."), "ok"))
+                              .catch(() => notify(t("Não foi possível copiar."), "error"));
                           }
                         }}
                       >
@@ -355,8 +362,8 @@ export function Files({
       </section>
 
       <p className="muted" style={{ fontSize: 11.5, marginTop: 10 }}>
-        Enviar e baixar arquivos avulsos não substitui uma pasta de sincronização:
-        para manter tudo igual nos dois lados, crie um par em <strong>Pastas</strong>.
+        {t("Enviar e baixar arquivos avulsos não substitui uma pasta de sincronização: para manter tudo igual nos dois lados, crie um par em")}{" "}
+        <strong>{t("Pastas")}</strong>.
         {path ? (
           <>
             {" "}
@@ -367,7 +374,7 @@ export function Files({
                 setQuery("");
               }}
             >
-              Voltar um nível
+              {t("Voltar um nível")}
             </button>
           </>
         ) : null}

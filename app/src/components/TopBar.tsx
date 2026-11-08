@@ -1,16 +1,22 @@
 import { Icon } from "./Icons";
 import type { Snapshot } from "../lib/types";
+import { useT } from "../lib/i18n";
 
-function statusOf(snapshot: Snapshot) {
-  if (snapshot.paused) return { tone: "warn", label: "Pausado" };
+type Tr = (texto: string, valores?: Record<string, string | number>) => string;
+
+function statusOf(snapshot: Snapshot, tr: Tr) {
+  if (snapshot.paused) return { tone: "warn", label: tr("Pausado") };
   if (snapshot.running) {
     const count = snapshot.jobs;
     return {
       tone: "busy",
-      label: count === 1 ? "Sincronizando 1 tarefa" : `Sincronizando ${count} tarefas`,
+      label:
+        count === 1
+          ? tr("Sincronizando 1 tarefa")
+          : tr("Sincronizando {n} tarefas", { n: count }),
     };
   }
-  return { tone: "ok", label: "Tudo em dia" };
+  return { tone: "ok", label: tr("Tudo em dia") };
 }
 
 export function TopBar({
@@ -30,7 +36,8 @@ export function TopBar({
   onOpenPalette: () => void;
   onStatusClick: () => void;
 }) {
-  const status = statusOf(snapshot);
+  const t = useT();
+  const status = statusOf(snapshot, t);
 
   return (
     <header className="topbar">
@@ -40,22 +47,22 @@ export function TopBar({
       </div>
 
       <div className="topbar-actions">
-        <button className="pill" onClick={onStatusClick} title="Abrir visão geral">
+        <button className="pill" onClick={onStatusClick} title={t("Abrir visão geral")}>
           <span className={`dot ${status.tone}`} />
           {status.label}
         </button>
 
-        <button className="search-btn" onClick={onOpenPalette} aria-label="Abrir busca de ações">
+        <button className="search-btn" onClick={onOpenPalette} aria-label={t("Abrir busca de ações")}>
           <Icon name="search" size={15} />
-          <span>Buscar</span>
+          <span>{t("Buscar")}</span>
           <span className="kbd">Ctrl K</span>
         </button>
 
         <button
           className="icon-btn"
           onClick={onToggleTheme}
-          aria-label={theme === "light" ? "Ativar tema escuro" : "Ativar tema claro"}
-          title={theme === "light" ? "Tema escuro" : "Tema claro"}
+          aria-label={theme === "light" ? t("Ativar tema escuro") : t("Ativar tema claro")}
+          title={theme === "light" ? t("Tema escuro") : t("Tema claro")}
         >
           <Icon name={theme === "light" ? "moon" : "sun"} size={18} />
         </button>

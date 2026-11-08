@@ -20,7 +20,8 @@ de opções. Feito com [Tauri 2](https://tauri.app) (Rust + React) e o motor
   sincronização é barrada em vez de apagar o lado cheio.
 - Bandeja do sistema, iniciar com o sistema, notificações, limites de banda,
   regras de ignorar, tema claro/escuro, relatório de diagnóstico sem segredos.
-- **pt-BR**, sem telemetria: nada sai do computador além do tráfego direto para
+- **Português e inglês**, trocados em Ajustes → Sistema → Idioma (sem reiniciar),
+  sem telemetria: nada sai do computador além do tráfego direto para
   Google/Microsoft.
 - **Doações opcionais via Pix** em Ajustes, para quem quiser ajudar a manter o
   projeto — com QR code e "copia e cola". Nada do app depende disso.
@@ -59,6 +60,8 @@ O rclone vai dentro de todos os pacotes: não é preciso instalá-lo.
 - [`docs/flathub-pr.md`](docs/flathub-pr.md) — submissão ao Flathub.
 - [`docs/doacoes.md`](docs/doacoes.md) — doações via Pix: como o QR é gerado e
   como trocar a chave.
+- [`docs/idiomas.md`](docs/idiomas.md) — como funciona a troca de idioma e o
+  que fazer ao mudar um texto da interface.
 - [`PRIVACIDADE.md`](PRIVACIDADE.md) — política de privacidade.
 - [`PLANO.md`](PLANO.md) — o que já foi feito e o que falta.
 

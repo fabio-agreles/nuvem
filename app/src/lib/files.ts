@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 import type { FileChange } from "./types";
 
 /// Cada ação tem rótulo no singular e no plural; a ordem é a de leitura na tela.
@@ -29,6 +30,6 @@ export function grupos(files: FileChange[]) {
 /// `2 enviados · 1 baixado` — para onde não cabe a lista de etiquetas.
 export function resumoTexto(files: FileChange[]): string {
   return resumo(files)
-    .map((item) => `${item.quantos} ${item.quantos === 1 ? item.um : item.varios}`)
+    .map((item) => `${item.quantos} ${t(item.quantos === 1 ? item.um : item.varios)}`)
     .join(" · ");
 }

@@ -169,6 +169,7 @@ class DemoBackend {
     syncIntervalMin: 5,
     driveClientId: "",
     driveClientSecret: "",
+    language: "pt",
   };
 
   private paused = false;

@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useT } from "../lib/i18n";
 import { Icon } from "./Icons";
 
 export function Modal({
@@ -15,6 +16,7 @@ export function Modal({
   footer?: ReactNode;
   wide?: boolean;
 }) {
+  const t = useT();
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -46,7 +48,7 @@ export function Modal({
       >
         <div className="modal-head">
           <h2>{title}</h2>
-          <button className="icon-btn" onClick={onClose} aria-label="Fechar">
+          <button className="icon-btn" onClick={onClose} aria-label={t("Fechar")}>
             <Icon name="x" size={17} />
           </button>
         </div>

@@ -1,3 +1,4 @@
+import { useT } from "../lib/i18n";
 import { Icon } from "./Icons";
 
 export type ToastKind = "info" | "ok" | "error";
@@ -15,6 +16,7 @@ export function Toasts({
   items: ToastItem[];
   onDismiss: (id: number) => void;
 }) {
+  const t = useT();
   if (items.length === 0) return null;
   return (
     <div className="toasts" role="status" aria-live="polite">
@@ -27,7 +29,7 @@ export function Toasts({
             />
           </span>
           <span>{item.message}</span>
-          <button onClick={() => onDismiss(item.id)} aria-label="Dispensar aviso">
+          <button onClick={() => onDismiss(item.id)} aria-label={t("Dispensar aviso")}>
             <Icon name="x" size={14} />
           </button>
         </div>

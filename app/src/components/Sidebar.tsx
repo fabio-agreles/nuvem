@@ -2,11 +2,12 @@ import { Icon, type IconName } from "./Icons";
 import type { EngineStatus, ViewId } from "../lib/types";
 import { isDesktop } from "../lib/bridge";
 import { NOME } from "../lib/marca";
+import { useT } from "../lib/i18n";
 import logo from "../assets/logo.png";
 
 type NavItem = {
   id: ViewId;
-  label: string;
+  label: string; // chave em português; traduzida na hora de desenhar
   icon: IconName;
   shortcut: string;
 };
@@ -33,27 +34,29 @@ export function Sidebar({
   conflictCount: number;
   engine: EngineStatus | null;
 }) {
+  const t = useT();
+
   return (
     <aside className="sidebar">
       <div className="brand">
         <img className="brand-mark" src={logo} alt="" width={36} height={36} />
         <div className="brand-text">
           <div className="brand-name">{NOME}</div>
-          <div className="brand-sub">sincronização simples</div>
+          <div className="brand-sub">{t("sincronização simples")}</div>
         </div>
       </div>
 
-      <div className="nav-label">Navegação</div>
+      <div className="nav-label">{t("Navegação")}</div>
       {ITEMS.map((item) => (
         <button
           key={item.id}
           className={`nav-item ${view === item.id ? "active" : ""}`}
           onClick={() => onNavigate(item.id)}
-          title={`${item.label} (${item.shortcut})`}
+          title={`${t(item.label)} (${item.shortcut})`}
           aria-current={view === item.id ? "page" : undefined}
         >
           <Icon name={item.icon} size={18} />
-          <span>{item.label}</span>
+          <span>{t(item.label)}</span>
           {item.id === "folders" && folderCount > 0 ? (
             <span className="nav-count">{folderCount}</span>
           ) : null}
@@ -67,20 +70,22 @@ export function Sidebar({
         {isDesktop ? (
           <>
             <div className="sidebar-card">
-              <strong>{engine?.available ? "rclone conectado" : "Motor indisponível"}</strong>
+              <strong>
+                {engine?.available ? t("rclone conectado") : t("Motor indisponível")}
+              </strong>
               {engine?.available
-                ? (engine.version ?? "versão desconhecida")
-                : "Instale o rclone para sincronizar de verdade."}
+                ? (engine.version ?? t("versão desconhecida"))
+                : t("Instale o rclone para sincronizar de verdade.")}
             </div>
             <div className="sidebar-card">
-              <strong>Sincroniza na bandeja</strong>
-              Fechar a janela não interrompe as pastas.
+              <strong>{t("Sincroniza na bandeja")}</strong>
+              {t("Fechar a janela não interrompe as pastas.")}
             </div>
           </>
         ) : (
           <div className="sidebar-card">
-            <strong>Modo demonstração</strong>
-            Dados simulados, sem rclone nem contas reais.
+            <strong>{t("Modo demonstração")}</strong>
+            {t("Dados simulados, sem rclone nem contas reais.")}
           </div>
         )}
       </div>

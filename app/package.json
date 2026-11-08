@@ -4,6 +4,7 @@
   "version": "1.4.0",
   "type": "module",
   "scripts": {
+    "i18n": "node scripts/checar-i18n.mjs",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",

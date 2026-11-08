@@ -3,10 +3,12 @@ import { Icon } from "../components/Icons";
 import { Modal } from "../components/Modal";
 import { api, errorMessage } from "../lib/bridge";
 import { formatBytes, relativeTime } from "../lib/format";
+import { useT } from "../lib/i18n";
 import type { Conflict } from "../lib/types";
 
 type Resolution = "remote" | "local" | "both";
 
+// Rótulos em português (chaves do dicionário); traduzidos na hora de desenhar.
 const RESOLUTIONS: Record<
   Resolution,
   { label: string; title: string; description: string }
@@ -36,6 +38,7 @@ export function Conflicts({
 }: {
   notify: (message: string, kind?: "info" | "ok" | "error") => void;
 }) {
+  const t = useT();
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +67,7 @@ export function Conflicts({
     try {
       const remaining = await api.resolveConflict(pending.action, pending.conflict);
       setConflicts(remaining);
-      notify(`Conflito resolvido: ${pending.conflict.baseName}`, "ok");
+      notify(t("Conflito resolvido: {arquivo}", { arquivo: pending.conflict.baseName }), "ok");
       setPending(null);
     } catch (cause) {
       notify(errorMessage(cause), "error");
@@ -77,16 +80,17 @@ export function Conflicts({
     <div>
       <div className="toolbar">
         <div>
-          <strong style={{ fontSize: 13.5 }}>Conflitos de sincronização</strong>
+          <strong style={{ fontSize: 13.5 }}>{t("Conflitos de sincronização")}</strong>
           <div className="muted" style={{ fontSize: 12 }}>
-            O bisync guarda as duas versões com os sufixos <span className="mono">..path1</span> e{" "}
+            {t("O bisync guarda as duas versões com os sufixos")}{" "}
+            <span className="mono">..path1</span> {t("e")}{" "}
             <span className="mono">..path2</span>.
           </div>
         </div>
         <span style={{ flex: 1 }} />
         <button className="btn ghost" onClick={() => void load()}>
           <Icon name="refresh" size={16} className={loading ? "spin" : undefined} />
-          Verificar de novo
+          {t("Verificar de novo")}
         </button>
       </div>
 
@@ -103,15 +107,16 @@ export function Conflicts({
             <div className="empty-art">
               <Icon name="shield" size={28} />
             </div>
-            <h3>{loading ? "Verificando…" : "Nenhum conflito"}</h3>
+            <h3>{loading ? t("Verificando…") : t("Nenhum conflito")}</h3>
             <p>
-              Quando o mesmo arquivo muda dos dois lados, o Nuvem Sync avisa aqui em vez de
-              escolher sozinho.
+              {t(
+                "Quando o mesmo arquivo muda dos dois lados, o Nuvem Sync avisa aqui em vez de escolher sozinho.",
+              )}
             </p>
             {!loading ? (
               <button className="btn ghost sm" onClick={() => void load()}>
                 <Icon name="refresh" size={14} />
-                Verificar novamente
+                {t("Verificar novamente")}
               </button>
             ) : null}
           </div>
@@ -122,7 +127,7 @@ export function Conflicts({
             <div className="conflict-side">
               <div className="conflict-tag">
                 <Icon name="cloud" size={13} />
-                Na nuvem
+                {t("Na nuvem")}
               </div>
               <div className="conflict-name">{conflict.baseName}</div>
               <div className="conflict-meta">
@@ -130,14 +135,14 @@ export function Conflicts({
                   ? `${formatBytes(conflict.path1Size ?? 0)}${
                       conflict.path1Modified ? ` · ${relativeTime(conflict.path1Modified)}` : ""
                     }`
-                  : "versão não encontrada"}
+                  : t("versão não encontrada")}
               </div>
               <div className="conflict-path mono">{conflict.path1 ?? "—"}</div>
             </div>
             <div className="conflict-side">
               <div className="conflict-tag">
                 <Icon name="folder-open" size={13} />
-                Neste computador
+                {t("Neste computador")}
               </div>
               <div className="conflict-name">{conflict.baseName}</div>
               <div className="conflict-meta">
@@ -145,7 +150,7 @@ export function Conflicts({
                   ? `${formatBytes(conflict.path2Size ?? 0)}${
                       conflict.path2Modified ? ` · ${relativeTime(conflict.path2Modified)}` : ""
                     }`
-                  : "versão não encontrada"}
+                  : t("versão não encontrada")}
               </div>
               <div className="conflict-path mono">{conflict.path2 ?? "—"}</div>
             </div>
@@ -164,7 +169,7 @@ export function Conflicts({
                 }}
               >
                 <Icon name="folder-open" size={14} />
-                Abrir pasta
+                {t("Abrir pasta")}
               </button>
               <button
                 className="btn sm ghost"
@@ -172,7 +177,7 @@ export function Conflicts({
                 onClick={() => setPending({ conflict, action: "remote" })}
               >
                 <Icon name="cloud" size={14} />
-                Manter da nuvem
+                {t("Manter da nuvem")}
               </button>
               <button
                 className="btn sm primary"
@@ -180,14 +185,14 @@ export function Conflicts({
                 onClick={() => setPending({ conflict, action: "local" })}
               >
                 <Icon name="check" size={14} />
-                Manter a minha
+                {t("Manter a minha")}
               </button>
               <button
                 className="btn sm ghost"
                 disabled={!conflict.path1 || !conflict.path2}
                 onClick={() => setPending({ conflict, action: "both" })}
               >
-                Manter as duas
+                {t("Manter as duas")}
               </button>
             </div>
           </article>
@@ -196,7 +201,7 @@ export function Conflicts({
 
       {pending ? (
         <Modal
-          title={RESOLUTIONS[pending.action].title}
+          title={t(RESOLUTIONS[pending.action].title)}
           onClose={busy ? () => undefined : () => setPending(null)}
           footer={
             <>
@@ -205,22 +210,23 @@ export function Conflicts({
                 onClick={() => setPending(null)}
                 disabled={busy}
               >
-                Cancelar
+                {t("Cancelar")}
               </button>
               <button className="btn primary" onClick={() => void resolve()} disabled={busy}>
                 {busy ? <Icon name="refresh" size={15} className="spin" /> : null}
-                Resolver
+                {t("Resolver")}
               </button>
             </>
           }
         >
           <p style={{ fontSize: 13, color: "var(--text-soft)" }}>
-            {RESOLUTIONS[pending.action].description}
+            {t(RESOLUTIONS[pending.action].description)}
           </p>
           <div className="banner info">
             <Icon name="shield" size={16} />
-            A versão descartada fica guardada em “conflitos-resolvidos” dentro da
-            configuração do Nuvem Sync.
+            {t(
+              "A versão descartada fica guardada em “conflitos-resolvidos” dentro da configuração do Nuvem Sync.",
+            )}
           </div>
           <p className="mono" style={{ fontSize: 11.5, color: "var(--muted)" }}>
             {pending.conflict.baseName}

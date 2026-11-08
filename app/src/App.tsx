@@ -11,6 +11,7 @@ import { Sidebar } from "./components/Sidebar";
 import { Toasts, type ToastItem, type ToastKind } from "./components/Toasts";
 import { TopBar } from "./components/TopBar";
 import { api, errorMessage, isDesktop, subscribe } from "./lib/bridge";
+import { definirIdioma, locale, t as tr, useIdioma, useT } from "./lib/i18n";
 import { parentPath } from "./lib/format";
 import type {
   Account,
@@ -56,6 +57,7 @@ const DEFAULT_SETTINGS: Settings = {
   syncIntervalMin: 5,
   driveClientId: "",
   driveClientSecret: "",
+  language: "pt",
 };
 
 const TITLES: Record<ViewId, { title: string; subtitle: string }> = {
@@ -93,6 +95,9 @@ export default function App() {
   const [addFolderOpen, setAddFolderOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const toastId = useRef(1);
+  // Assina o idioma: trocar de idioma em Ajustes redesenha o app inteiro,
+  // inclusive os rótulos memorizados da paleta de comandos.
+  const idioma = useIdioma();
 
   const notify = useCallback((message: string, kind: ToastKind = "info") => {
     const id = toastId.current++;
@@ -118,12 +123,18 @@ export default function App() {
     try {
       await api.clearActivity();
       setActivity([]);
-      notify("Histórico de atividade limpo.", "ok");
+      notify(tr("Histórico de atividade limpo."), "ok");
     } catch (cause) {
       notify(errorMessage(cause), "error");
       void refreshActivity();
     }
   }, [notify, refreshActivity]);
+
+  // Idioma: a preferência vem dos ajustes (padrão "pt"). O efeito cobre tanto a
+  // carga inicial quanto a troca em Ajustes, inclusive quando o backend avisa.
+  useEffect(() => {
+    definirIdioma(settings.language === "en" ? "en" : "pt");
+  }, [settings.language]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -234,7 +245,7 @@ export default function App() {
     if (snapshot.paused) {
       try {
         setSnapshot(await api.setPaused(false));
-        notify("Sincronização retomada.", "ok");
+        notify(tr("Sincronização retomada."), "ok");
       } catch (cause) {
         notify(errorMessage(cause), "error");
       }
@@ -242,7 +253,7 @@ export default function App() {
     }
     const targets = profiles.filter((profile) => profile.enabled);
     if (targets.length === 0) {
-      notify("Adicione uma pasta antes de sincronizar.", "info");
+      notify(tr("Adicione uma pasta antes de sincronizar."), "info");
       return;
     }
     const results = await Promise.allSettled(
@@ -252,7 +263,7 @@ export default function App() {
     if (failure && failure.status === "rejected") {
       notify(errorMessage(failure.reason), "error");
     } else {
-      notify("Sincronização iniciada.", "ok");
+      notify(tr("Sincronização iniciada."), "ok");
     }
   }, [notify, profiles, snapshot.paused]);
 
@@ -263,7 +274,10 @@ export default function App() {
   const togglePause = useCallback(async () => {
     try {
       setSnapshot(await api.setPaused(!snapshot.paused));
-      notify(snapshot.paused ? "Sincronização retomada." : "Sincronização pausada.", "ok");
+      notify(
+        snapshot.paused ? tr("Sincronização retomada.") : tr("Sincronização pausada."),
+        "ok",
+      );
     } catch (cause) {
       notify(errorMessage(cause), "error");
     }
@@ -273,7 +287,7 @@ export default function App() {
     async (id: string, resync = false) => {
       try {
         setSnapshot(await api.startSync(id, resync));
-        notify("Sincronização iniciada.", "ok");
+        notify(tr("Sincronização iniciada."), "ok");
       } catch (cause) {
         notify(errorMessage(cause), "error");
       }
@@ -288,7 +302,10 @@ export default function App() {
         setProfiles((items) =>
           items.map((item) => (item.id === updated.id ? updated : item)),
         );
-        notify(updated.enabled ? "Pasta ativada." : "Pasta desativada.", "ok");
+        notify(
+          updated.enabled ? tr("Pasta ativada.") : tr("Pasta desativada."),
+          "ok",
+        );
       } catch (cause) {
         notify(errorMessage(cause), "error");
       }
@@ -301,7 +318,7 @@ export default function App() {
       try {
         await api.deleteProfile(id);
         await refreshProfiles();
-        notify("Pasta removida.", "ok");
+        notify(tr("Pasta removida."), "ok");
       } catch (cause) {
         notify(errorMessage(cause), "error");
       }
@@ -328,7 +345,12 @@ export default function App() {
         // (dentro do Flatpak quem escreve o arquivo é o portal).
         const value = await api.setAutostart(enabled);
         setAutostart(value);
-        notify(value ? "Nuvem Sync abrirá junto com o sistema." : "Início automático desativado.", "ok");
+        notify(
+          value
+            ? tr("Nuvem Sync abrirá junto com o sistema.")
+            : tr("Início automático desativado."),
+          "ok",
+        );
       } catch (cause) {
         notify(errorMessage(cause), "error");
         setAutostart(await api.autostartEnabled().catch(() => enabled));
@@ -349,7 +371,7 @@ export default function App() {
           lista.some((item) => item.name === atual) ? atual : lista[0]?.name ?? "",
         );
         void api.accountUsage().then(setUsage).catch(() => undefined);
-        notify(`Conta “${name}” removida.`, "ok");
+        notify(tr("Conta “{nome}” removida.", { nome: name }), "ok");
       } catch (cause) {
         notify(errorMessage(cause), "error");
       }
@@ -363,7 +385,7 @@ export default function App() {
       setAccounts(await api.listAccounts());
       setFilesAccount(account.name);
       setFilesPath("");
-      notify(`Conta “${account.name}” conectada.`, "ok");
+      notify(tr("Conta “{nome}” conectada.", { nome: account.name }), "ok");
     },
     [notify],
   );
@@ -372,7 +394,7 @@ export default function App() {
     async (input: { account: string; remotePath: string; localPath: string }) => {
       const profile = await api.createProfile({ ...input, enabled: true });
       setProfiles((items) => [...items, profile]);
-      notify("Pasta adicionada. Sincronizando pela primeira vez…", "ok");
+      notify(tr("Pasta adicionada. Sincronizando pela primeira vez…"), "ok");
       void syncProfile(profile.id, true);
     },
     [notify, syncProfile],
@@ -430,8 +452,8 @@ export default function App() {
       ] as [ViewId, string, IconName, string][]
     ).map(([id, label, icon, shortcut]) => ({
       id: `go-${id}`,
-      label,
-      group: "Ir para",
+      label: tr(label),
+      group: tr("Ir para"),
       icon,
       shortcut,
       run: () => setView(id),
@@ -440,50 +462,50 @@ export default function App() {
     const actions: PaletteAction[] = [
       {
         id: "sync",
-        label: "Sincronizar agora",
-        group: "Sincronização",
+        label: tr("Sincronizar agora"),
+        group: tr("Sincronização"),
         icon: "refresh",
         run: () => void syncAll(),
       },
       {
         id: "pause",
-        label: snapshot.paused ? "Retomar sincronização" : "Pausar tudo",
-        group: "Sincronização",
+        label: snapshot.paused ? tr("Retomar sincronização") : tr("Pausar tudo"),
+        group: tr("Sincronização"),
         icon: snapshot.paused ? "play" : "pause",
         run: () => void togglePause(),
       },
       {
         id: "add-folder",
-        label: "Adicionar pasta",
-        group: "Sincronização",
+        label: tr("Adicionar pasta"),
+        group: tr("Sincronização"),
         icon: "plus",
         run: () => setAddFolderOpen(true),
       },
       {
         id: "add-account",
-        label: "Conectar conta",
-        group: "Sincronização",
+        label: tr("Conectar conta"),
+        group: tr("Sincronização"),
         icon: "link",
         run: () => setAddAccountOpen(true),
       },
       {
         id: "theme",
-        label: theme === "light" ? "Ativar tema escuro" : "Ativar tema claro",
-        group: "Sistema",
+        label: theme === "light" ? tr("Ativar tema escuro") : tr("Ativar tema claro"),
+        group: tr("Sistema"),
         icon: theme === "light" ? "moon" : "sun",
         run: () => setTheme(theme === "light" ? "dark" : "light"),
       },
       {
         id: "quit",
-        label: "Sair do Nuvem Sync",
-        group: "Sistema",
+        label: tr("Sair do Nuvem Sync"),
+        group: tr("Sistema"),
         icon: "x",
         run: () => void api.quitApp(),
       },
     ];
 
     return [...nav, ...actions];
-  }, [snapshot.paused, syncAll, theme, togglePause]);
+  }, [idioma, snapshot.paused, syncAll, theme, togglePause]);
 
   const meta = TITLES[view];
 
@@ -499,8 +521,8 @@ export default function App() {
 
       <div className="main">
         <TopBar
-          title={meta.title}
-          subtitle={meta.subtitle}
+          title={tr(meta.title)}
+          subtitle={tr(meta.subtitle)}
           snapshot={snapshot}
           theme={theme}
           onToggleTheme={() => setTheme(theme === "light" ? "dark" : "light")}
@@ -608,6 +630,7 @@ function AddAccountModal({
   onClose: () => void;
   onConnect: (provider: string, name: string) => Promise<void>;
 }) {
+  const t = useT();
   const [provider, setProvider] = useState("drive");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -627,16 +650,16 @@ function AddAccountModal({
 
   return (
     <Modal
-      title="Conectar conta"
+      title={t("Conectar conta")}
       onClose={busy ? () => undefined : onClose}
       footer={
         <>
           <button className="btn ghost" onClick={onClose} disabled={busy}>
-            Cancelar
+            {t("Cancelar")}
           </button>
           <button className="btn primary" onClick={() => void submit()} disabled={busy}>
             {busy ? <Icon name="refresh" size={15} className="spin" /> : <Icon name="link" size={15} />}
-            {busy ? "Aguardando autorização…" : "Conectar"}
+            {busy ? t("Aguardando autorização…") : t("Conectar")}
           </button>
         </>
       }
@@ -665,7 +688,7 @@ function AddAccountModal({
       </div>
 
       <div className="field">
-        <label htmlFor="account-name">Nome da conta (opcional)</label>
+        <label htmlFor="account-name">{t("Nome da conta (opcional)")}</label>
         <input
           id="account-name"
           className="input"
@@ -675,13 +698,13 @@ function AddAccountModal({
           disabled={busy}
         />
         <span className="hint">
-          É o nome que aparece no Nuvem Sync e no rclone. Pode ser qualquer apelido.
+          {t("É o nome que aparece no Nuvem Sync e no rclone. Pode ser qualquer apelido.")}
         </span>
       </div>
 
       <div className="banner info">
         <Icon name="shield" size={16} />
-        A autorização acontece no navegador. O Nuvem Sync nunca vê sua senha.
+        {t("A autorização acontece no navegador. O Nuvem Sync nunca vê sua senha.")}
       </div>
 
       {error ? (
@@ -693,8 +716,9 @@ function AddAccountModal({
 
       {busy ? (
         <p className="muted" style={{ fontSize: 12 }}>
-          Termine a autorização na janela do navegador que o rclone abriu. Esta caixa
-          fecha sozinha ao concluir.
+          {t(
+            "Termine a autorização na janela do navegador que o rclone abriu. Esta caixa fecha sozinha ao concluir.",
+          )}
         </p>
       ) : null}
     </Modal>
@@ -717,6 +741,7 @@ function AddFolderModal({
   const inicial = accounts.some((item) => item.name === defaultAccount)
     ? (defaultAccount as string)
     : accounts[0]?.name ?? "";
+  const t = useT();
   const [account, setAccount] = useState(inicial);
   const [remotePath, setRemotePath] = useState("");
   const [localPath, setLocalPath] = useState("");
@@ -742,7 +767,7 @@ function AddFolderModal({
         setFolders(
           listing
             .filter((entry) => entry.isDir)
-            .sort((left, right) => left.name.localeCompare(right.name, "pt-BR")),
+            .sort((left, right) => left.name.localeCompare(right.name, locale())),
         );
       })
       .catch((cause) => {
@@ -763,14 +788,14 @@ function AddFolderModal({
 
   const pickFolder = async () => {
     if (!isDesktop) {
-      notify("No navegador, digite o caminho manualmente.", "info");
+      notify(t("No navegador, digite o caminho manualmente."), "info");
       return;
     }
     try {
       const picked = await openDialog({
         directory: true,
         multiple: false,
-        title: "Escolha a pasta local",
+        title: t("Escolha a pasta local"),
       });
       if (typeof picked === "string") setLocalPath(picked);
     } catch (cause) {
@@ -780,11 +805,11 @@ function AddFolderModal({
 
   const submit = async () => {
     if (!account) {
-      setError("Conecte uma conta primeiro.");
+      setError(t("Conecte uma conta primeiro."));
       return;
     }
     if (!localPath.trim()) {
-      setError("Escolha a pasta local.");
+      setError(t("Escolha a pasta local."));
       return;
     }
     setBusy(true);
@@ -804,22 +829,22 @@ function AddFolderModal({
 
   return (
     <Modal
-      title="Adicionar pasta"
+      title={t("Adicionar pasta")}
       onClose={busy ? () => undefined : onClose}
       footer={
         <>
           <button className="btn ghost" onClick={onClose} disabled={busy}>
-            Cancelar
+            {t("Cancelar")}
           </button>
           <button className="btn primary" onClick={() => void submit()} disabled={busy}>
             {busy ? <Icon name="refresh" size={15} className="spin" /> : <Icon name="plus" size={15} />}
-            Adicionar
+            {t("Adicionar")}
           </button>
         </>
       }
     >
       <div className="field">
-        <label htmlFor="folder-account">Conta</label>
+        <label htmlFor="folder-account">{t("Conta")}</label>
         <select
           id="folder-account"
           className="select"
@@ -840,17 +865,17 @@ function AddFolderModal({
       </div>
 
       <div className="field">
-        <label htmlFor="folder-remote">Pasta na nuvem</label>
+        <label htmlFor="folder-remote">{t("Pasta na nuvem")}</label>
         <input
           id="folder-remote"
           className="input"
           value={remotePath}
           onChange={(event) => setRemotePath(event.target.value)}
-          placeholder="Projetos (vazio = raiz da conta)"
+          placeholder={t("Projetos (vazio = raiz da conta)")}
           disabled={busy}
         />
         <span className="hint">
-          Escolha na lista ou digite o caminho (vazio = raiz da conta).
+          {t("Escolha na lista ou digite o caminho (vazio = raiz da conta).")}
         </span>
 
         <div className="remote-pick">
@@ -859,14 +884,14 @@ function AddFolderModal({
               className="icon-btn"
               onClick={() => setBrowse(parentPath(browse))}
               disabled={!browse || busy}
-              aria-label="Subir um nível"
-              title="Subir um nível"
+              aria-label={t("Subir um nível")}
+              title={t("Subir um nível")}
             >
               <Icon name="chevron-left" size={15} />
             </button>
             <span className="remote-trail">
               <button onClick={() => setBrowse("")} className={browse ? "" : "current"}>
-                Início
+                {t("Início")}
               </button>
               {trilha.map((segmento, indice) => {
                 const alvo = trilha.slice(0, indice + 1).join("/");
@@ -889,18 +914,18 @@ function AddFolderModal({
               className="link"
               onClick={() => setRemotePath(browse)}
               disabled={busy}
-              title={browse ? `Usar ${browse}` : "Usar a raiz da conta"}
+              title={browse ? t("Usar {caminho}", { caminho: browse }) : t("Usar a raiz da conta")}
             >
-              {browse ? `Usar “${atual}”` : "Usar a raiz"}
+              {browse ? t("Usar “{pasta}”", { pasta: atual }) : t("Usar a raiz")}
             </button>
           </div>
           <div className="remote-list">
             {loadingFolders ? (
-              <div className="remote-empty">Lendo a nuvem…</div>
+              <div className="remote-empty">{t("Lendo a nuvem…")}</div>
             ) : foldersError ? (
               <div className="remote-empty">{foldersError}</div>
             ) : folders.length === 0 ? (
-              <div className="remote-empty">Nenhuma subpasta aqui.</div>
+              <div className="remote-empty">{t("Nenhuma subpasta aqui.")}</div>
             ) : (
               folders.map((pasta) => (
                 <div
@@ -910,7 +935,7 @@ function AddFolderModal({
                   <button
                     className="remote-name"
                     onClick={() => setRemotePath(pasta.path)}
-                    title={`Usar ${pasta.path}`}
+                    title={t("Usar {caminho}", { caminho: pasta.path })}
                   >
                     <Icon name="folder" size={15} />
                     {pasta.name}
@@ -918,8 +943,8 @@ function AddFolderModal({
                   <button
                     className="icon-btn"
                     onClick={() => setBrowse(pasta.path)}
-                    aria-label={`Entrar em ${pasta.name}`}
-                    title="Entrar"
+                    aria-label={t("Entrar em {pasta}", { pasta: pasta.name })}
+                    title={t("Entrar")}
                   >
                     <Icon name="chevron-right" size={15} />
                   </button>
@@ -931,22 +956,22 @@ function AddFolderModal({
       </div>
 
       <div className="field">
-        <label htmlFor="folder-local">Pasta local</label>
+        <label htmlFor="folder-local">{t("Pasta local")}</label>
         <div style={{ display: "flex", gap: 8 }}>
           <input
             id="folder-local"
             className="input"
             value={localPath}
             onChange={(event) => setLocalPath(event.target.value)}
-            placeholder="/home/você/Nuvem/Projetos"
+            placeholder={t("/home/você/Nuvem/Projetos")}
             disabled={busy}
           />
           <button className="btn ghost" onClick={() => void pickFolder()} disabled={busy}>
             <Icon name="folder-open" size={15} />
-            Escolher
+            {t("Escolher")}
           </button>
         </div>
-        <span className="hint">A pasta é criada se não existir.</span>
+        <span className="hint">{t("A pasta é criada se não existir.")}</span>
       </div>
 
       {error ? (

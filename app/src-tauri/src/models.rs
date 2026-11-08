@@ -218,10 +218,17 @@ pub struct Settings {
     pub drive_client_id: String,
     #[serde(default)]
     pub drive_client_secret: String,
+    /// Idioma da interface: "pt" (padrão) ou "en".
+    #[serde(default = "default_language")]
+    pub language: String,
 }
 
 fn default_theme() -> String {
     "system".to_string()
+}
+
+fn default_language() -> String {
+    "pt".to_string()
 }
 
 fn default_interval() -> u64 {
@@ -248,6 +255,7 @@ impl Default for Settings {
             sync_interval_min: default_interval(),
             drive_client_id: String::new(),
             drive_client_secret: String::new(),
+            language: default_language(),
         }
     }
 }

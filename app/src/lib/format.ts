@@ -1,3 +1,5 @@
+import { idiomaAtual, locale, t } from "./i18n";
+
 const UNITS = ["B", "KB", "MB", "GB", "TB"];
 
 export function formatBytes(value: number, digits = 1): string {
@@ -8,7 +10,10 @@ export function formatBytes(value: number, digits = 1): string {
   );
   const scaled = value / 1024 ** exponent;
   const decimals = exponent === 0 ? 0 : scaled >= 100 ? 0 : digits;
-  return `${scaled.toFixed(decimals).replace(".", ",")} ${UNITS[exponent]}`;
+  const numero = scaled.toFixed(decimals);
+  // Português usa vírgula decimal; inglês, ponto.
+  const texto = idiomaAtual() === "en" ? numero : numero.replace(".", ",");
+  return `${texto} ${UNITS[exponent]}`;
 }
 
 export function formatSpeed(value: number): string {
@@ -27,16 +32,20 @@ export function formatEta(seconds: number | null): string {
 }
 
 export function relativeTime(timestamp: number | null): string {
-  if (!timestamp) return "nunca";
+  if (!timestamp) return t("nunca");
   const diff = Date.now() - timestamp;
-  if (diff < 45_000) return "agora";
-  if (diff < 3_600_000) return `há ${Math.max(1, Math.round(diff / 60_000))} min`;
-  if (diff < 86_400_000) return `há ${Math.round(diff / 3_600_000)} h`;
+  if (diff < 45_000) return t("agora");
+  if (diff < 3_600_000) return t("há {n} min", { n: Math.max(1, Math.round(diff / 60_000)) });
+  if (diff < 86_400_000) return t("há {n} h", { n: Math.round(diff / 3_600_000) });
   if (diff < 7 * 86_400_000) {
     const days = Math.round(diff / 86_400_000);
-    return `há ${days} dia${days === 1 ? "" : "s"}`;
+    return days === 1 ? t("há {n} dia", { n: days }) : t("há {n} dias", { n: days });
   }
-  return new Date(timestamp).toLocaleDateString("pt-BR");
+  return new Date(timestamp).toLocaleDateString(locale(), {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
 export function dayLabel(timestamp: number): string {
@@ -48,16 +57,16 @@ export function dayLabel(timestamp: number): string {
     left.getDate() === right.getDate() &&
     left.getMonth() === right.getMonth() &&
     left.getFullYear() === right.getFullYear();
-  if (sameDay(date, today)) return "Hoje";
-  if (sameDay(date, yesterday)) return "Ontem";
-  return date.toLocaleDateString("pt-BR", {
+  if (sameDay(date, today)) return t("Hoje");
+  if (sameDay(date, yesterday)) return t("Ontem");
+  return date.toLocaleDateString(locale(), {
     day: "2-digit",
     month: "long",
   });
 }
 
 export function clock(timestamp: number): string {
-  return new Date(timestamp).toLocaleTimeString("pt-BR", {
+  return new Date(timestamp).toLocaleTimeString(locale(), {
     hour: "2-digit",
     minute: "2-digit",
   });

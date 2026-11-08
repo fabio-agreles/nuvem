@@ -217,6 +217,24 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
+- 🚧 **Idioma inglês (não publicado)** — troca em **Ajustes → Sistema → Idioma**,
+  sem reiniciar. O português continua o padrão e quem já usa o app não vê nada
+  mudar. O dicionário usa **o texto em português como chave**
+  (`"Visão geral": "Overview"`): se faltar tradução, aparece o português, então
+  nada quebra; a contrapartida é que mudar o texto em português exige atualizar a
+  chave. `src/lib/i18n.ts` traz `t()`, `useT()`, `useIdioma()`, `locale()`;
+  `format.ts` passou a usar vírgula decimal só em português e datas em
+  `pt-BR`/`en-US`. Telas traduzidas: visão geral, arquivos, pastas, atividade,
+  conflitos, ajustes (inclusive Avançado e Sobre), doações, paleta de comandos,
+  barra lateral, topo, modais de conta/pasta e mensagens de aviso. O idioma é
+  gravado em `Settings.language` (`"pt"`/`"en"`) no `settings.json`, aplicado na
+  carga inicial e no `lang` do documento. `npm run i18n` (`scripts/checar-i18n.mjs`)
+  confere o que falta: hoje **0 textos sem tradução** em 328 chaves.
+  Conferido com o modo demonstração no navegador: as 6 telas, os modais, a paleta
+  e a volta para o português; `tsc` limpo, `vite build` ok, `cargo test` 52/52.
+  **Fica em português**: título/detalhe de atividade montado pelo backend, as
+  notificações do sistema e as mensagens do rclone — traduzir exige passar o
+  idioma ao Rust. Guia em [`docs/idiomas.md`](docs/idiomas.md).
 - ✅ **1.4.0 publicada** (tag `v1.4.0`, 04/11) — doações via Pix. Cartão "Ajude
   a manter o projeto" nos Ajustes, logo antes de "Sobre", e um diálogo com o
   texto pedido, o QR code e o botão "Copiar código Pix". O QR e o "copia e

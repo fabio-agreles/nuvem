@@ -85,6 +85,8 @@ export type Settings = {
   /** Credenciais OAuth próprias do Google Drive; vazias = projeto do rclone. */
   driveClientId: string;
   driveClientSecret: string;
+  /** Idioma da interface: "pt" (padrão) ou "en". */
+  language: string;
 };
 
 export type FolderSize = {

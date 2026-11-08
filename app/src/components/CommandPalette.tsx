@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon, type IconName } from "./Icons";
+import { useT } from "../lib/i18n";
 
 export type PaletteAction = {
   id: string;
@@ -19,6 +20,7 @@ export function CommandPalette({
   onClose: () => void;
   actions: PaletteAction[];
 }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [index, setIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +70,7 @@ export function CommandPalette({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="palette" role="dialog" aria-modal="true" aria-label="Paleta de comandos">
+      <div className="palette" role="dialog" aria-modal="true" aria-label={t("Paleta de comandos")}>
         <div className="palette-input">
           <Icon name="search" size={18} />
           <input
@@ -90,14 +92,14 @@ export function CommandPalette({
                 run(filtered[index]);
               }
             }}
-            placeholder="Buscar ações…"
-            aria-label="Buscar ações"
+            placeholder={t("Buscar ações…")}
+            aria-label={t("Buscar ações")}
           />
           <span className="kbd">Esc</span>
         </div>
         <div className="palette-list">
           {filtered.length === 0 ? (
-            <div className="palette-empty">Nenhuma ação encontrada.</div>
+            <div className="palette-empty">{t("Nenhuma ação encontrada.")}</div>
           ) : (
             groups.map((group) => (
               <div key={group.name}>

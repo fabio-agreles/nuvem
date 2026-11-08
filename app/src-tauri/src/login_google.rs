@@ -177,8 +177,20 @@ async fn trocar_codigo_por_token(
     client_secret: &str,
     retorno: &str,
 ) -> AppResult<Value> {
+    trocar_codigo_em(URL_TOKEN, codigo, client_id, client_secret, retorno).await
+}
+
+/// Mesma troca, com o endereço do serviço de token explícito (os testes usam um
+/// Google de mentira em `127.0.0.1`).
+async fn trocar_codigo_em(
+    endereco: &str,
+    codigo: &str,
+    client_id: &str,
+    client_secret: &str,
+    retorno: &str,
+) -> AppResult<Value> {
     let resposta = reqwest::Client::new()
-        .post(URL_TOKEN)
+        .post(endereco)
         .form(&[
             ("code", codigo),
             ("client_id", client_id),
@@ -655,6 +667,111 @@ mod testes {
 
         let erro = espera.await.unwrap().unwrap_err().to_string();
         assert!(erro.contains("não confere"));
+    }
+
+    /// Servidor de mentira no lugar do Google: responde ao POST do token com o
+    /// corpo combinado, para exercitar o fluxo inteiro sem tocar na internet.
+    async fn google_de_mentira(codigo_http: u16, corpo: &'static str) -> String {
+        let ouvinte = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        let porta = ouvinte.local_addr().unwrap().port();
+        tokio::spawn(async move {
+            let (mut fluxo, _) = ouvinte.accept().await.unwrap();
+            let mut pedido = Vec::new();
+            let mut pedaco = [0u8; 1024];
+            loop {
+                let lido = fluxo.read(&mut pedaco).await.unwrap();
+                if lido == 0 {
+                    break;
+                }
+                pedido.extend_from_slice(&pedaco[..lido]);
+                if pedido.windows(4).any(|janela| janela == b"\r\n\r\n") {
+                    break;
+                }
+            }
+            let pedido = String::from_utf8_lossy(&pedido);
+            assert!(pedido.starts_with("POST /token "));
+            assert!(pedido.contains("grant_type=authorization_code"));
+            assert!(pedido.contains("code=4%2F0Ab"));
+            let resposta = format!(
+                "HTTP/1.1 {codigo_http} OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{corpo}",
+                corpo.len()
+            );
+            fluxo.write_all(resposta.as_bytes()).await.unwrap();
+            fluxo.flush().await.unwrap();
+        });
+        format!("http://127.0.0.1:{porta}/token")
+    }
+
+    #[tokio::test]
+    async fn troca_do_codigo_vira_token_no_formato_do_rclone() {
+        let endereco = google_de_mentira(
+            200,
+            r#"{"access_token":"ya29.teste","expires_in":3599,"refresh_token":"1//refresh","scope":"https://www.googleapis.com/auth/drive","token_type":"Bearer"}"#,
+        )
+        .await;
+
+        let token = trocar_codigo_em(
+            &endereco,
+            "4/0Ab",
+            "123-abc.apps.googleusercontent.com",
+            "GOCSPX-segredo",
+            "http://127.0.0.1:53682/",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(token["access_token"], "ya29.teste");
+        assert_eq!(token["refresh_token"], "1//refresh");
+        assert_eq!(token["token_type"], "Bearer");
+        // O rclone espera RFC 3339 em `expiry`.
+        let validade = token["expiry"].as_str().unwrap();
+        assert_eq!(validade.len(), 20, "{validade}");
+        assert!(validade.ends_with('Z'));
+        assert!(validade.starts_with("20"));
+    }
+
+    #[tokio::test]
+    async fn token_sem_refresh_vira_erro_explicado() {
+        let endereco = google_de_mentira(
+            200,
+            r#"{"access_token":"ya29.teste","expires_in":3599,"token_type":"Bearer"}"#,
+        )
+        .await;
+
+        let erro = trocar_codigo_em(
+            &endereco,
+            "4/0Ab",
+            "123-abc.apps.googleusercontent.com",
+            "GOCSPX-segredo",
+            "http://127.0.0.1:53682/",
+        )
+        .await
+        .unwrap_err()
+        .to_string();
+        assert!(erro.contains("uma hora só"), "{erro}");
+        assert!(erro.contains("myaccount.google.com/permissions"), "{erro}");
+    }
+
+    #[tokio::test]
+    async fn credenciais_recusadas_pelo_google_explicam_o_que_conferir() {
+        let endereco = google_de_mentira(
+            400,
+            r#"{"error":"invalid_client","error_description":"Unauthorized"}"#,
+        )
+        .await;
+
+        let erro = trocar_codigo_em(
+            &endereco,
+            "4/0Ab",
+            "123-abc.apps.googleusercontent.com",
+            "GOCSPX-errado",
+            "http://127.0.0.1:53682/",
+        )
+        .await
+        .unwrap_err()
+        .to_string();
+        assert!(erro.contains("Ajustes → Avançado"), "{erro}");
+        assert!(erro.contains("invalid_client"), "{erro}");
     }
 
     #[test]

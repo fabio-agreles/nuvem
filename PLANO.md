@@ -227,9 +227,13 @@ Alternativas descartadas por ora:
   `oauth2.googleapis.com/token` e cria o remote com `config/create`
   (`token` + `config_refresh_token=false` + `nonInteractive`), sem a etapa
   interativa do rclone. Sem projeto OAuth (nem embutido, nem em Ajustes →
-  Avançado) o app mantém o caminho antigo do rclone como plano B. 63 testes
-  (9 novos: endereço de autorização, `state`, decodificação da consulta,
-  RFC 3339 do `expiry`, laço local com navegador de mentira, páginas pt/en).
+  Avançado) o app mantém o caminho antigo do rclone como plano B. 66 testes
+  (12 novos: endereço de autorização, `state`, decodificação da consulta,
+  RFC 3339 do `expiry`, laço local e troca do código exercitados de ponta a ponta
+  contra um Google de mentira em `127.0.0.1`, páginas pt/en). Conferido fora dos
+  testes: o Google devolve 302 para esse `client_id` com retorno em
+  `127.0.0.1`, em qualquer porta, e o `client_secret` do projeto responde
+  `invalid_grant` (e não `invalid_client`) a um código falso.
 - ✅ **1.5.1 publicada** (tag `v1.5.1`, 08/11) — correção da bandeja. O menu da
   bandeja, as notificações e o registro de atividade continuavam em português na
   1.5.0: nascem no Rust, fora do dicionário do frontend. `src-tauri/src/idioma.rs`

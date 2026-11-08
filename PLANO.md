@@ -232,7 +232,21 @@ Alternativas descartadas por ora:
   (DNS/TLS/rede) em vez de só "error sending request". Prova nova, `#[ignore]`
   (depende de rede): `cargo test --lib -- --ignored fala_https_com_o_google`
   confere HTTPS de verdade e que o par do projeto responde `invalid_grant` a um
-  código falso. 67 testes + 1 ignorado. Pacotes regerados (os 5) e 1.6.0 mantida.
+  código falso. 67 testes + 1 ignorado. **Publicada como 1.6.1** (tag `v1.6.1`)
+  com os 5 pacotes: `.deb` (33,8 MB, `Version: 1.6.1`, `Depends:
+  libwebkit2gtk-4.1-0, libgtk-3-0`) e AppImage 108,9 MB do CI, `.exe` 25,0 MB
+  (NSIS), Flatpak 23,6 MB e zip portátil 32,0 MB daqui. Foi preciso **regenerar
+  `flatpak/cargo-sources.json`** (963 → 1015 fontes): o build do Flatpak é
+  `--offline` e os crates novos do TLS (`rustls`, `ring`, `webpki-roots`,
+  `hyper-rustls`…) não estavam vendorizados — o primeiro build morreu com "no
+  matching package named `hyper-rustls` found". Conferido no `nuvem` do `.deb`,
+  no `Nuvem.exe` do zip e no `nuvem.exe` do NSIS: `could not reach Google`,
+  `Conta conectada`, `go back to Nuvem Sync` e o `client_id` do projeto;
+  `flatpak info` → 1.6.1; DNS para `oauth2.googleapis.com` resolve dentro do
+  sandbox do Flatpak. O teste `#[ignore]` também passa em **release** (o build
+  que vai para os pacotes), não só em debug. Local em `~/Downloads/nuvem-1.6.1`
+  (+ `Nuvem-Sync-1.6.1-pacotes.zip`, SHA256SUMS 5/5). 1.6.0, 1.5.1, 1.5.0 e
+  1.4.0 seguem publicadas.
 - ✅ **1.6.0 — autorização com a cara do app (08/11)** — a última página da
   autorização do Google era do rclone ("All done. Please go back to rclone.",
   template Go embutido no binário dele). Agora o laço de retorno é do próprio

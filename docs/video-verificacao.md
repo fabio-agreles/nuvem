@@ -21,7 +21,7 @@ escopo restrito `drive`. É o vídeo que falta.
 | **Conta Google reserva** | a tela de consentimento só aparece em autorização nova. Usar a principal obriga revogar e reconectar, e ainda apaga o estado do bisync. Cada conta reserva consome **1 das 97 autorizações** restantes — não faça testes extras. |
 | `bash scripts/demo-video.sh` | cria `~/Downloads/nuvem-demo-video` com `nota.txt`, `planilha-demo.csv` e `exemplo.md` fictícios. |
 | Pasta `Nuvem-demo` no Drive | crie pela web e envie os três arquivos para dentro. É a pasta que o vídeo vai sincronizar. |
-| Nuvem Sync **1.4.0** instalado | a tela de consentimento tem de mostrar `Nuvem Sync`, igual à marca verificada. |
+| Nuvem Sync **1.5.0** instalado | a tela de consentimento tem de mostrar `Nuvem Sync`, igual à marca verificada. |
 | Janela limpa | feche abas com e-mail, banco, WhatsApp Web. O revisor vê a tela inteira. |
 | Resolução e fonte | 1280×720 no mínimo; zoom do sistema em 110–125% para o texto ser legível no YouTube. |
 | Gravação | tela inteira + microfone, **um take só, sem cortes e sem edição**. |

@@ -84,12 +84,39 @@ mensagens que o backend envia por texto exato.
 3. Ajuste o campo `language` em `Settings` (Rust e TypeScript) — ele é texto, não
    um enum, justamente para não precisar mexer no banco de configuração.
 
+## O lado do Rust: bandeja, notificações e atividade
+
+Três coisas aparecem sem passar pela interface e por isso não podiam depender do
+dicionário do frontend: o **menu da bandeja**, as **notificações do sistema** e o
+**registro de atividade**. Elas são montadas em `src-tauri/src/idioma.rs`, que
+guarda o idioma escolhido num `AtomicU8` e oferece o par português/inglês:
+
+```rust
+.push_activity(
+    "sync",
+    crate::idioma::texto("Sincronização concluída", "Sync finished"),
+    &crate::idioma::escolhe(
+        format!("{nome} está em dia · {tempo} s"),
+        format!("{nome} is up to date · {tempo} s"),
+    ),
+    Some(&profile.id),
+)
+```
+
+- Na abertura, o idioma vem do `settings.json` **antes** de `tray::init` montar o
+  menu;
+- ao trocar em Ajustes, `save_settings` chama `idioma::definir` e
+  `tray::aplicar_idioma`, que monta o menu de novo com os rótulos traduzidos;
+- entrar num idioma novo é acrescentar o par de textos nas chamadas de
+  `texto()`/`escolhe()` — não existe tabela de chaves deste lado, porque são
+  poucas frases e cada uma aparece junto do formato.
+
 ## O que ainda está em português
 
-- **Registro de atividade**: os títulos fixos são traduzidos pelo frontend por
-  texto exato, mas os detalhes montados pelo backend (`pessoal:Projetos está em
-  dia`, `… não sincronizou`) e as notificações do sistema continuam em
-  português. Traduzir isso exige passar o idioma escolhido ao Rust e montar as
-  frases lá — está na lista do `PLANO.md`.
+- **Erros do rclone**: as mensagens vêm da ferramenta (em inglês, aliás) e são
+  mostradas como vieram — traduzir texto de terceiro seria pior que deixar claro
+  que é uma mensagem técnica.
 - **Modo demonstração** (navegador): dados fictícios, incluindo nomes de pasta.
-- Textos de erro vindos do rclone: são mensagens técnicas da ferramenta.
+- Um registro de atividade antigo continua no idioma em que foi escrito; só os
+  novos seguem a troca (o histórico é um registro do que aconteceu, não um texto
+  vivo).

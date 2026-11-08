@@ -363,7 +363,7 @@ pub async fn connect_account(
     state
         .push_activity(
             "account",
-            "Conta conectada",
+            crate::idioma::texto("Conta conectada", "Account connected"),
             &format!("{} · {}", account.label, account.name),
             None,
         )
@@ -420,7 +420,7 @@ pub async fn create_profile(
     state
         .push_activity(
             "info",
-            "Pasta adicionada",
+            crate::idioma::texto("Pasta adicionada", "Folder added"),
             &format!("{} → {}", profile.remote_path, profile.local_path),
             Some(&profile.id),
         )
@@ -519,7 +519,12 @@ pub async fn delete_account(
     limpar_cache_da_conta(&state, &account).await;
 
     state
-        .push_activity("account", "Conta removida", &account, None)
+        .push_activity(
+            "account",
+            crate::idioma::texto("Conta removida", "Account removed"),
+            &account,
+            None,
+        )
         .await;
     let _ = app.emit("sync://changed", ());
     Ok(())
@@ -812,8 +817,14 @@ async fn start_profile_inner(
             state
                 .push_activity(
                     "info",
-                    "Trava antiga do bisync removida",
-                    &format!("{removidas} arquivo(s) .lck de uma execução interrompida"),
+                    crate::idioma::texto(
+                        "Trava antiga do bisync removida",
+                        "Old bisync lock removed",
+                    ),
+                    &crate::idioma::escolhe(
+                        format!("{removidas} arquivo(s) .lck de uma execução interrompida"),
+                        format!("{removidas} .lck file(s) from an interrupted run"),
+                    ),
                     Some(&profile.id),
                 )
                 .await;
@@ -870,9 +881,9 @@ async fn start_profile_inner(
             .push_activity(
                 "sync",
                 if resync {
-                    "Ressincronização iniciada"
+                    crate::idioma::texto("Ressincronização iniciada", "Resync started")
                 } else {
-                    "Sincronização iniciada"
+                    crate::idioma::texto("Sincronização iniciada", "Sync started")
                 },
                 &format!("{} ↔ {}", remote, profile.local_path),
                 Some(&profile.id),
@@ -908,7 +919,15 @@ pub async fn set_paused(
     if paused {
         stop_running_jobs(&state).await;
         state
-            .push_activity("info", "Sincronização pausada", "Todas as tarefas foram paradas.", None)
+            .push_activity(
+                "info",
+                crate::idioma::texto("Sincronização pausada", "Sync paused"),
+                crate::idioma::texto(
+                    "Todas as tarefas foram paradas.",
+                    "All jobs were stopped.",
+                ),
+                None,
+            )
             .await;
     } else {
         let profiles = state.profiles.lock().await.clone();
@@ -917,7 +936,7 @@ pub async fn set_paused(
                 state
                     .push_activity(
                         "error",
-                        "Falha ao retomar",
+                        crate::idioma::texto("Falha ao retomar", "Could not resume"),
                         &error.message,
                         Some(&profile.id),
                     )
@@ -1194,7 +1213,7 @@ pub async fn upload_file(
     state
         .push_activity_with_files(
             "upload",
-            "Enviado para a nuvem",
+            crate::idioma::texto("Enviado para a nuvem", "Uploaded to the cloud"),
             &format!("{} → {account}:{remote_path}", name),
             None,
             vec![FileChange {
@@ -1251,7 +1270,7 @@ pub async fn download_file(
     state
         .push_activity_with_files(
             "download",
-            "Baixado da nuvem",
+            crate::idioma::texto("Baixado da nuvem", "Downloaded from the cloud"),
             &format!("{account}:{remote_path} → {}", target.display()),
             None,
             vec![FileChange {
@@ -1376,7 +1395,7 @@ pub async fn resolve_conflict(
     state
         .push_activity(
             "conflict",
-            "Conflito resolvido",
+            crate::idioma::texto("Conflito resolvido", "Conflict resolved"),
             &format!("{base_name} · {}", action_label(&action)),
             None,
         )
@@ -1387,9 +1406,12 @@ pub async fn resolve_conflict(
 
 fn action_label(action: &str) -> &'static str {
     match action {
-        "remote" => "mantida a versão da nuvem",
-        "local" => "mantida a versão local",
-        _ => "mantidas as duas versões",
+        "remote" => crate::idioma::texto(
+            "mantida a versão da nuvem",
+            "kept the cloud version",
+        ),
+        "local" => crate::idioma::texto("mantida a versão local", "kept the local version"),
+        _ => crate::idioma::texto("mantidas as duas versões", "kept both versions"),
     }
 }
 
@@ -1575,6 +1597,10 @@ pub async fn save_settings(
         *stored = settings.clone();
         state.save_settings(&stored);
     }
+    // O idioma vale também para o que nasce no Rust: o menu da bandeja e as
+    // notificações do sistema.
+    crate::idioma::definir(&settings.language);
+    crate::tray::aplicar_idioma(&app);
     let _ = app.emit("settings://changed", ());
     Ok(settings)
 }

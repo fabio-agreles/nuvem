@@ -135,11 +135,60 @@ pub fn apply_estado(app: &AppHandle, estado: Estado) {
     aplicar(app, ESCURO.load(Ordering::Relaxed), estado);
 }
 
+/// Os três itens do menu, com os textos nos dois idiomas.
+const ROTULOS: [(&str, &str, &str); 3] = [
+    ("open", "Abrir Nuvem Sync", "Open Nuvem Sync"),
+    ("sync", "Sincronizar agora", "Sync now"),
+    ("quit", "Sair", "Quit"),
+];
+
+/// Monta o menu da bandeja no idioma em uso. Montar de novo (em vez de mexer
+/// nos itens um a um) é o caminho que a API do Tauri 2 oferece: o ícone da
+/// bandeja aceita `set_menu`, mas não devolve o menu que está lá.
+fn montar_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
+    let open = MenuItem::with_id(
+        app,
+        ROTULOS[0].0,
+        crate::idioma::texto(ROTULOS[0].1, ROTULOS[0].2),
+        true,
+        None::<&str>,
+    )?;
+    let sync = MenuItem::with_id(
+        app,
+        ROTULOS[1].0,
+        crate::idioma::texto(ROTULOS[1].1, ROTULOS[1].2),
+        true,
+        None::<&str>,
+    )?;
+    let quit = MenuItem::with_id(
+        app,
+        ROTULOS[2].0,
+        crate::idioma::texto(ROTULOS[2].1, ROTULOS[2].2),
+        true,
+        None::<&str>,
+    )?;
+    Menu::with_items(app, &[&open, &sync, &quit])
+}
+
+/// Reescreve o menu da bandeja no idioma escolhido. Chamado quando o usuário
+/// troca o idioma em Ajustes: a bandeja existe desde a abertura do app, antes
+/// de a interface conseguir mudar qualquer coisa.
+pub fn aplicar_idioma(app: &AppHandle) {
+    let Some(tray) = app.tray_by_id("main") else {
+        return;
+    };
+    match montar_menu(app) {
+        Ok(menu) => {
+            if let Err(error) = tray.set_menu(Some(menu)) {
+                eprintln!("bandeja: não foi possível trocar os rótulos do menu: {error}");
+            }
+        }
+        Err(error) => eprintln!("bandeja: não foi possível montar o menu traduzido: {error}"),
+    }
+}
+
 pub fn init(app: &mut App) -> tauri::Result<()> {
-    let open = MenuItem::with_id(app, "open", "Abrir Nuvem Sync", true, None::<&str>)?;
-    let sync = MenuItem::with_id(app, "sync", "Sincronizar agora", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Sair", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&open, &sync, &quit])?;
+    let menu = montar_menu(&app.handle())?;
 
     // Antes de a janela carregar o tema, usa o do sistema. O front-end confirma
     // (ou corrige) assim que monta, pelo comando `set_tray_theme`.

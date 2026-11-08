@@ -299,7 +299,7 @@ async fn supervise<W: Watcher + ?Sized>(
             state
                 .push_activity(
                     "error",
-                    "Sincronização automática",
+                    crate::idioma::texto("Sincronização automática", "Automatic sync"),
                     &format!("{}: {}", profile.local_path, error),
                     Some(&profile.id),
                 )

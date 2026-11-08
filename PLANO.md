@@ -238,9 +238,15 @@ Alternativas descartadas por ora:
   Pacote local em `~/Downloads/nuvem-1.5.0` (+ `Nuvem-Sync-1.5.0-pacotes.zip`,
   219 MB, SHA256SUMS conferido 5/5). **A 1.4.0 ficou como estava**, com os cinco
   pacotes dela na Release.
-  **Fica em português**: o detalhe do registro de atividade e as notificações
-  montados pelo backend, e as mensagens do rclone — traduzir exige passar o
-  idioma escolhido ao Rust. Os títulos fixos da atividade já são traduzidos.
+  **O lado do Rust também fala inglês** (`src-tauri/src/idioma.rs`): o menu da
+  bandeja (Abrir/Sincronizar agora/Sair), as notificações do sistema e o registro
+  de atividade — títulos e detalhes. O idioma é lido do `settings.json` antes de
+  `tray::init` e, ao trocar em Ajustes, `save_settings` chama `idioma::definir` +
+  `tray::aplicar_idioma`, que remonta o menu. 54 testes (novos: português é o
+  padrão, inglês troca as frases).
+  **Fica em português**: só as mensagens que o rclone devolve (texto de
+  terceiro) e um registro de atividade antigo, que continua no idioma em que foi
+  escrito.
 
 - ✅ **1.4.0 publicada** (tag `v1.4.0`, 04/11) — doações via Pix. Cartão "Ajude
   a manter o projeto" nos Ajustes, logo antes de "Sobre", e um diálogo com o

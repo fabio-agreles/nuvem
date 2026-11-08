@@ -155,8 +155,18 @@ async fn tick(app: &AppHandle) {
                     state
                         .push_activity(
                             "account",
-                            "Conta OneDrive reconfigurada",
-                            &format!("{}: o drive foi escolhido; a próxima execução ressincroniza", conta),
+                            crate::idioma::texto(
+                                "Conta OneDrive reconfigurada",
+                                "OneDrive account reconfigured",
+                            ),
+                            &crate::idioma::escolhe(
+                                format!(
+                                    "{conta}: o drive foi escolhido; a próxima execução ressincroniza"
+                                ),
+                                format!(
+                                    "{conta}: the drive was picked; the next run resyncs"
+                                ),
+                            ),
                             Some(&record.profile_id),
                         )
                         .await;
@@ -167,19 +177,35 @@ async fn tick(app: &AppHandle) {
         }
 
         let (kind, title) = if success {
-            ("sync", "Sincronização concluída")
+            (
+                "sync",
+                crate::idioma::texto("Sincronização concluída", "Sync finished"),
+            )
         } else {
-            ("error", "Falha na sincronização")
+            (
+                "error",
+                crate::idioma::texto("Falha na sincronização", "Sync failed"),
+            )
         };
         let elapsed = now_ms().saturating_sub(record.started_at) / 1000;
+        let nome = &record.profile_name;
         let detail = if success && elapsed >= 2 {
-            format!("{} está em dia · {} s", record.profile_name, elapsed)
+            crate::idioma::escolhe(
+                format!("{nome} está em dia · {elapsed} s"),
+                format!("{nome} is up to date · {elapsed} s"),
+            )
         } else if success {
-            format!("{} está em dia", record.profile_name)
+            crate::idioma::escolhe(
+                format!("{nome} está em dia"),
+                format!("{nome} is up to date"),
+            )
         } else if error.is_empty() {
-            format!("{} não sincronizou", record.profile_name)
+            crate::idioma::escolhe(
+                format!("{nome} não sincronizou"),
+                format!("{nome} did not sync"),
+            )
         } else {
-            format!("{}: {}", record.profile_name, error)
+            format!("{nome}: {error}")
         };
 
         // Verificação automática que não moveu nada não polui a atividade nem
@@ -203,9 +229,15 @@ async fn tick(app: &AppHandle) {
         if notify_enabled && !silencioso {
             use tauri_plugin_notification::NotificationExt;
             let heading = if success {
-                "Nuvem Sync — sincronização concluída"
+                crate::idioma::texto(
+                    "Nuvem Sync — sincronização concluída",
+                    "Nuvem Sync — sync finished",
+                )
             } else {
-                "Nuvem Sync — falha na sincronização"
+                crate::idioma::texto(
+                    "Nuvem Sync — falha na sincronização",
+                    "Nuvem Sync — sync failed",
+                )
             };
             let _ = app
                 .notification()
@@ -226,15 +258,23 @@ async fn tick(app: &AppHandle) {
             state.bump_attempt(&record.profile_id).await;
             state
                 .push_activity(
-                        "sync",
-                    "Nova tentativa agendada",
-                    &format!(
-                        "{} tenta de novo em {} s (tentativa {} de {})",
-                        record.profile_name,
-                        wait.as_secs(),
-                        attempt,
-                        crate::retry::MAX_ATTEMPTS
-                    ),
+                    "sync",
+                    crate::idioma::texto("Nova tentativa agendada", "Retry scheduled"),
+                    &{
+                        let (nome, segundos, maximo) = (
+                            &record.profile_name,
+                            wait.as_secs(),
+                            crate::retry::MAX_ATTEMPTS,
+                        );
+                        crate::idioma::escolhe(
+                            format!(
+                                "{nome} tenta de novo em {segundos} s (tentativa {attempt} de {maximo})"
+                            ),
+                            format!(
+                                "{nome} retries in {segundos} s (attempt {attempt} of {maximo})"
+                            ),
+                        )
+                    },
                     Some(&record.profile_id),
                 )
                 .await;
@@ -274,7 +314,7 @@ fn schedule_retry(app: &AppHandle, profile_id: String, wait: Duration) {
             state
                 .push_activity(
                     "error",
-                    "Não foi possível repetir",
+                    crate::idioma::texto("Não foi possível repetir", "Could not retry"),
                     &error.to_string(),
                     Some(&profile_id),
                 )

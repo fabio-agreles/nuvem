@@ -9,6 +9,7 @@ mod autostart;
 mod autosync;
 mod commands;
 mod error;
+mod idioma;
 mod models;
 mod oauth;
 mod monitor;
@@ -48,6 +49,14 @@ pub fn run() {
             // Um `profiles.json`/`settings.json` ilegível não pode passar em
             // silêncio: vira uma entrada na atividade (com o caminho da cópia).
             let recuperacao = estado.recuperacao.clone();
+            // A bandeja é montada aqui, antes de a interface ler os ajustes: o
+            // idioma salvo precisa entrar antes dela.
+            let idioma_salvo = estado
+                .settings
+                .try_lock()
+                .map(|guardado| guardado.language.clone())
+                .unwrap_or_else(|_| "pt".to_string());
+            idioma::definir(&idioma_salvo);
             app.manage(estado);
 
             if !recuperacao.is_empty() {
@@ -58,7 +67,10 @@ pub fn run() {
                         estado
                             .push_activity(
                                 "error",
-                                "Configuração recuperada",
+                                idioma::texto(
+                                    "Configuração recuperada",
+                                    "Configuration recovered",
+                                ),
                                 &aviso,
                                 None,
                             )

@@ -234,6 +234,15 @@ Alternativas descartadas por ora:
   testes: o Google devolve 302 para esse `client_id` com retorno em
   `127.0.0.1`, em qualquer porta, e o `client_secret` do projeto responde
   `invalid_grant` (e não `invalid_client`) a um código falso.
+  **Publicada como 1.6.0** (tag `v1.6.0`, 08/11) com os 5 pacotes: `.deb`
+  (33,2 MB, `Version: 1.6.0`, `Depends: libwebkit2gtk-4.1-0, libgtk-3-0`) e
+  AppImage 108 MB do CI, `.exe` 24,5 MB (NSIS, job `windows-latest`), Flatpak
+  22 MB e zip portátil 30 MB gerados aqui. Conferido nos três binários:
+  `Conta conectada`, `Account connected`, `go back to Nuvem Sync` e o
+  `client_id` do projeto embutido aparecem no `nuvem` do .deb, no `Nuvem.exe`
+  do zip e no `nuvem.exe` do instalador NSIS; `flatpak info` → 1.6.0. Local em
+  `~/Downloads/nuvem-1.6.0` (+ `Nuvem-Sync-1.6.0-pacotes.zip`, SHA256SUMS 5/5).
+  As 1.5.1, 1.5.0 e 1.4.0 continuam publicadas com os 5 pacotes de cada uma.
 - ✅ **1.5.1 publicada** (tag `v1.5.1`, 08/11) — correção da bandeja. O menu da
   bandeja, as notificações e o registro de atividade continuavam em português na
   1.5.0: nascem no Rust, fora do dicionário do frontend. `src-tauri/src/idioma.rs`

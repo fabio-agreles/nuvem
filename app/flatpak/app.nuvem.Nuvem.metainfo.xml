@@ -68,6 +68,19 @@
   </screenshots>
 
   <releases>
+    <release version="1.5.1" date="2026-11-08">
+      <description>
+        <p>
+          Correção: o que nasce fora da janela também fala inglês.
+        </p>
+        <ul>
+          <li>O menu da bandeja (Abrir / Sincronizar agora / Sair) passa a seguir o
+            idioma escolhido, na hora.</li>
+          <li>As notificações do sistema e o registro de atividade — títulos e
+            detalhes — também.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.5.0" date="2026-11-08">
       <description>
         <p>

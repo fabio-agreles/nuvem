@@ -217,6 +217,18 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
+- ✅ **1.5.1 publicada** (tag `v1.5.1`, 08/11) — correção da bandeja. O menu da
+  bandeja, as notificações e o registro de atividade continuavam em português na
+  1.5.0: nascem no Rust, fora do dicionário do frontend. `src-tauri/src/idioma.rs`
+  guarda o idioma num `AtomicU8`; o `settings.json` é lido **antes** de
+  `tray::init`, e `save_settings` chama `idioma::definir` + `tray::aplicar_idioma`,
+  que remonta o menu (`set_menu` — o Tauri 2 não devolve o menu da bandeja).
+  54 testes (2 novos). Conferido no `nuvem.exe` do NSIS e do zip: os rótulos
+  `Open Nuvem Sync` / `Sync now` estão no binário. Pacotes: `.deb` 33,2 MB
+  (`Version: 1.5.1`), AppImage 108 MB, `.exe` 24,5 MB (todos do CI), Flatpak
+  23 MB (`flatpak info` → 1.5.1) e zip portátil 31,4 MB. Local em
+  `~/Downloads/nuvem-1.5.1` (+ `Nuvem-Sync-1.5.1-pacotes.zip`, SHA256SUMS 5/5).
+  **As 1.5.0 e 1.4.0 continuam publicadas**, com os pacotes delas.
 - ✅ **1.5.0 publicada** (tag `v1.5.0`, 08/11) — português e inglês. Troca em
   **Ajustes → Sistema → Idioma**, valendo na hora e sem reiniciar; o português
   continua o padrão, então quem já usa o app não vê nada mudar. O dicionário usa

@@ -22,6 +22,9 @@
 # Bundle de arquivo único gerado por `flatpak build-bundle`
 /*.flatpak
 
+# Ferramenta de apoio (clone raso) para regenerar flatpak/cargo-sources.json
+/app/flatpak-builder-tools/
+
 # Credenciais do projeto OAuth do Google usado no build (scripts/oauth-google.sh)
 /app/.env.oauth
 /app/flatpak/app.nuvem.Nuvem.build.json

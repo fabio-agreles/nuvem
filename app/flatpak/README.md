@@ -126,9 +126,12 @@ build`. Sem `--share=network` nas `build-options`.
 Depois de mexer em `Cargo.lock` ou `package-lock.json`, rode a partir de `app/`:
 
 ```bash
+# ferramenta (uma vez; o clone não é versionado)
+(cd app && git clone --depth 1 https://github.com/flatpak/flatpak-builder-tools)
+
 # crates
-python3 flatpak-builder-tools/cargo/flatpak-cargo-generator.py \
-  src-tauri/Cargo.lock -o flatpak/cargo-sources.json
+python3 app/flatpak-builder-tools/cargo/flatpak-cargo-generator.py \
+  app/src-tauri/Cargo.lock -o app/flatpak/cargo-sources.json
 
 # npm
 flatpak-node-generator npm ./package-lock.json -o flatpak/node-sources.json

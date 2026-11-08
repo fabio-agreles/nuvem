@@ -68,6 +68,19 @@
   </screenshots>
 
   <releases>
+    <release version="1.5.0" date="2026-11-08">
+      <description>
+        <p>
+          A interface agora fala inglês também, com troca na hora.
+        </p>
+        <ul>
+          <li>Em Ajustes → Sistema → Idioma há "Português" e "English"; a escolha
+            vale na hora, sem reiniciar, e fica salva.</li>
+          <li>O português continua o padrão: quem já usa o app não vê nada mudar.</li>
+          <li>Datas, números e "há 5 min" também seguem o idioma escolhido.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.4.0" date="2026-11-04">
       <description>
         <p>

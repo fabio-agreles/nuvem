@@ -10,6 +10,7 @@ mod autosync;
 mod commands;
 mod error;
 mod idioma;
+mod login_google;
 mod models;
 mod oauth;
 mod monitor;

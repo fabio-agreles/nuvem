@@ -68,6 +68,18 @@
   </screenshots>
 
   <releases>
+    <release version="1.6.0" date="2026-11-08">
+      <description>
+        <p>
+          A autorização do Google agora acontece dentro do Nuvem Sync.
+        </p>
+        <ul>
+          <li>Ao conectar uma conta, o navegador termina numa página do Nuvem Sync (“Conta conectada”), e não mais na página do rclone.</li>
+          <li>O retorno da autorização é recebido pelo próprio aplicativo, com um identificador sorteado a cada tentativa.</li>
+          <li>O token é criado pelo app e entregue ao motor de sincronização já pronto, sem a etapa interativa do rclone.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.5.1" date="2026-11-08">
       <description>
         <p>

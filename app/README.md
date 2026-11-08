@@ -15,7 +15,7 @@ o rclone embutido.
 | --- | --- |
 | UI (6 telas, tema claro/escuro, Ctrl+K, atalhos 1–6) | ✅ |
 | Motor de sync com rclone (`sync/bisync`, jobs assíncronos) | ✅ |
-| Contas Google Drive/OneDrive via OAuth do rclone | ✅ (depende do navegador) |
+| Contas Google Drive/OneDrive via OAuth | ✅ (autorização no navegador; no Google quem recebe o retorno é o próprio app) |
 | Progresso ao vivo, pausar/retomar, sincronizar agora | ✅ |
 | Pastas (criar, ativar, remover, ressincronizar) | ✅ |
 | Navegação da nuvem (somente leitura) | ✅ |
@@ -268,8 +268,10 @@ pendências (`$HOME` apenas, `aarch64`, metainfo), veja
 
 ## Como usar
 
-1. **Conectar conta** → escolha Google Drive ou OneDrive. O rclone abre o navegador;
-   conclua a autorização. Nomeie a conta como quiser.
+1. **Conectar conta** → escolha Google Drive ou OneDrive. No Google o próprio app
+   abre o navegador e recebe o retorno (`127.0.0.1`), mostrando a página
+   "Nuvem Sync · Conta conectada" no fim; no OneDrive quem conduz é o rclone.
+   Nomeie a conta como quiser.
 2. **Adicionar pasta** → escolha a conta, navegue pelas pastas da nuvem na lista
    (dá para digitar o caminho também; vazio = raiz) e a pasta local. O app cria a
    pasta local e inicia um `bisync` com `--resync`.
@@ -296,6 +298,7 @@ React + TypeScript (src/)
   ↕ invoke/listen (Tauri IPC)
 Rust (src-tauri/src/)
   ├─ commands.rs   contas, perfis, sync, conflitos, ajustes
+  ├─ login_google.rs  autorização do Google: laço local, página de retorno, token
   ├─ monitor.rs    observa jobs e grava atividade
   ├─ rclone.rs     sobe/gerencia `rclone rcd` em porta loopback
   └─ state.rs      perfis, atividade e ajustes em JSON

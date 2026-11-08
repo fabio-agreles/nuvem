@@ -326,7 +326,37 @@ pub async fn connect_account(
     // Contas Google podem ser autorizadas por um projeto OAuth do próprio
     // usuário: a cota de requisições passa a ser só dele, sem a fila mundial do
     // projeto compartilhado do rclone.
-    let parametros = parametros_do_provedor(&state, &provider).await?;
+    let mut parametros = parametros_do_provedor(&state, &provider).await?;
+    let mut opcoes = json!({});
+
+    // Com um projeto OAuth em mãos (do usuário ou o do próprio Nuvem Sync), quem
+    // autoriza é o app: ele abre o navegador, escuta o retorno em `127.0.0.1` e
+    // mostra a página do Nuvem Sync. Com o token pronto, o remote é criado sem
+    // passar pelo fluxo interativo do rclone — que terminava numa página dizendo
+    // “All done. Please go back to rclone.”.
+    if provider == "drive" {
+        let par = (
+            parametros
+                .get("client_id")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string(),
+            parametros
+                .get("client_secret")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string(),
+        );
+        if !par.0.is_empty() && !par.1.is_empty() {
+            let token = crate::login_google::autorizar(&par.0, &par.1).await?;
+            parametros["token"] = Value::String(token.to_string());
+            // Sem isto o rclone pergunta “Token already configured - replace it?”
+            // e o remote fica pela metade.
+            parametros["config_refresh_token"] = Value::String("false".to_string());
+            opcoes = json!({ "nonInteractive": true });
+        }
+    }
+
     state
         .rclone
         .call(
@@ -335,14 +365,14 @@ pub async fn connect_account(
                 "name": account_name,
                 "type": provider,
                 "parameters": parametros,
-                "opt": {}
+                "opt": opcoes
             }),
             Duration::from_secs(600),
         )
         .await
         .map_err(|error| {
             AppError::new(format!(
-                "não foi possível conectar a conta. Autorize no navegador que o rclone abrir e tente novamente. ({error})"
+                "não foi possível conectar a conta. Autorize no navegador e tente novamente. ({error})"
             ))
         })?;
 
@@ -1639,7 +1669,7 @@ pub async fn autostart_enabled(app: AppHandle) -> AppResult<bool> {
 /// `xdg-open` no Linux, `explorer` no Windows (o WSL usa `wslview`; aqui não
 /// interessa). O erro importa: no Flatpak sem portal de arquivos o comando
 /// falha e a interface precisa dizer isso em vez de fingir que abriu.
-fn abrir_no_sistema<P: AsRef<std::path::Path>>(path: P) -> std::io::Result<()> {
+pub(crate) fn abrir_no_sistema<P: AsRef<std::path::Path>>(path: P) -> std::io::Result<()> {
     #[cfg(windows)]
     let program = "explorer";
     #[cfg(not(windows))]

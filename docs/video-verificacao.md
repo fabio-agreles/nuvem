@@ -21,7 +21,7 @@ escopo restrito `drive`. É o vídeo que falta.
 | **Conta Google reserva** | a tela de consentimento só aparece em autorização nova. Usar a principal obriga revogar e reconectar, e ainda apaga o estado do bisync. Cada conta reserva consome **1 das 97 autorizações** restantes — não faça testes extras. |
 | `bash scripts/demo-video.sh` | cria `~/Downloads/nuvem-demo-video` com `nota.txt`, `planilha-demo.csv` e `exemplo.md` fictícios. |
 | Pasta `Nuvem-demo` no Drive | crie pela web e envie os três arquivos para dentro. É a pasta que o vídeo vai sincronizar. |
-| Nuvem Sync **1.5.0** instalado | a tela de consentimento tem de mostrar `Nuvem Sync`, igual à marca verificada. |
+| Nuvem Sync **1.6.0** instalado | a tela de consentimento tem de mostrar `Nuvem Sync`, igual à marca verificada. |
 | Janela limpa | feche abas com e-mail, banco, WhatsApp Web. O revisor vê a tela inteira. |
 | Resolução e fonte | 1280×720 no mínimo; zoom do sistema em 110–125% para o texto ser legível no YouTube. |
 | Gravação | tela inteira + microfone, **um take só, sem cortes e sem edição**. |
@@ -114,24 +114,36 @@ Encerre dizendo o nome e o repositório:
 
 ---
 
-## A página "All done. Please go back to rclone."
+## A última página da autorização
 
-Depois de clicar em **Permitir**, o navegador mostra `Success! / All done. Please
-go back to rclone.`. **Essa página não é do Google**: é do rclone, que roda um
-servidor local em `127.0.0.1:53682` para receber a resposta da autorização e
-devolve o token para o app. O texto é um template Go embutido no binário do
-rclone (não há flag para trocá-lo):
+Na **1.6.0 em diante**, depois de clicar em **Permitir** o navegador mostra a
+página do próprio app:
 
-```
-{{ if eq .OK false }}…{{ else }}
-All done. Please go back to rclone.
-{{ end }}
-```
+> **NUVEM SYNC**
+> ✓ **Conta conectada**
+> Pode fechar esta aba e voltar ao Nuvem Sync.
 
-Isso **não atrapalha a verificação**: o revisor julga a tela de consentimento
-(nome do app + escopo) e o funcionamento. Se quiser o nome do app nessa página,
-o caminho é o app fazer a autorização sozinho, com o próprio servidor de retorno
-— está anotado no `PLANO.md` como melhoria para uma 1.6.0.
+É a página que o revisor vê no vídeo — não há mais o nome de outro programa no
+meio do fluxo. Ela é servida pelo laço local do app
+(`app/src-tauri/src/login_google.rs`), que:
+
+1. abre o navegador em `accounts.google.com` com `state` sorteado e
+   `access_type=offline` (para receber o refresh token);
+2. escuta o retorno em `127.0.0.1` (porta 53682; se estiver ocupada, uma livre);
+3. confere o `state`, responde com a página acima e fecha a conexão;
+4. troca o código pelo token em `oauth2.googleapis.com/token`;
+5. cria o remote no rclone por `config/create` com o token pronto
+   (`nonInteractive`), sem a etapa interativa dele.
+
+Se o app estiver sem nenhum projeto OAuth (nem embutido no build, nem colado em
+Ajustes → Avançado), o caminho é o antigo fluxo do rclone e a última página volta
+a ser `All done. Please go back to rclone.` — os pacotes oficiais saem com o
+projeto do Nuvem embutido, então isso não aparece na prática.
+
+> Histórico: até a 1.5.1 a página era do rclone (`127.0.0.1:53682`, template Go
+> embutido no binário dele, sem flag para trocar o texto). Isso não reprovava a
+> verificação — o que se julga é a tela de consentimento e o funcionamento —,
+> mas tirava o nome do app do fim do fluxo.
 
 ## Depois de gravar
 

@@ -12,7 +12,7 @@ narração em inglês, em [`narracao-video-en.md`](narracao-video-en.md).
 
 ## Antes de gravar (5 minutos)
 
-- [ ] App **1.5.1** aberto na **Visão geral**, conta **desconectada**.
+- [ ] App **1.6.0** aberto na **Visão geral**, conta **desconectada**.
 - [ ] Conta Google reserva pronta (a que vai conectar), em outra janela do
       navegador **já logada** — assim a tela de consentimento aparece direto.
 - [ ] Pasta **Nuvem-demo** já existe no Drive dessa conta.
@@ -33,7 +33,7 @@ narração em inglês, em [`narracao-video-en.md`](narracao-video-en.md).
 | 2 | `02.mp3` (5 s) | Passe o mouse pelas pastas/ajustes, devagar. Nada de clicar. |
 | 3 | `03.mp3` (9 s) | **Contas → Adicionar** → escreva (ou deixe) o nome → **Conectar**. |
 | 4 | `04.mp3` (15 s) | **O navegador abre.** Deixe a tela de consentimento parada e legível: nome **Nuvem Sync** e o escopo **Drive**. Role devagar se precisar. Clique em **Permitir**. |
-| 5 | `05.mp3` (6 s) | Voltou ao app: a conta aparece **conectada**, com cota. Deixe ler. |
+| 5 | `05.mp3` (6 s) | Antes de trocar de janela, mostre a página final do navegador — **Nuvem Sync · Conta conectada** — por 1 segundo. Voltou ao app: a conta aparece **conectada**, com cota. Deixe ler. |
 | 6 | `06.mp3` (14 s) | **Pastas → Adicionar pasta** → navegue pelo Drive e escolha **Nuvem-demo** → escolha a pasta local → **Adicionar**. |
 | 7 | `07.mp3` (9 s) | Crie um arquivo **dentro da pasta local** (ex.: abra a pasta e salve um `teste.txt`). Espere aparecer na **Atividade** como enviado. |
 | 8 | `08.mp3` (8 s) | **No navegador**: edite o mesmo arquivo no Drive. Volte ao app e espere a alteração descer sozinha. |

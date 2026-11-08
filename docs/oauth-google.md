@@ -34,8 +34,13 @@ Resumo: criar projeto → ativar **Drive API** → tela de consentimento (públi
 Detalhes que importam:
 
 - **Não precisa de URI de redirecionamento.** Aplicativo instalado usa o laço
-  local `http://127.0.0.1:53682/`, que o rclone abre sozinho durante a
-  autorização.
+  local (`http://127.0.0.1:53682/`, ou uma porta livre se essa estiver ocupada),
+  e o Google aceita qualquer porta em `127.0.0.1`. Desde a 1.6.0 quem abre esse
+  laço é o **próprio Nuvem Sync** (`src-tauri/src/login_google.rs`): ele mostra
+  a página "Nuvem Sync — conta conectada" no fim da autorização, troca o código
+  pelo token e entrega o token pronto ao rclone (`config/create` com
+  `nonInteractive`). Sem um projeto OAuth (nem embutido, nem em Ajustes →
+  Avançado) o app cai no fluxo do rclone — e aí a última página é a do rclone.
 - **Publicar é obrigatório.** Em *Testing*, a autorização e o refresh token
   expiram em **7 dias** — a sincronização pararia toda semana. Em produção não
   expira; em troca, aparece a tela "O Google não verificou este aplicativo"

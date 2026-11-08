@@ -114,6 +114,25 @@ Encerre dizendo o nome e o repositório:
 
 ---
 
+## A página "All done. Please go back to rclone."
+
+Depois de clicar em **Permitir**, o navegador mostra `Success! / All done. Please
+go back to rclone.`. **Essa página não é do Google**: é do rclone, que roda um
+servidor local em `127.0.0.1:53682` para receber a resposta da autorização e
+devolve o token para o app. O texto é um template Go embutido no binário do
+rclone (não há flag para trocá-lo):
+
+```
+{{ if eq .OK false }}…{{ else }}
+All done. Please go back to rclone.
+{{ end }}
+```
+
+Isso **não atrapalha a verificação**: o revisor julga a tela de consentimento
+(nome do app + escopo) e o funcionamento. Se quiser o nome do app nessa página,
+o caminho é o app fazer a autorização sozinho, com o próprio servidor de retorno
+— está anotado no `PLANO.md` como melhoria para uma 1.6.0.
+
 ## Depois de gravar
 
 1. **YouTube** → *Criar → Enviar vídeo* → visibilidade **Não listado** (não

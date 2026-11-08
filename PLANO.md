@@ -217,6 +217,15 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
+- 📝 **Autorização com a cara do app (1.6.0)** — hoje quem recebe o retorno do
+  Google é o **rclone** (`127.0.0.1:53682`), então a última página do navegador
+  diz "All done. Please go back to rclone.". O texto é um template Go embutido no
+  binário do rclone, sem flag para trocar. A saída é o app fazer o fluxo de
+  loopback: abrir o navegador com `state` + PKCE, servir a página de retorno
+  ("Nuvem Sync: conta conectada"), trocar o código pelo token e criar o remote
+  com `config/create` (token + client_id, sem interação). Manter o caminho do
+  rclone como plano B. Não é exigência da verificação — a tela de consentimento
+  é que é julgada —, mas tira o nome de outra ferramenta do meio do fluxo.
 - ✅ **1.5.1 publicada** (tag `v1.5.1`, 08/11) — correção da bandeja. O menu da
   bandeja, as notificações e o registro de atividade continuavam em português na
   1.5.0: nascem no Rust, fora do dicionário do frontend. `src-tauri/src/idioma.rs`

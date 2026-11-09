@@ -217,7 +217,7 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
-- ✅ **Windows: conectar conta abria o Explorer (09/11, corrigido no código)** —
+- ✅ **Windows: conectar conta abria o Explorer (09/11, na 1.6.2)** —
   `abrir_no_sistema` usava `explorer` para tudo, inclusive endereços
   (`Explorer.exe <url>` não entrega a URL ao navegador: abre ou traz para a
   frente a janela do Explorer). No Linux não aparecia porque o `xdg-open` serve
@@ -229,7 +229,19 @@ Alternativas descartadas por ora:
   Verificado com `cargo xwin check --target x86_64-pc-windows-msvc` e com o
   portátil 1.6.2 gerado localmente (import de `ShellExecuteW` e a mensagem nova
   presentes no `Nuvem.exe`; ausentes na 1.6.1).
-- ✅ **E-mail da conta no cartão (09/11, não publicado)** — o `about` do rclone
+- ✅ **1.6.2 publicada (09/11, tag `v1.6.2`)** — três correções juntas:
+  conflitos lado a lado, e-mail da conta no cartão e o navegador no Windows.
+  `Checagem` verde em 1 m 22 s no `main`; `Pacotes` verde em 8 m 36 s na tag,
+  gerando `.deb` (33,8 MB), AppImage (108,9 MB) e instalador NSIS (25,0 MB). O
+  Flatpak (23,5 MB) foi buildado aqui com `scripts/build-flatpak.sh` e o
+  portátil Windows (32,0 MB) com `scripts/build-windows.sh` (llvm-mingw); os
+  dois subiram como assets do release. Conferido por dentro dos pacotes: a
+  string `user(emailAddress)` e a dupla `.path1,.path2` aparecem no `nuvem` do
+  `.deb`, no `nuvem.exe` do NSIS, no `Nuvem.exe` do zip portátil e no binário
+  do Flatpak (`flatpak info` → 1.6.2). Cópia local em
+  `~/Downloads/nuvem-1.6.2/` (7 arquivos, SHA256SUMS conferido, zip de 213 MB).
+  As releases 1.6.1, 1.6.0, 1.5.1, 1.5.0 e 1.4.0 continuam com 5 assets cada.
+- ✅ **E-mail da conta no cartão (09/11, na 1.6.2)** — o `about` do rclone
   não diz de quem é a conta, então "Google Drive 1" não distinguia duas contas
   Google. Novo comando `account_emails` + `login_google::email_da_conta`: pergunta
   `GET /drive/v3/about?fields=user(emailAddress)` com o `access_token` do
@@ -240,7 +252,7 @@ Alternativas descartadas por ora:
   provedor. Teste `#[ignore] le_o_email_da_conta` (precisa de
   `NUVEM_TOKEN_DE_TESTE`) roda em debug e provou o HTTPS; 74 testes no total.
   Três testes novos com um Drive de mentira em `127.0.0.1`.
-- 🔧 **Conflitos lado a lado: correção no código (09/11, não publicada)** — a
+- ✅ **Conflitos lado a lado: correção (09/11, na 1.6.2)** — a
   promessa do site não se cumpria na 1.6.1. Teste de campo com o rclone 1.75.2
   pela API RC (`sync/bisync`, o mesmo caminho do app): sem `conflictLoser` e
   `conflictSuffix` o padrão é `--conflict-loser num`, e um arquivo que mudou dos

@@ -63,3 +63,27 @@ tokens ou o `client_secret` do OAuth.
 
 Dúvidas sobre privacidade: abra uma issue em
 <https://github.com/fabio-agreles/nuvem/issues>.
+
+## Privacy policy — English summary
+
+Nuvem Sync is an open-source desktop application (MIT) that keeps folders on
+your computer in two-way sync with Google Drive or OneDrive. It has **no
+server**: your files and credentials never reach us.
+
+The application only accesses the files and folders you explicitly add to it,
+plus your account name, e-mail and storage quota (to show them in the
+interface). OAuth tokens and settings are stored locally with `0600`
+permissions. The `https://www.googleapis.com/auth/drive` scope is requested
+because syncing an existing folder requires reading and writing files the app
+did not create — the narrower `drive.file` scope would only cover app-created
+files. Data received from Google APIs is used solely to transfer the files in
+the folders you selected.
+
+Network requests go only to the Google and Microsoft APIs, and — if you press
+"Check for updates" — to `api.github.com`. There is no telemetry, analytics,
+remote crash reporting or advertising. To delete your data: disconnect the
+account in the app, remove `~/.config/app.nuvem.Nuvem` and `~/.config/rclone`,
+and revoke access at
+[myaccount.google.com/permissions](https://myaccount.google.com/permissions).
+Contact: open an issue at
+[github.com/fabio-agreles/nuvem/issues](https://github.com/fabio-agreles/nuvem/issues).

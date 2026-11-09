@@ -1,75 +1,82 @@
 # Nuvem Sync
 
-Sincronização bidirecional entre pastas deste computador e **Google Drive** ou
-**OneDrive** — com o visual cuidado e o uso simples, em vez de um painel cheio
-de opções. Feito com [Tauri 2](https://tauri.app) (Rust + React) e o motor
-[bisync do rclone](https://rclone.org/bisync/) embutido nos pacotes.
+Two-way sync between folders on this computer and **Google Drive** or
+**OneDrive** — with a careful interface you can actually use, instead of a panel
+full of options. Built with [Tauri 2](https://tauri.app) (Rust + React), with
+the [rclone bisync](https://rclone.org/bisync/) engine bundled inside every
+package.
 
-![Nuvem Sync no tema escuro](app/docs/previews/preview-dark.png)
+**English** · [Português](README.pt-BR.md)
 
-## O que ele faz
+![Nuvem Sync in the dark theme](app/docs/previews/preview-dark.png)
 
-- **Bisync de verdade**: alterações locais e da nuvem descem e sobem sozinhas,
-  sem sincronização em um sentido só.
-- **Google Drive e OneDrive**, contas via OAuth com o projeto do próprio Nuvem Sync
-  (mais rápido que o projeto compartilhado do rclone) e possibilidade de usar as
-  suas credenciais.
-- **Enviar e baixar arquivos avulsos**, navegar pela nuvem, ver conflitos lado a
-  lado e escolher qual versão fica.
-- **Trava de segurança**: se um dos lados ficar vazio e o outro não, a
-  sincronização é barrada em vez de apagar o lado cheio.
-- Bandeja do sistema, iniciar com o sistema, notificações, limites de banda,
-  regras de ignorar, tema claro/escuro, relatório de diagnóstico sem segredos.
-- **Português e inglês**, trocados em Ajustes → Sistema → Idioma (sem reiniciar),
-  sem telemetria: nada sai do computador além do tráfego direto para
-  Google/Microsoft.
-- **Doações opcionais via Pix** em Ajustes, para quem quiser ajudar a manter o
-  projeto — com QR code e "copia e cola". Nada do app depende disso.
+## What it does
 
-## Instalar
+- **Real bisync**: changes made locally and in the cloud travel both ways on
+  their own — not a one-way mirror.
+- **Google Drive and OneDrive**, connected through OAuth using the app's own
+  Google project (faster than the shared rclone project), with the option to use
+  your own credentials instead.
+- **Send and download individual files**, browse the cloud, see conflicts side by
+  side and pick which version stays.
+- **Safety brake**: if one side is empty and the other is not, the sync is
+  blocked instead of wiping the full side.
+- System tray, start with the system, native notifications, bandwidth limits,
+  ignore rules, light/dark theme, and a diagnostics report that contains no
+  secrets.
+- **Portuguese and English**, switched in Settings → System → Language (no
+  restart), with no telemetry: nothing leaves your computer except the traffic
+  to Google/Microsoft.
+- **Optional Pix donations** in Settings, for anyone who wants to help keep the
+  project going (QR code and copy-and-paste code). No feature depends on it.
 
-Baixe em [Releases](https://github.com/fabio-agreles/nuvem/releases/latest):
+## Install
 
-| Pacote | Para |
+Download from [Releases](https://github.com/fabio-agreles/nuvem/releases/latest):
+
+| Package | For |
 | --- | --- |
 | `Nuvem.Sync_x.y.z_amd64.deb` | Debian, Ubuntu, Mint — `sudo apt install ./*.deb` |
-| `Nuvem.Sync_x.y.z_amd64.AppImage` | Qualquer Linux, sem instalar (usa o WebKitGTK do sistema) |
-| `Nuvem-Sync-x.y.z-x86_64.flatpak` | Flatpak, isolado |
-| `Nuvem.Sync_x.y.z_x64-setup.exe` | Windows 10/11 (instalador NSIS, sem assinatura digital) |
-| `Nuvem-Sync-x.y.z-windows-x64.zip` | Windows 10/11 portátil, sem instalar |
+| `Nuvem.Sync_x.y.z_amd64.AppImage` | Any Linux, no install (uses the system WebKitGTK) |
+| `Nuvem-Sync-x.y.z-x86_64.flatpak` | Flatpak, sandboxed |
+| `Nuvem.Sync_x.y.z_x64-setup.exe` | Windows 10/11 (NSIS installer, not code-signed) |
+| `Nuvem-Sync-x.y.z-windows-x64.zip` | Windows 10/11 portable, no install |
 
-O espaço do nome virou ponto no nome dos arquivos (`Nuvem.Sync_…`) porque o
-empacotador do Tauri troca espaço por ponto; dentro do pacote o nome é
-`nuvem-sync` (Debian) e o binário continua `/usr/bin/nuvem`.
+The space in the app name became a dot in the file names (`Nuvem.Sync_…`)
+because the Tauri bundler replaces spaces with dots; inside the package the name
+is `nuvem-sync` (Debian) and the binary is still `/usr/bin/nuvem`.
 
-> A partir da 1.3.0 o app se chama **Nuvem Sync** e o pacote Debian mudou de
-> nome (`nuvem` → `nuvem-sync`). O `.deb` novo declara `Conflicts`/`Replaces` do
-> antigo, então `sudo apt install ./*.deb` substitui a versão velha — não fica
-> com dois apps instalados nem conflito em `/usr/bin/nuvem`.
+> Since 1.3.0 the app is called **Nuvem Sync** and the Debian package was renamed
+> (`nuvem` → `nuvem-sync`). The new `.deb` declares `Conflicts`/`Replaces` for
+> the old one, so `sudo apt install ./*.deb` replaces the previous version — you
+> don't end up with two apps installed or a conflict in `/usr/bin/nuvem`.
 
-O rclone vai dentro de todos os pacotes: não é preciso instalá-lo.
+rclone ships inside every package: you don't need to install it.
 
-## Documentação
+## Documentation
 
-- [`app/README.md`](app/README.md) — arquitetura, como rodar do código, decisões
-  de velocidade e limites conscientes.
-- [`docs/roteiro-teste-windows.md`](docs/roteiro-teste-windows.md) — roteiro de
-  teste no Windows, passo a passo.
-- [`docs/oauth-google.md`](docs/oauth-google.md) — projeto OAuth próprio no
-  Google Cloud (e por que ele importa para a cota).
-- [`docs/flathub-pr.md`](docs/flathub-pr.md) — submissão ao Flathub.
-- [`docs/doacoes.md`](docs/doacoes.md) — doações via Pix: como o QR é gerado e
-  como trocar a chave.
-- [`docs/idiomas.md`](docs/idiomas.md) — como funciona a troca de idioma e o
-  que fazer ao mudar um texto da interface.
-- [`PRIVACIDADE.md`](PRIVACIDADE.md) — política de privacidade.
-- [`PLANO.md`](PLANO.md) — o que já foi feito e o que falta.
+The in-depth docs are written in Portuguese:
 
-## Estado
+- [`app/README.md`](app/README.md) — architecture, running from source, speed
+  decisions and known limits.
+- [`docs/roteiro-teste-windows.md`](docs/roteiro-teste-windows.md) — Windows test
+  walkthrough.
+- [`docs/oauth-google.md`](docs/oauth-google.md) — your own Google OAuth project
+  (and why it matters for the quota).
+- [`docs/flathub-pr.md`](docs/flathub-pr.md) — Flathub submission.
+- [`docs/doacoes.md`](docs/doacoes.md) — Pix donations: how the QR code is
+  generated and how to change the key.
+- [`docs/idiomas.md`](docs/idiomas.md) — how the language switch works and what
+  to do when a UI string changes.
+- [`PRIVACIDADE.md`](PRIVACIDADE.md) — privacy policy (English summary at the
+  end).
+- [`PLANO.md`](PLANO.md) — what is done and what is left.
 
-Funciona em Linux (Flatpak, `.deb`, AppImage) e Windows. Limitações conhecidas:
-os pacotes não são assinados (o SmartScreen avisa no Windows), o AppImage não
-embute o WebKitGTK, e o projeto OAuth do Google ainda está em verificação — o que
-limita quantas contas novas podem autorizar o app por enquanto.
+## Status
 
-Licença: [MIT](LICENSE).
+Runs on Linux (Flatpak, `.deb`, AppImage) and Windows. Known limitations: the
+packages are not code-signed (SmartScreen warns on Windows), the AppImage does
+not bundle WebKitGTK, and the Google OAuth project is still going through
+verification — which caps how many new accounts can authorize the app for now.
+
+License: [MIT](LICENSE).

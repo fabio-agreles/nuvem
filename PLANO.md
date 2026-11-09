@@ -217,6 +217,18 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
+- ✅ **README bilíngue (08/11)** — o GitHub não tem troca de idioma nativa, então
+  virou o padrão do mundo open source: um arquivo principal + uma linha de troca
+  no topo. `README.md` agora está em **inglês** (curto e estável: o que é, como
+  instalar, limitações, links) e o texto em português foi para
+  `README.pt-BR.md` com "**Português** · [English](README.md)". Decisão de não
+  traduzir `app/README.md` (734 linhas, técnico): ganhou um bloco "**In English**"
+  de 10 linhas no topo apontando para o README raiz, o site e as releases.
+  `PRIVACIDADE.md` recebeu o mesmo resumo em inglês que já existia no site
+  (`privacidade.html` e `termos.html` sempre tiveram o bloco "English summary" —
+  é o que o revisor do Google lê). Descrição do repositório ficou bilíngue e a
+  homepage passou a apontar para <https://nuvem-sync.app.br/> (era o próprio
+  repositório).
 - ✅ **1.6.1 publicada** (tag `v1.6.1`, 08/11) — a 1.6.0 quebrou o conectar
   conta: a troca do código morria em `error sending request for url
   (https://oauth2.googleapis.com/token)`. Causa: `reqwest` estava em

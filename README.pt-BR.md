@@ -1,0 +1,77 @@
+# Nuvem Sync
+
+Sincronização bidirecional entre pastas deste computador e **Google Drive** ou
+**OneDrive** — com o visual cuidado e o uso simples, em vez de um painel cheio
+de opções. Feito com [Tauri 2](https://tauri.app) (Rust + React) e o motor
+[bisync do rclone](https://rclone.org/bisync/) embutido nos pacotes.
+
+**Português** · [English](README.md)
+
+![Nuvem Sync no tema escuro](app/docs/previews/preview-dark.png)
+
+## O que ele faz
+
+- **Bisync de verdade**: alterações locais e da nuvem descem e sobem sozinhas,
+  sem sincronização em um sentido só.
+- **Google Drive e OneDrive**, contas via OAuth com o projeto do próprio Nuvem Sync
+  (mais rápido que o projeto compartilhado do rclone) e possibilidade de usar as
+  suas credenciais.
+- **Enviar e baixar arquivos avulsos**, navegar pela nuvem, ver conflitos lado a
+  lado e escolher qual versão fica.
+- **Trava de segurança**: se um dos lados ficar vazio e o outro não, a
+  sincronização é barrada em vez de apagar o lado cheio.
+- Bandeja do sistema, iniciar com o sistema, notificações, limites de banda,
+  regras de ignorar, tema claro/escuro, relatório de diagnóstico sem segredos.
+- **Português e inglês**, trocados em Ajustes → Sistema → Idioma (sem reiniciar),
+  sem telemetria: nada sai do computador além do tráfego direto para
+  Google/Microsoft.
+- **Doações opcionais via Pix** em Ajustes, para quem quiser ajudar a manter o
+  projeto — com QR code e "copia e cola". Nada do app depende disso.
+
+## Instalar
+
+Baixe em [Releases](https://github.com/fabio-agreles/nuvem/releases/latest):
+
+| Pacote | Para |
+| --- | --- |
+| `Nuvem.Sync_x.y.z_amd64.deb` | Debian, Ubuntu, Mint — `sudo apt install ./*.deb` |
+| `Nuvem.Sync_x.y.z_amd64.AppImage` | Qualquer Linux, sem instalar (usa o WebKitGTK do sistema) |
+| `Nuvem-Sync-x.y.z-x86_64.flatpak` | Flatpak, isolado |
+| `Nuvem.Sync_x.y.z_x64-setup.exe` | Windows 10/11 (instalador NSIS, sem assinatura digital) |
+| `Nuvem-Sync-x.y.z-windows-x64.zip` | Windows 10/11 portátil, sem instalar |
+
+O espaço do nome virou ponto no nome dos arquivos (`Nuvem.Sync_…`) porque o
+empacotador do Tauri troca espaço por ponto; dentro do pacote o nome é
+`nuvem-sync` (Debian) e o binário continua `/usr/bin/nuvem`.
+
+> A partir da 1.3.0 o app se chama **Nuvem Sync** e o pacote Debian mudou de
+> nome (`nuvem` → `nuvem-sync`). O `.deb` novo declara `Conflicts`/`Replaces` do
+> antigo, então `sudo apt install ./*.deb` substitui a versão velha — não fica
+> com dois apps instalados nem conflito em `/usr/bin/nuvem`.
+
+O rclone vai dentro de todos os pacotes: não é preciso instalá-lo.
+
+## Documentação
+
+- [`app/README.md`](app/README.md) — arquitetura, como rodar do código, decisões
+  de velocidade e limites conscientes.
+- [`docs/roteiro-teste-windows.md`](docs/roteiro-teste-windows.md) — roteiro de
+  teste no Windows, passo a passo.
+- [`docs/oauth-google.md`](docs/oauth-google.md) — projeto OAuth próprio no
+  Google Cloud (e por que ele importa para a cota).
+- [`docs/flathub-pr.md`](docs/flathub-pr.md) — submissão ao Flathub.
+- [`docs/doacoes.md`](docs/doacoes.md) — doações via Pix: como o QR é gerado e
+  como trocar a chave.
+- [`docs/idiomas.md`](docs/idiomas.md) — como funciona a troca de idioma e o
+  que fazer ao mudar um texto da interface.
+- [`PRIVACIDADE.md`](PRIVACIDADE.md) — política de privacidade.
+- [`PLANO.md`](PLANO.md) — o que já foi feito e o que falta.
+
+## Estado
+
+Funciona em Linux (Flatpak, `.deb`, AppImage) e Windows. Limitações conhecidas:
+os pacotes não são assinados (o SmartScreen avisa no Windows), o AppImage não
+embute o WebKitGTK, e o projeto OAuth do Google ainda está em verificação — o que
+limita quantas contas novas podem autorizar o app por enquanto.
+
+Licença: [MIT](LICENSE).

@@ -1,5 +1,18 @@
 # Nuvem Sync
 
+> **In English** — Nuvem Sync is an open-source (MIT) desktop app that keeps a
+> folder on your computer in two-way sync with **Google Drive** or **OneDrive**.
+> It is a thin, careful UI around the bundled [rclone bisync](https://rclone.org/bisync/)
+> engine: accounts via OAuth, folder pairs, live progress, per-file activity,
+> conflict resolution, storage quota, tray icon, autostart, bandwidth limits,
+> ignore rules and light/dark themes — in Portuguese and English, with no
+> telemetry and no server. It ships as `.deb`, AppImage, Flatpak, a Windows
+> installer and a portable zip, all with rclone inside.
+> Start at the [main README](../README.md) (English), the
+> [project site](https://nuvem-sync.app.br/) and the
+> [releases](https://github.com/fabio-agreles/nuvem/releases/latest).
+> This technical document is in Portuguese.
+
 Aplicativo desktop de sincronização (Google Drive + OneDrive) com foco em clareza
 visual e poucos cliques. Fases 1, 2 e 3 implementadas: contas, pastas, bisync real
 (nos dois sentidos), sincronização automática (inotify + intervalo), fila ao vivo,

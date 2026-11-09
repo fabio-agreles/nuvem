@@ -217,6 +217,21 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
+- ✅ **CI de verdade (08/11)** — até aqui o único workflow era o build de
+  release; teste, clippy e tsc não rodavam em lugar nenhum antes da tag.
+  `.github/workflows/checagem.yml` roda em push/PR: `npm run build` (tsc),
+  `npm run i18n -- --falhar`, `cargo clippy --all-targets -D warnings` e
+  `cargo test --lib`; e um segundo job regenera `flatpak/cargo-sources.json`
+  com o `flatpak-cargo-generator` (commit fixo) e falha se estiver velho — foi
+  o que derrubou o build da 1.6.1. `.github/workflows/verificar-https.yml` roda
+  por agenda (segundas, 9h UTC) e manualmente o teste `#[ignore]` que fala
+  HTTPS com o Google em perfil release, com os segredos do projeto: é a rede de
+  proteção contra o bug da 1.6.0 (reqwest sem TLS). Para o clippy estrito
+  valer, dois ajustes pequenos: `iter().any()` → `contains()` no tray e
+  `#![allow(clippy::await_holding_lock)]` nos testes que seguram a trava do
+  idioma. Toolchain do job presa em **1.99.0** — lint novo de versão nova não
+  deve quebrar o CI sozinho. Primeira execução: `Checagem` 4 m 48 s (testes) +
+  9 s (vendor), `HTTPS com o Google` 7 min, tudo verde.
 - ✅ **README bilíngue (08/11)** — o GitHub não tem troca de idioma nativa, então
   virou o padrão do mundo open source: um arquivo principal + uma linha de troca
   no topo. `README.md` agora está em **inglês** (curto e estável: o que é, como

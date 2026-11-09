@@ -1,0 +1,129 @@
+name: Checagem
+
+# O que este workflow cobre, e por quê:
+#
+# - `cargo test`, `clippy` e `tsc` antes de qualquer tag. Até a 1.6.1, a única
+#   coisa que rodava em CI era o build de release: uma regressão de teste ou um
+#   aviso novo só aparecia depois do pacote publicado.
+# - `npm run i18n -- --falhar`: texto novo na interface sem tradução quebra aqui,
+#   em vez de sair em português no meio da tela em inglês.
+# - `flatpak/cargo-sources.json` atualizado: o build do Flatpak é `--offline`, e
+#   na 1.6.1 ele morreu com "no matching package named hyper-rustls" porque o
+#   Cargo.lock tinha crates novos que nunca foram vendorizados. Regenerar e
+#   comparar pega isso antes do build de release.
+#
+# O teste de HTTPS de verdade (que depende da rede e do par OAuth) fica em
+# `verificar-https.yml`, rodando por agenda: ele não serve como portão de PR.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checagem-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testes:
+    name: Testes, clippy e typecheck
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Dependências do WebKitGTK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      # Toolchain fixa de propósito: o clippy está rodando com `-D warnings`, e
+      # uma versão nova do compilador traz lint novo — o job quebraria sozinho,
+      # num código que ninguém tocou. Atualizar aqui é uma decisão, não um
+      # efeito colateral do dia. (O workflow de release segue no `stable`.)
+      - uses: dtolnay/rust-toolchain@1.99.0
+        with:
+          components: clippy
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      # O `generate_context!` do Tauri lê os recursos declarados no
+      # `tauri.conf.json` em tempo de compilação: sem o rclone ao lado, nem os
+      # testes compilam. O download (~82 MB) fica em cache entre execuções.
+      - uses: actions/cache@v4
+        with:
+          path: app/src-tauri/resources/rclone
+          key: rclone-1.75.2-linux
+
+      - name: rclone para Linux
+        working-directory: app
+        run: |
+          if [ -x src-tauri/resources/rclone ]; then
+            echo "rclone já presente (cache)"
+          else
+            scripts/fetch-rclone.sh 1.75.2 linux
+          fi
+
+      - name: Dependências do frontend
+        working-directory: app
+        run: npm ci
+
+      - name: Typecheck e build do frontend
+        working-directory: app
+        run: npm run build
+
+      - name: Textos sem tradução
+        working-directory: app
+        run: npm run i18n -- --falhar
+
+      - name: Clippy
+        working-directory: app/src-tauri
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Testes
+        working-directory: app/src-tauri
+        # `--lib` porque são testes de unidade; os de integração dependem de rede
+        # e ficam no workflow mensal.
+        run: cargo test --lib
+
+  vendorizacao:
+    name: cargo-sources.json em dia
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ferramenta do Flatpak
+        # Commit fixo: uma mudança no formato de saída do gerador não deve
+        # parecer "vendorização velha" da noite para o dia.
+        run: |
+          git clone --depth 1 https://github.com/flatpak/flatpak-builder-tools /tmp/fbt
+          git -C /tmp/fbt fetch --depth 1 origin 9d86d336a39b9af38b86f114b6ce5820fe260f91
+          git -C /tmp/fbt checkout 9d86d336a39b9af38b86f114b6ce5820fe260f91
+          pip install "aiohttp<4" "PyYAML<7" "tomlkit>=0.13.3,<1.0"
+
+      - name: Regenerar e comparar
+        run: |
+          python /tmp/fbt/cargo/flatpak-cargo-generator.py \
+            app/src-tauri/Cargo.lock -o /tmp/cargo-sources.json
+          if ! diff -q app/flatpak/cargo-sources.json /tmp/cargo-sources.json; then
+            echo "::error file=app/flatpak/cargo-sources.json::desatualizado — rode: python3 flatpak-builder-tools/cargo/flatpak-cargo-generator.py app/src-tauri/Cargo.lock -o app/flatpak/cargo-sources.json"
+            diff app/flatpak/cargo-sources.json /tmp/cargo-sources.json | head -40
+            exit 1
+          fi
+          echo "cargo-sources.json bate com o Cargo.lock"

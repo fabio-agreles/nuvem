@@ -587,6 +587,11 @@ fn data_civil(dias: i64) -> (i64, u32, u32) {
 
 #[cfg(test)]
 mod testes {
+    // Os testes de rede seguram a trava do idioma (global no processo) através
+    // de `await`. Em teste isso é seguro: a trava só serializa os testes e não
+    // há outra tarefa disputando o idioma no meio.
+    #![allow(clippy::await_holding_lock)]
+
     use super::*;
     use std::sync::Mutex;
 

@@ -1,0 +1,80 @@
+name: HTTPS com o Google
+
+# O furo que a 1.6.0 mostrou: o cliente HTTP do app estava compilado sem nenhum
+# backend de TLS, e NENHUM endereço `https://` funcionava. Teste offline não
+# pega isso — o "Google de mentira" dos testes fala `http://` em 127.0.0.1.
+#
+# Este workflow roda o único teste que fala com o Google de verdade (o mesmo que
+# fica `#[ignore]` no `cargo test` do dia a dia):
+#
+#   cargo test --release --lib -- --ignored fala_https_com_o_google
+#
+# Ele falha se: (a) o HTTPS parar de funcionar (TLS, raízes de confiança, rede),
+# (b) o `client_id`/`client_secret` do projeto deixar de ser aceito pelo Google
+# (`invalid_client`), ou (c) a troca do código parar de devolver `invalid_grant`
+# para um código falso — o que indicaria mudança no endpoint de token.
+#
+# Rodar em release é de propósito: é o perfil que vai para os pacotes.
+
+on:
+  schedule:
+    # Toda segunda-feira, 9h UTC (6h em Brasília).
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  https:
+    name: Troca do código com o Google (release)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Dependências do WebKitGTK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - uses: actions/cache@v4
+        with:
+          path: app/src-tauri/resources/rclone
+          key: rclone-1.75.2-linux
+
+      - name: rclone para Linux
+        working-directory: app
+        run: |
+          if [ -x src-tauri/resources/rclone ]; then
+            echo "rclone já presente (cache)"
+          else
+            scripts/fetch-rclone.sh 1.75.2 linux
+          fi
+
+      - name: Build do frontend
+        working-directory: app
+        run: |
+          npm ci
+          npm run build
+
+      - name: Teste que fala HTTPS com o Google
+        working-directory: app/src-tauri
+        env:
+          # Sem estes segredos o teste não tem o que conferir e passa sem fazer
+          # nada. Com eles, o par do projeto é provado contra o Google.
+          NUVEM_GOOGLE_CLIENT_ID: ${{ secrets.NUVEM_GOOGLE_CLIENT_ID }}
+          NUVEM_GOOGLE_CLIENT_SECRET: ${{ secrets.NUVEM_GOOGLE_CLIENT_SECRET }}
+        run: cargo test --release --lib -- --ignored fala_https_com_o_google --nocapture

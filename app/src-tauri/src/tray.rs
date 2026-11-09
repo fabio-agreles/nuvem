@@ -292,7 +292,7 @@ mod tests {
             for estado in estados {
                 let desenho = bytes(escuro, estado);
                 assert!(
-                    !vistos.iter().any(|outro| *outro == desenho),
+                    !vistos.contains(&desenho),
                     "estado {estado:?} repete o desenho de outro (tema escuro: {escuro})"
                 );
                 vistos.push(desenho);

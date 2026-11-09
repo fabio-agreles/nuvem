@@ -405,6 +405,13 @@ class DemoBackend {
     return this.conflicts.map((item) => ({ ...item }));
   }
 
+  async accountEmails() {
+    await delay(60);
+    // O OneDrive fica de fora de propósito: nem toda conta tem e-mail legível, e
+    // a interface precisa ficar bem sem ele.
+    return { pessoal: "ana.silva@gmail.com" };
+  }
+
   async accountUsage() {
     await delay(120);
     return [

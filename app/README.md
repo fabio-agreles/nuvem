@@ -351,6 +351,23 @@ Cada pasta é um par `conta:caminho ←→ pasta local`. O app usa `sync/bisync`
 
 ## Cota por conta
 
+## Qual conta está conectada
+
+O `about` do rclone devolve só total/usado/livre — não diz de quem é a conta. Por
+isso o app pergunta o e-mail no mesmo endpoint da API do Drive
+(`GET /drive/v3/about?fields=user(emailAddress)`, dentro do escopo `drive` que já
+está autorizado) e mostra o endereço embaixo do nome, nos cartões **Contas** e
+**Armazenamento**: `Google Drive 1` não distingue duas contas, `ana@gmail.com` sim.
+
+O comando é `account_emails` (`commands.rs`), com o HTTP em
+`login_google::email_da_conta`: usa o `access_token` do `rclone.conf` e, se o
+Google recusar, renova uma vez pelo `refresh_token`. O resultado fica em cache
+enquanto o token não muda, para não repetir a pergunta a cada leitura de cota. Se
+não der para saber (OneDrive, conta sem token, sem rede), o cartão cai para o nome
+do provedor — nada quebra.
+
+## Cota por conta
+
 O cartão **Armazenamento** lê `operations/about` de cada conta a cada 30 s. Quando
 a leitura falha (o Google responde 403 de cota em rajada; o OneDrive some por alguns
 segundos ao renovar o token), o app **repete uma vez** — subindo o daemon de novo se

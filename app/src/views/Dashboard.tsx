@@ -31,6 +31,7 @@ export function Dashboard({
   profiles,
   activity,
   usage,
+  emails,
   onRefreshUsage,
   onSyncAll,
   onTogglePause,
@@ -45,6 +46,7 @@ export function Dashboard({
   profiles: Profile[];
   activity: ActivityEntry[];
   usage: AccountUsage[];
+  emails: Record<string, string>;
   onRefreshUsage: () => void;
   onSyncAll: () => void;
   onTogglePause: () => void;
@@ -264,7 +266,7 @@ export function Dashboard({
                       <div style={{ minWidth: 0 }}>
                         <div className="account-name">{account.name}</div>
                         <div className="account-meta">
-                          {account.label} ·{" "}
+                          {emails[account.name] ?? account.label} ·{" "}
                           {linked.length === 1
                             ? t("1 pasta")
                             : t("{n} pastas", { n: linked.length })}
@@ -343,7 +345,7 @@ export function Dashboard({
                         <span style={{ width: `${percent}%` }} />
                       </div>
                       <div className="quota-foot">
-                        <span>{item.label}</span>
+                        <span>{emails[item.account] ?? item.label}</span>
                         {item.error ? (
                           item.stale ? (
                             // A leitura falhou, mas o número anterior continua valendo.

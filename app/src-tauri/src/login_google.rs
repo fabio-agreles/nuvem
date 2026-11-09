@@ -34,6 +34,11 @@ const PRAZO_DO_NAVEGADOR: Duration = Duration::from_secs(600);
 const URL_AUTORIZACAO: &str = "https://accounts.google.com/o/oauth2/auth";
 const URL_TOKEN: &str = "https://oauth2.googleapis.com/token";
 
+/// O `about` do rclone devolve só total/usado/livre da cota. O e-mail da conta
+/// está no mesmo endpoint da API do Drive, que já está coberto pelo escopo
+/// `drive` que o app pede — daí dá para dizer *qual* conta está conectada.
+const URL_CONTA: &str = "https://www.googleapis.com/drive/v3/about";
+
 /// Erro que segue o idioma do app: estas mensagens aparecem na janela de
 /// conectar conta, então precisam falar a mesma língua da interface.
 fn falha(portugues: &str, ingles: &str) -> AppError {
@@ -68,7 +73,7 @@ pub async fn autorizar(client_id: &str, client_secret: &str) -> AppResult<Value>
     let endereco = endereco_de_autorizacao(client_id, &retorno, &estado);
 
     // O navegador é aberto pelo app: é ele que recebe o retorno.
-    crate::commands::abrir_no_sistema(&endereco).map_err(|erro| {
+    crate::commands::abrir_endereco(&endereco).map_err(|erro| {
         falha(
             &format!("não foi possível abrir o navegador para autorizar a conta: {erro}"),
             &format!("could not open the browser to authorize the account: {erro}"),
@@ -585,6 +590,102 @@ fn data_civil(dias: i64) -> (i64, u32, u32) {
     (if mes <= 2 { ano + 1 } else { ano }, mes, dia)
 }
 
+/// E-mail da conta dona de um token guardado pelo rclone.
+///
+/// `None` quando não dá para saber (conta sem `access_token`, sem rede, token
+/// recusado): a janela simplesmente não mostra o e-mail, sem virar erro na cara
+/// de quem só queria ver a cota.
+pub async fn email_da_conta(
+    token: &Value,
+    client_id: &str,
+    client_secret: &str,
+) -> Option<String> {
+    let acesso = token.get("access_token").and_then(Value::as_str)?;
+    match email_em(URL_CONTA, acesso).await {
+        Ok(Some(email)) => Some(email),
+        // Respondeu, mas sem `user`: nada a mostrar e nada a renovar.
+        Ok(None) => None,
+        // O caso comum de falha aqui é token vencido (o rclone só renova quando
+        // usa a conta). Uma renovação pelo `refresh_token` resolve.
+        Err(_) => {
+            let novo = renovar_token(token, client_id, client_secret).await?;
+            email_em(URL_CONTA, &novo).await.ok().flatten()
+        }
+    }
+}
+
+/// Busca o e-mail com um `access_token` já pronto (os testes usam um Google de
+/// mentira em `127.0.0.1`).
+async fn email_em(endereco: &str, acesso: &str) -> AppResult<Option<String>> {
+    let resposta = reqwest::Client::new()
+        .get(endereco)
+        .query(&[("fields", "user(emailAddress)")])
+        .bearer_auth(acesso)
+        .timeout(Duration::from_secs(20))
+        .send()
+        .await
+        .map_err(|erro| {
+            falha(
+                &format!("não foi possível perguntar ao Google qual é a conta: {}", motivo(&erro)),
+                &format!("could not ask Google which account this is: {}", motivo(&erro)),
+            )
+        })?;
+
+    let situacao = resposta.status();
+    if !situacao.is_success() {
+        return Err(AppError::new(format!(
+            "o Google respondeu {} ao perguntar pela conta",
+            situacao.as_u16()
+        )));
+    }
+
+    let corpo: Value = resposta.json().await.map_err(|erro| {
+        falha(
+            &format!("o Google respondeu algo inesperado: {}", motivo(&erro)),
+            &format!("Google answered something unexpected: {}", motivo(&erro)),
+        )
+    })?;
+    Ok(email_da_resposta(&corpo))
+}
+
+/// Troca o `refresh_token` por um `access_token` novo.
+async fn renovar_token(
+    token: &Value,
+    client_id: &str,
+    client_secret: &str,
+) -> Option<String> {
+    let refresh = token.get("refresh_token").and_then(Value::as_str)?;
+    let resposta = reqwest::Client::new()
+        .post(URL_TOKEN)
+        .form(&[
+            ("client_id", client_id),
+            ("client_secret", client_secret),
+            ("refresh_token", refresh),
+            ("grant_type", "refresh_token"),
+        ])
+        .timeout(Duration::from_secs(30))
+        .send()
+        .await
+        .ok()?;
+    let corpo: Value = resposta.json().await.ok()?;
+    corpo
+        .get("access_token")
+        .and_then(Value::as_str)
+        .map(str::to_string)
+}
+
+/// `{"user":{"emailAddress":"ana@gmail.com"}}` → `Some("ana@gmail.com")`.
+///
+/// Sem `@` não é e-mail: melhor não mostrar nada do que mostrar lixo.
+pub fn email_da_resposta(corpo: &Value) -> Option<String> {
+    let email = corpo.get("user")?.get("emailAddress")?.as_str()?.trim();
+    if email.contains('@') && !email.chars().any(char::is_whitespace) {
+        Some(email.to_string())
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod testes {
     // Os testes de rede seguram a trava do idioma (global no processo) através
@@ -906,6 +1007,113 @@ mod testes {
         assert!(erro.contains("invalid_grant"), "{erro}");
     }
 
+    #[test]
+    fn email_da_resposta_le_a_conta_do_about_do_drive() {
+        let corpo = serde_json::json!({
+            "user": { "emailAddress": "  ana@gmail.com " }
+        });
+        assert_eq!(email_da_resposta(&corpo), Some("ana@gmail.com".to_string()));
+    }
+
+    #[test]
+    fn email_da_resposta_nao_inventa_quando_o_campo_falta() {
+        // Conta de serviço, resposta sem `user`, campo vazio: nada a mostrar.
+        assert_eq!(email_da_resposta(&serde_json::json!({})), None);
+        assert_eq!(email_da_resposta(&serde_json::json!({ "user": {} })), None);
+        assert_eq!(
+            email_da_resposta(&serde_json::json!({ "user": { "emailAddress": "" } })),
+            None
+        );
+        assert_eq!(
+            email_da_resposta(&serde_json::json!({ "user": { "emailAddress": "sem arroba" } })),
+            None
+        );
+    }
+
+    /// Servidor de mentira no lugar do `about` do Drive.
+    async fn drive_de_mentira(codigo_http: u16, corpo: &'static str) -> String {
+        let ouvinte = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
+        let porta = ouvinte.local_addr().unwrap().port();
+        tokio::spawn(async move {
+            let (mut fluxo, _) = ouvinte.accept().await.unwrap();
+            let mut pedido = Vec::new();
+            let mut pedaco = [0u8; 1024];
+            loop {
+                let lido = fluxo.read(&mut pedaco).await.unwrap();
+                if lido == 0 {
+                    break;
+                }
+                pedido.extend_from_slice(&pedaco[..lido]);
+                if pedido.windows(4).any(|janela| janela == b"\r\n\r\n") {
+                    break;
+                }
+            }
+            let pedido = String::from_utf8_lossy(&pedido).to_string();
+            assert!(pedido.starts_with("GET /about?"), "{pedido}");
+            // Só o e-mail: não pedimos a árvore inteira da conta.
+            assert!(pedido.contains("fields=user"), "{pedido}");
+            assert!(
+                pedido.to_lowercase().contains("authorization: bearer ya29.teste"),
+                "{pedido}"
+            );
+            let resposta = format!(
+                "HTTP/1.1 {codigo_http} OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{corpo}",
+                corpo.len()
+            );
+            fluxo.write_all(resposta.as_bytes()).await.unwrap();
+            fluxo.flush().await.unwrap();
+        });
+        format!("http://127.0.0.1:{porta}/about")
+    }
+
+    #[tokio::test]
+    async fn email_em_pergunta_ao_drive_qual_e_a_conta() {
+        let endereco = drive_de_mentira(
+            200,
+            r#"{"user":{"emailAddress":"fabioagreles@gmail.com"}}"#,
+        )
+        .await;
+
+        let email = email_em(&endereco, "ya29.teste").await.unwrap();
+        assert_eq!(email, Some("fabioagreles@gmail.com".to_string()));
+    }
+
+    #[tokio::test]
+    async fn email_em_trata_recusa_do_google_como_falha() {
+        let endereco = drive_de_mentira(403, r#"{"error":{"code":403}}"#).await;
+        assert!(email_em(&endereco, "ya29.teste").await.is_err());
+    }
+
+    /// Conta sem token (remote criado à mão, por exemplo) não vira erro nem
+    /// tentativa de rede: apenas nada a mostrar.
+    #[tokio::test]
+    async fn email_da_conta_sem_token_devolve_nada() {
+        let token = serde_json::json!({ "token_type": "Bearer" });
+        assert_eq!(email_da_conta(&token, "id", "segredo").await, None);
+    }
+
+    /// Prova de ponta a ponta contra o Google de verdade: mesmo `about`, mesmo
+    /// HTTPS. Precisa de um token no ambiente (`NUVEM_TOKEN_DE_TESTE` = o JSON
+    /// guardado no `rclone.conf`), por isso fica `#[ignore]`:
+    ///
+    /// ```text
+    /// NUVEM_TOKEN_DE_TESTE="$(...)"; cargo test --lib -- --ignored le_o_email_da_conta
+    /// ```
+    #[tokio::test]
+    #[ignore]
+    async fn le_o_email_da_conta() {
+        let Ok(bruto) = std::env::var("NUVEM_TOKEN_DE_TESTE") else {
+            eprintln!("sem NUVEM_TOKEN_DE_TESTE: nada para conferir");
+            return;
+        };
+        let token: Value = serde_json::from_str(&bruto).expect("token em JSON");
+        let (id, segredo) = crate::oauth::do_build().unwrap_or_default();
+        let email = email_da_conta(&token, &id, &segredo)
+            .await
+            .expect("devia ler o e-mail da conta");
+        eprintln!("conta conectada: {email}");
+        assert!(email.contains('@'), "{email}");
+    }
     #[test]
     fn pagina_de_erro_nao_mostra_marca_de_outro_programa() {
         let _trava = TRAVA.lock().unwrap_or_else(|erro| erro.into_inner());

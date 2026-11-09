@@ -217,6 +217,49 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
+- ✅ **Windows: conectar conta abria o Explorer (09/11, corrigido no código)** —
+  `abrir_no_sistema` usava `explorer` para tudo, inclusive endereços
+  (`Explorer.exe <url>` não entrega a URL ao navegador: abre ou traz para a
+  frente a janela do Explorer). No Linux não aparecia porque o `xdg-open` serve
+  para pasta e para endereço. Fix: `abrir_endereco()` com `ShellExecuteW`
+  (shell32, chamada direta por FFI, sem dependência nova) no Windows e
+  `xdg-open`/`open` fora dele; usado na autorização do Google
+  (`login_google.rs`) e no comando `open_url`. `cmd /C start` foi descartado de
+  propósito: o endereço de autorização tem vários `&`, que o `cmd` cortaria.
+  Verificado com `cargo xwin check --target x86_64-pc-windows-msvc` e com o
+  portátil 1.6.2 gerado localmente (import de `ShellExecuteW` e a mensagem nova
+  presentes no `Nuvem.exe`; ausentes na 1.6.1).
+- ✅ **E-mail da conta no cartão (09/11, não publicado)** — o `about` do rclone
+  não diz de quem é a conta, então "Google Drive 1" não distinguia duas contas
+  Google. Novo comando `account_emails` + `login_google::email_da_conta`: pergunta
+  `GET /drive/v3/about?fields=user(emailAddress)` com o `access_token` do
+  `rclone.conf` (renovando uma vez pelo `refresh_token` se o Google recusar) e
+  cacheia enquanto o token não muda. Conferido contra a conta real: devolveu
+  `fabioagreles@gmail.com`. O cartão **Contas** e o pé do cartão **Armazenamento**
+  passam a mostrar o e-mail; OneDrive e conta sem token caem para o nome do
+  provedor. Teste `#[ignore] le_o_email_da_conta` (precisa de
+  `NUVEM_TOKEN_DE_TESTE`) roda em debug e provou o HTTPS; 74 testes no total.
+  Três testes novos com um Drive de mentira em `127.0.0.1`.
+- 🔧 **Conflitos lado a lado: correção no código (09/11, não publicada)** — a
+  promessa do site não se cumpria na 1.6.1. Teste de campo com o rclone 1.75.2
+  pela API RC (`sync/bisync`, o mesmo caminho do app): sem `conflictLoser` e
+  `conflictSuffix` o padrão é `--conflict-loser num`, e um arquivo que mudou dos
+  dois lados vira `nota.txt.conflict1` / `nota.txt.conflict2` — nomes que o
+  detector (`collect_conflict_files`, que só conhecia `..path1`/`..path2`) não
+  reconhece. Resultado: as cópias ficavam na pasta e a aba **Conflitos** dizia
+  "Nenhum conflito". Corrigido em `start_sync` (`conflictLoser: "pathname"`,
+  `conflictSuffix: ".path1,.path2"` → `nota.txt..path1` da nuvem e
+  `nota.txt..path2` local, conferido nos dois sentidos) e o detector passou a
+  aceitar também os sufixos antigos `.conflict1`/`.conflict2`, para pastas que
+  já têm sobras de versões anteriores. `resolve_conflict` valida os dois pares.
+  Dois testes novos (69 no total), clippy limpo. Roteiro e explicação em
+  [`docs/conflitos-e-trava.md`](docs/conflitos-e-trava.md).
+- ✅ **Trava de segurança conferida contra o rclone (09/11)** — `Empty current
+  Path1/Path2 listing` aborta a rodada nos dois sentidos (nada é apagado, mas a
+  pasta passa a exigir `--resync`); a trava do app barra antes de começar. E
+  **Ressincronizar é seguro com um lado vazio**: com o computador cheio e a
+  nuvem vazia, o resync sobe os arquivos; com a nuvem cheia e o computador
+  vazio, baixa — conferido nos dois sentidos, não apaga o lado cheio.
 - ⏳ **Verificação de escopo restrito enviada (09/11, 13h20)** — formulário do
   Centro de verificação preenchido com a justificativa de 986 caracteres (o campo
   corta em 1.000), o vídeo do YouTube (não listado) e as respostas: **não** é uso

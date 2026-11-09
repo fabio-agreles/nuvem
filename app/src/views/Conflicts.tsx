@@ -35,8 +35,12 @@ const RESOLUTIONS: Record<
 
 export function Conflicts({
   notify,
+  onCount,
 }: {
   notify: (message: string, kind?: "info" | "ok" | "error") => void;
+  // Mantém o contador da barra lateral em dia: abrir a aba, verificar de novo e
+  // resolver mexem na mesma lista.
+  onCount?: (total: number) => void;
 }) {
   const t = useT();
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
@@ -49,13 +53,15 @@ export function Conflicts({
     setLoading(true);
     setError(null);
     try {
-      setConflicts(await api.scanConflicts());
+      const lista = await api.scanConflicts();
+      setConflicts(lista);
+      onCount?.(lista.length);
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onCount]);
 
   useEffect(() => {
     void load();
@@ -67,6 +73,7 @@ export function Conflicts({
     try {
       const remaining = await api.resolveConflict(pending.action, pending.conflict);
       setConflicts(remaining);
+      onCount?.(remaining.length);
       notify(t("Conflito resolvido: {arquivo}", { arquivo: pending.conflict.baseName }), "ok");
       setPending(null);
     } catch (cause) {

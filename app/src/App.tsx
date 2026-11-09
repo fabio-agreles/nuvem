@@ -90,6 +90,9 @@ export default function App() {
   const [autostartBusy, setAutostartBusy] = useState(false);
   const [conflictCount, setConflictCount] = useState(0);
   const [usage, setUsage] = useState<AccountUsage[]>([]);
+  // Nome da conta → e-mail. Vazio quando não dá para descobrir (OneDrive, conta
+  // sem token): o cartão cai para o nome do provedor.
+  const [emails, setEmails] = useState<Record<string, string>>({});
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [addAccountOpen, setAddAccountOpen] = useState(false);
   const [addFolderOpen, setAddFolderOpen] = useState(false);
@@ -168,6 +171,7 @@ export default function App() {
         setSnapshot(await api.syncStatus());
         setConflictCount((await api.scanConflicts().catch(() => [])).length);
         void api.accountUsage().then(setUsage).catch(() => undefined);
+        void api.accountEmails().then(setEmails).catch(() => undefined);
       } catch (cause) {
         if (!cancelled) notify(errorMessage(cause), "error");
       }
@@ -228,6 +232,12 @@ export default function App() {
         void refreshProfiles();
         void refreshActivity();
         void api.listAccounts().then(setAccounts).catch(() => undefined);
+        // Uma rodada pode ter acabado de criar (ou o usuário resolvido) um
+        // conflito: o contador da barra lateral só era lido na abertura.
+        void api
+          .scanConflicts()
+          .then((lista) => setConflictCount(lista.length))
+          .catch(() => undefined);
       }),
       subscribe("settings://changed", () => {
         void api.getSettings().then((value) => setSettings({ ...DEFAULT_SETTINGS, ...value }));
@@ -371,6 +381,7 @@ export default function App() {
           lista.some((item) => item.name === atual) ? atual : lista[0]?.name ?? "",
         );
         void api.accountUsage().then(setUsage).catch(() => undefined);
+        void api.accountEmails().then(setEmails).catch(() => undefined);
         notify(tr("Conta “{nome}” removida.", { nome: name }), "ok");
       } catch (cause) {
         notify(errorMessage(cause), "error");
@@ -385,6 +396,7 @@ export default function App() {
       setAccounts(await api.listAccounts());
       setFilesAccount(account.name);
       setFilesPath("");
+      void api.accountEmails().then(setEmails).catch(() => undefined);
       notify(tr("Conta “{nome}” conectada.", { nome: account.name }), "ok");
     },
     [notify],
@@ -538,6 +550,7 @@ export default function App() {
               profiles={profiles}
               activity={activity}
               usage={usage}
+              emails={emails}
               onRefreshUsage={() => void refreshUsage()}
               onSyncAll={() => void syncAll()}
               onTogglePause={() => void togglePause()}
@@ -575,7 +588,9 @@ export default function App() {
 
           {view === "activity" ? <Activity entries={activity} onClear={clearActivity} /> : null}
 
-          {view === "conflicts" ? <Conflicts notify={notify} /> : null}
+          {view === "conflicts" ? (
+            <Conflicts notify={notify} onCount={setConflictCount} />
+          ) : null}
 
           {view === "settings" ? (
             <SettingsView

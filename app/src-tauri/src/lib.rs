@@ -118,6 +118,7 @@ pub fn run() {
             commands::download_file,
             commands::scan_conflicts,
             commands::resolve_conflict,
+            commands::account_emails,
             commands::account_usage,
             commands::recent_activity,
             commands::clear_activity,

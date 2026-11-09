@@ -68,6 +68,18 @@
   </screenshots>
 
   <releases>
+    <release version="1.6.2" date="2026-11-09">
+      <description>
+        <p>
+          Três correções: conflitos, identificação da conta e Windows.
+        </p>
+        <ul>
+          <li>Conflitos lado a lado voltam a aparecer na aba Conflitos: o motor de sincronização guardava as duas versões com nomes que o app não reconhecia (.conflict1/.conflict2) e a aba dizia "Nenhum conflito".</li>
+          <li>O cartão Contas e o cartão Armazenamento passam a mostrar o e-mail da conta, em vez de só o nome "Google Drive 1".</li>
+          <li>No Windows, conectar uma conta abre o navegador em vez do Explorer: o app entregava o endereço ao Explorer, que não é o programa padrão para endereços.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.6.1" date="2026-11-08">
       <description>
         <p>

@@ -10,7 +10,10 @@ use serde_json::{json, Value};
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
-    sync::atomic::{AtomicU64, Ordering},
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Mutex, OnceLock,
+    },
     time::Duration,
 };
 use tauri::{AppHandle, Emitter, State};
@@ -72,16 +75,18 @@ fn new_id() -> String {
     )
 }
 
-pub async fn list_accounts_inner(state: &AppState) -> AppResult<Vec<Account>> {
+/// `rclone config dump` — a configuração inteira, com os tokens.
+async fn dump_da_configuracao(state: &AppState) -> AppResult<HashMap<String, Value>> {
     let binary = state.rclone.binary().await?;
-    // Esta função roda a cada tela que lista contas: sem `sem_console` seria uma
-    // janela de console piscando a cada navegação no Windows.
+    // Roda a cada tela que lista contas: sem `sem_console` seria uma janela de
+    // console piscando a cada navegação no Windows.
     let mut command = tokio::process::Command::new(binary);
     command.args(["config", "dump"]).sem_console();
-    let output = command
-        .output()
-        .await
-        .map_err(|error| AppError::new(format!("não foi possível ler a configuração do rclone: {error}")))?;
+    let output = command.output().await.map_err(|error| {
+        AppError::new(format!(
+            "não foi possível ler a configuração do rclone: {error}"
+        ))
+    })?;
 
     if !output.status.success() {
         return Err(AppError::new(format!(
@@ -90,7 +95,11 @@ pub async fn list_accounts_inner(state: &AppState) -> AppResult<Vec<Account>> {
         )));
     }
 
-    let dump: HashMap<String, Value> = serde_json::from_slice(&output.stdout)?;
+    Ok(serde_json::from_slice(&output.stdout)?)
+}
+
+pub async fn list_accounts_inner(state: &AppState) -> AppResult<Vec<Account>> {
+    let dump = dump_da_configuracao(state).await?;
     let mut accounts: Vec<Account> = dump
         .into_iter()
         .map(|(name, config)| {
@@ -870,6 +879,14 @@ async fn start_profile_inner(
         // `maxDelete` vale 0 e qualquer exclusão aborta com "too many deletes"
         // (o usuário apaga um arquivo e a pasta fica presa em erro).
         "maxDelete": 50,
+        // Como o bisync guarda as duas versões de um arquivo que mudou dos dois
+        // lados. O padrão do rclone (`--conflict-loser num`) gera
+        // `nota.txt.conflict1` / `.conflict2`, que a aba Conflitos não reconhece;
+        // com `pathname` + este sufixo saem `nota.txt..path1` (a da nuvem, que é
+        // o path1) e `nota.txt..path2` (a deste computador) — os nomes que
+        // `collect_conflict_files` procura e que `resolve_conflict` valida.
+        "conflictLoser": "pathname",
+        "conflictSuffix": ".path1,.path2",
         "_async": true
     });
     if let Some(limit) = bandwidth {
@@ -1127,6 +1144,25 @@ fn file_meta(path: &Option<String>) -> (Option<u64>, Option<u64>) {
     }
 }
 
+/// Sufixos que o bisync usa para guardar as duas versões de um arquivo em
+/// conflito, na ordem (nuvem, este computador).
+///
+/// O primeiro par é o que pedimos em `start_sync` (`conflictLoser: pathname`
+/// com `conflictSuffix: ".path1,.path2"`). O segundo é o padrão do rclone
+/// (`--conflict-loser num`), que fica para trás em pastas sincronizadas por
+/// versões anteriores do app — sem ele, esses arquivos ficariam invisíveis na
+/// aba Conflitos.
+const SUFIXOS_DE_CONFLITO: [(&str, &str); 2] = [
+    ("..path1", "..path2"),
+    (".conflict1", ".conflict2"),
+];
+
+#[derive(Clone, Copy)]
+enum LadoDoConflito {
+    Nuvem,
+    Local,
+}
+
 fn collect_conflict_files(
     dir: &str,
     depth: usize,
@@ -1150,7 +1186,9 @@ fn collect_conflict_files(
 
         let name = entry.file_name().to_string_lossy().to_string();
         let full = path.to_string_lossy().to_string();
-        for suffix in ["..path1", "..path2"] {
+        for (lado, suffix) in SUFIXOS_DE_CONFLITO.iter().flat_map(|(nuvem, local)| {
+            [("nuvem", *nuvem), ("local", *local)]
+        }) {
             if let Some(base) = name.strip_suffix(suffix) {
                 let key = format!("{dir}\u{0}{base}");
                 let slot = found.entry(key).or_insert_with(|| ConflictSlot {
@@ -1158,7 +1196,7 @@ fn collect_conflict_files(
                     base: base.to_string(),
                     ..Default::default()
                 });
-                if suffix == "..path1" {
+                if lado == "nuvem" {
                     slot.path1 = Some(full.clone());
                 } else {
                     slot.path2 = Some(full.clone());
@@ -1369,7 +1407,11 @@ pub async fn resolve_conflict(
         )));
     }
 
-    let verify = |candidate: &Option<String>, suffix: &str| -> AppResult<PathBuf> {
+    // `nuvem` = o arquivo que veio do path1; `local` = o do path2. Os sufixos
+    // aceitos são os mesmos que `collect_conflict_files` reconhece, porque o
+    // conflito pode ter sido criado por esta versão (`..path1`) ou por uma
+    // anterior (`.conflict1`).
+    let verify = |candidate: &Option<String>, lado: LadoDoConflito| -> AppResult<PathBuf> {
         let raw = candidate
             .as_ref()
             .ok_or_else(|| AppError::new("a versão escolhida não está mais disponível"))?;
@@ -1382,7 +1424,14 @@ pub async fn resolve_conflict(
             .file_name()
             .map(|name| name.to_string_lossy().to_string())
             .unwrap_or_default();
-        if !name.ends_with(suffix) {
+        let conhecido = SUFIXOS_DE_CONFLITO.iter().any(|(nuvem, local)| {
+            let sufixo = match lado {
+                LadoDoConflito::Nuvem => nuvem,
+                LadoDoConflito::Local => local,
+            };
+            name.ends_with(sufixo)
+        });
+        if !conhecido {
             return Err(AppError::new("arquivo de conflito inesperado"));
         }
         Ok(path)
@@ -1395,24 +1444,24 @@ pub async fn resolve_conflict(
 
     match action.as_str() {
         "remote" => {
-            let winner = verify(&path1, "..path1")?;
-            if let Ok(loser) = verify(&path2, "..path2") {
+            let winner = verify(&path1, LadoDoConflito::Nuvem)?;
+            if let Ok(loser) = verify(&path2, LadoDoConflito::Local) {
                 move_to_backup(&loser, &backup_dir)?;
             }
             std::fs::rename(&winner, &target)
                 .map_err(|error| AppError::new(format!("não foi possível restaurar o arquivo: {error}")))?;
         }
         "local" => {
-            let winner = verify(&path2, "..path2")?;
-            if let Ok(loser) = verify(&path1, "..path1") {
+            let winner = verify(&path2, LadoDoConflito::Local)?;
+            if let Ok(loser) = verify(&path1, LadoDoConflito::Nuvem) {
                 move_to_backup(&loser, &backup_dir)?;
             }
             std::fs::rename(&winner, &target)
                 .map_err(|error| AppError::new(format!("não foi possível restaurar o arquivo: {error}")))?;
         }
         _ => {
-            let remote = verify(&path1, "..path1")?;
-            let local = verify(&path2, "..path2")?;
+            let remote = verify(&path1, LadoDoConflito::Nuvem)?;
+            let local = verify(&path2, LadoDoConflito::Local)?;
             let remote_target = unique_path(&folder, &variant_name(&base_name, "nuvem"));
             let local_target = unique_path(&folder, &variant_name(&base_name, "local"));
             std::fs::rename(&remote, &remote_target)
@@ -1493,6 +1542,76 @@ fn unique_path(folder: &Path, name: &str) -> PathBuf {
         }
     }
     candidate
+}
+
+/// E-mail de cada conta, para a janela poder mostrar *qual* conta está
+/// conectada (`Google Drive 1` não diz nada a quem tem duas contas).
+///
+/// Silencioso por natureza: conta sem token, sem rede ou de provedor que não
+/// seja o Google simplesmente não entra no mapa. O cache evita uma ida ao
+/// Google a cada leitura de cota (30 s): só refaz quando o `access_token` muda.
+#[tauri::command]
+pub async fn account_emails(state: State<'_, AppState>) -> AppResult<HashMap<String, String>> {
+    static CACHE: OnceLock<Mutex<HashMap<String, (String, String)>>> = OnceLock::new();
+    let dump = dump_da_configuracao(&state).await?;
+    // Sem par embutido (build sem `.env.oauth`), os campos vazios mandam o
+    // Google recusar — e aí a interface só não mostra e-mail.
+    let (id_do_app, segredo_do_app) = oauth::do_build().unwrap_or_default();
+
+    let mut emails = HashMap::new();
+    for (nome, config) in dump {
+        if config.get("type").and_then(Value::as_str) != Some("drive") {
+            continue;
+        }
+        let Some(bruto) = config.get("token").and_then(Value::as_str) else {
+            continue;
+        };
+        let Ok(token) = serde_json::from_str::<Value>(bruto) else {
+            continue;
+        };
+        let acesso = token
+            .get("access_token")
+            .and_then(Value::as_str)
+            .unwrap_or_default()
+            .to_string();
+        if acesso.is_empty() {
+            continue;
+        }
+
+        let anterior = {
+            let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+            let guarda = cache.lock().unwrap_or_else(|erro| erro.into_inner());
+            guarda.get(&nome).cloned()
+        };
+        if let Some((guardado, mesmo_token)) = anterior {
+            if mesmo_token == acesso {
+                emails.insert(nome, guardado);
+                continue;
+            }
+        }
+
+        let client_id = config
+            .get("client_id")
+            .and_then(Value::as_str)
+            .filter(|valor| !valor.is_empty())
+            .unwrap_or(&id_do_app);
+        let client_secret = config
+            .get("client_secret")
+            .and_then(Value::as_str)
+            .filter(|valor| !valor.is_empty())
+            .unwrap_or(&segredo_do_app);
+
+        if let Some(email) =
+            crate::login_google::email_da_conta(&token, client_id, client_secret).await
+        {
+            let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+            let mut guarda = cache.lock().unwrap_or_else(|erro| erro.into_inner());
+            guarda.insert(nome.clone(), (email.clone(), acesso));
+            drop(guarda);
+            emails.insert(nome, email);
+        }
+    }
+    Ok(emails)
 }
 
 #[tauri::command]
@@ -1677,6 +1796,76 @@ pub(crate) fn abrir_no_sistema<P: AsRef<std::path::Path>>(path: P) -> std::io::R
     let mut command = std::process::Command::new(program);
     command.arg(path.as_ref()).sem_console();
     command.spawn().map(|_| ())
+}
+
+/// Abre um **endereço** no navegador padrão.
+///
+/// No Windows não serve o `explorer`: ele abre (ou só traz para a frente) a
+/// janela do Explorer em vez do navegador — era o bug de "conectar conta →
+/// Google Drive" na versão do Windows. Quem entrega um endereço ao navegador
+/// padrão é o `ShellExecute`. Também não serve `cmd /C start`: o endereço de
+/// autorização tem vários `&`, que o `cmd` interpretaria como separador de
+/// comandos e cortaria a URL no primeiro deles.
+///
+/// No Linux e no macOS o `xdg-open`/`open` resolvem os dois casos (pasta ou
+/// endereço), então a função só delega.
+pub(crate) fn abrir_endereco(url: &str) -> std::io::Result<()> {
+    #[cfg(windows)]
+    {
+        shell_do_windows::abrir(url)
+    }
+    #[cfg(not(windows))]
+    {
+        abrir_no_sistema(url)
+    }
+}
+
+/// Chamada direta à `shell32` — o mesmo caminho que o menu "Abrir com" usa.
+#[cfg(windows)]
+mod shell_do_windows {
+    use std::os::windows::ffi::OsStrExt;
+
+    #[link(name = "shell32")]
+    extern "system" {
+        fn ShellExecuteW(
+            janela: *mut core::ffi::c_void,
+            operacao: *const u16,
+            arquivo: *const u16,
+            parametros: *const u16,
+            pasta: *const u16,
+            mostrar: i32,
+        ) -> isize;
+    }
+
+    pub fn abrir(url: &str) -> std::io::Result<()> {
+        let largo = |texto: &str| {
+            std::ffi::OsStr::new(texto)
+                .encode_wide()
+                .chain(std::iter::once(0))
+                .collect::<Vec<u16>>()
+        };
+        let operacao = largo("open");
+        let arquivo = largo(url);
+        // SW_SHOWNORMAL = 1: o navegador abre na frente, do tamanho normal.
+        let resultado = unsafe {
+            ShellExecuteW(
+                std::ptr::null_mut(),
+                operacao.as_ptr(),
+                arquivo.as_ptr(),
+                std::ptr::null(),
+                std::ptr::null(),
+                1,
+            )
+        };
+        // A API devolve um valor maior que 32 quando começou bem.
+        if resultado > 32 {
+            Ok(())
+        } else {
+            Err(std::io::Error::other(format!(
+                "o Windows não conseguiu abrir o endereço (código {resultado})"
+            )))
+        }
+    }
 }
 
 #[tauri::command]
@@ -2050,7 +2239,7 @@ pub fn open_url(url: String) -> AppResult<()> {
     if !(url.starts_with("https://") || url.starts_with("http://")) {
         return Err(AppError::new("só abro endereços http(s)"));
     }
-    abrir_no_sistema(&url)
+    abrir_endereco(&url)
         .map_err(|erro| AppError::new(format!("não foi possível abrir {url}: {erro}")))?;
     Ok(())
 }
@@ -2270,6 +2459,64 @@ mod tests {
         // Pasta que não existe não é "vazia": evita barrar por engano uma
         // pasta que ainda vai ser criada.
         assert!(tem_algo_em(&dir.join("nao-existe")));
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detector_de_conflitos_reconhece_o_sufixo_que_o_app_pede_ao_rclone() {
+        use super::{collect_conflict_files, ConflictSlot};
+        use std::collections::HashMap;
+
+        let dir = std::env::temp_dir().join(format!("nuvem-conflitos-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let sub = dir.join("Documentos");
+        std::fs::create_dir_all(&sub).expect("pasta temporária");
+
+        // `start_sync` manda `conflictSuffix: ".path1,.path2"`; foi isso que o
+        // rclone 1.75.2 gravou no teste de campo.
+        std::fs::write(sub.join("nota.txt..path1"), "da nuvem").expect("nuvem");
+        std::fs::write(sub.join("nota.txt..path2"), "daqui").expect("local");
+        // Sobra de uma versão anterior do app (padrão `--conflict-loser num`).
+        std::fs::write(dir.join("foto.jpg.conflict1"), "da nuvem").expect("nuvem");
+        std::fs::write(dir.join("foto.jpg.conflict2"), "daqui").expect("local");
+        // Arquivo comum não vira conflito.
+        std::fs::write(dir.join("outra.txt"), "comum").expect("comum");
+
+        let mut encontrados = HashMap::<String, ConflictSlot>::new();
+        collect_conflict_files(&dir.to_string_lossy(), 0, &mut encontrados);
+        assert_eq!(encontrados.len(), 2);
+
+        let mut bases: Vec<String> = encontrados.values().map(|slot| slot.base.clone()).collect();
+        bases.sort();
+        assert_eq!(bases, vec!["foto.jpg".to_string(), "nota.txt".to_string()]);
+
+        for slot in encontrados.values() {
+            let nuvem = slot.path1.as_deref().expect("versão da nuvem");
+            let local = slot.path2.as_deref().expect("versão local");
+            assert!(nuvem.contains(&slot.base), "{nuvem}");
+            assert!(local.contains(&slot.base), "{local}");
+            assert!(nuvem.ends_with("..path1") || nuvem.ends_with(".conflict1"), "{nuvem}");
+            assert!(local.ends_with("..path2") || local.ends_with(".conflict2"), "{local}");
+        }
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detector_de_conflitos_nao_confunde_arquivo_comum_com_sufixo() {
+        use super::{collect_conflict_files, ConflictSlot};
+        use std::collections::HashMap;
+
+        let dir = std::env::temp_dir().join(format!("nuvem-sem-conflito-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).expect("pasta temporária");
+        std::fs::write(dir.join("relatorio..path1.bak"), "x").expect("arquivo");
+        std::fs::write(dir.join("anotacoes.conflict1.txt"), "x").expect("arquivo");
+
+        let mut encontrados = HashMap::<String, ConflictSlot>::new();
+        collect_conflict_files(&dir.to_string_lossy(), 0, &mut encontrados);
+        assert!(encontrados.is_empty(), "{:?}", encontrados.len());
 
         let _ = std::fs::remove_dir_all(&dir);
     }

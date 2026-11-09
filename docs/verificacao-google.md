@@ -320,6 +320,26 @@ https://www.googleapis.com/auth/drive
 > The app requests a single scope, and the permission is explained in the
 > interface before the browser opens.
 
+### Justificativa no campo de 1.000 caracteres (o que foi enviado)
+
+O campo *"Justificativa"* do Centro de verificação corta em **1.000
+caracteres** — a versão longa acima não cabe. Esta é a que foi colada (986
+caracteres); se precisar de folga, a variante abaixo tem 914.
+
+> Nuvem Sync is an open-source (MIT) desktop app that keeps a folder on the user's computer in two-way sync with a folder of their own Google Drive, using the local rclone bisync engine. There is no server: the OAuth token and file contents stay on the user's machine.
+>
+> We request https://www.googleapis.com/auth/drive because the core feature is syncing folders that already exist in the Drive. The narrower drive.file scope only covers files the app itself created, so it could not list, download or update files the user created in the Drive web UI - the main feature would be impossible.
+>
+> Drive data is used only to transfer files between the Drive and the folder the user selected. It is not stored on any server we operate (we operate none), not shared, not used for advertising and not used to train AI models. Users can revoke access anytime in the app or at myaccount.google.com/permissions. It is the only scope requested, and the interface explains it before the browser opens.
+
+Variante mais curta (914 caracteres), mesmo conteúdo:
+
+> Nuvem Sync is an open-source (MIT) desktop app that syncs a folder on the user's computer two-way with a folder in their own Google Drive, using the local rclone bisync engine. There is no server: the OAuth token and files stay on the user's machine.
+>
+> We need https://www.googleapis.com/auth/drive because the core feature is syncing folders that already exist in the Drive. drive.file only covers files the app created, so it could not list, download or update files made in the Drive web UI - the main feature would be impossible.
+>
+> Drive data is used only to move files between the Drive and the folder the user chose. It is not stored on any server we operate (we operate none), not shared, not used for ads and not used to train AI models. Users can revoke access anytime in the app or at myaccount.google.com/permissions. It is the only scope requested, and the interface explains it before the browser opens.
+
 ### Roteiro do vídeo (2–3 min, sem cortes)
 
 > Roteiro completo, com pré-requisitos, marcação de tempo e narração em inglês:

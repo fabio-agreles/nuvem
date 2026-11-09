@@ -53,6 +53,8 @@ export type Backend = {
   // E-mail de cada conta (só as que dão para descobrir): a janela mostra o
   // endereço embaixo do nome, para não confundir "Google Drive 1" com "2".
   accountEmails(): Promise<Record<string, string>>;
+  // Botão Cancelar da janela "aguardando autorização": o app desiste na hora.
+  cancelAuthorization(): Promise<void>;
   revealPath(path: string): Promise<void>;
   openConfigFolder(): Promise<string>;
   saveDiagnostics(): Promise<string>;
@@ -100,6 +102,7 @@ const desktop: Backend = {
     }),
   accountUsage: () => invoke("account_usage"),
   accountEmails: () => invoke("account_emails"),
+  cancelAuthorization: () => invoke("cancel_authorization"),
   revealPath: (path) => invoke("reveal_path", { path }),
   openConfigFolder: () => invoke("open_config_folder"),
   saveDiagnostics: () => invoke("save_diagnostics"),
@@ -139,6 +142,7 @@ const demo: Backend = {
   resolveConflict: (action, conflict) => demoBackend.resolveConflict(action, conflict),
   accountUsage: () => demoBackend.accountUsage(),
   accountEmails: () => demoBackend.accountEmails(),
+  cancelAuthorization: async () => {},
   revealPath: () => demoBackend.revealPath(),
   openConfigFolder: () => demoBackend.openConfigFolder(),
   saveDiagnostics: () => demoBackend.saveDiagnostics(),

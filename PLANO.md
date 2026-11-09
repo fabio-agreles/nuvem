@@ -272,6 +272,29 @@ Alternativas descartadas por ora:
   **Ressincronizar é seguro com um lado vazio**: com o computador cheio e a
   nuvem vazia, o resync sobe os arquivos; com a nuvem cheia e o computador
   vazio, baixa — conferido nos dois sentidos, não apaga o lado cheio.
+- 🔧 **Rodada de correções do Windows (09/11, no código, sem publicar)** — três
+  dos quatro pontos relatados depois da 1.6.2:
+  (1) **dois ícones na área de notificação**: o `tauri.conf.json` tinha
+  `app.trayIcon` *e* o `tray::init` montava a bandeja — no Windows apareciam as
+  duas. O bloco do config saiu; teste novo (`bandeja_e_criada_so_pelo_codigo`)
+  lê o próprio `tauri.conf.json` para não voltar.
+  (3) **janela "aguardando autorização" sem saída**: agora mostra contador
+  (`00:42 de 10:00`), o botão Cancelar funciona de verdade (novo comando
+  `cancel_authorization` → `login_google::cancelar()`, que o laço local checa a
+  cada 300 ms) e o prazo de 10 minutos virou `select!` com mensagem clara —
+  antes, fechar o navegador deixava a janela presa e só restava matar o app.
+  (4) **e-mail da conta OneDrive**: `email_do_onedrive` pergunta o dono do drive
+  no Graph (`/me/drive?$select=owner`, coberto pela permissão que o rclone já
+  pede) e cai para `userPrincipalName` quando a conta é de empresa; sem nada
+  legível, o cartão continua sem e-mail.
+- 📝 **Pendente: página final do OneDrive ainda é a do rclone (09/11)** — o item
+  (2) do relato. A página "Success! All done. Please go back to rclone." é HTML
+  embutido no binário do rclone; para ter a página do Nuvem Sync no OneDrive é
+  preciso fazer a autorização da Microsoft como já fazemos com o Google, e isso
+  exige um registro de aplicativo no Microsoft Entra (client_id + redirecionamento
+  `http://localhost:53682/`) — não dá para reaproveitar o par do Google.
+  Alternativa sem registro próprio: usar o client_id público do rclone (funciona,
+  mas é o aplicativo dele). Decisão pendente com o usuário.
 - ⏳ **Verificação de escopo restrito enviada (09/11, 13h20)** — formulário do
   Centro de verificação preenchido com a justificativa de 986 caracteres (o campo
   corta em 1.000), o vídeo do YouTube (não listado) e as respostas: **não** é uso

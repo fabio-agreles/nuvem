@@ -1560,7 +1560,12 @@ pub async fn account_emails(state: State<'_, AppState>) -> AppResult<HashMap<Str
 
     let mut emails = HashMap::new();
     for (nome, config) in dump {
-        if config.get("type").and_then(Value::as_str) != Some("drive") {
+        let provider = config
+            .get("type")
+            .and_then(Value::as_str)
+            .unwrap_or_default()
+            .to_string();
+        if provider != "drive" && provider != "onedrive" {
             continue;
         }
         let Some(bruto) = config.get("token").and_then(Value::as_str) else {
@@ -1601,9 +1606,13 @@ pub async fn account_emails(state: State<'_, AppState>) -> AppResult<HashMap<Str
             .filter(|valor| !valor.is_empty())
             .unwrap_or(&segredo_do_app);
 
-        if let Some(email) =
+        let achado = if provider == "onedrive" {
+            email_do_onedrive(&token).await
+        } else {
             crate::login_google::email_da_conta(&token, client_id, client_secret).await
-        {
+        };
+
+        if let Some(email) = achado {
             let cache = CACHE.get_or_init(|| Mutex::new(HashMap::new()));
             let mut guarda = cache.lock().unwrap_or_else(|erro| erro.into_inner());
             guarda.insert(nome.clone(), (email.clone(), acesso));
@@ -1612,6 +1621,53 @@ pub async fn account_emails(state: State<'_, AppState>) -> AppResult<HashMap<Str
         }
     }
     Ok(emails)
+}
+
+/// E-mail de uma conta OneDrive.
+///
+/// O `about` do rclone não traz nada disso; o dono do drive aparece no Graph
+/// (`/me/drive?$select=owner`), coberto pela permissão que o rclone já pede
+/// (`Files.ReadWrite.All`). Conta de empresa pode vir sem `email` — aí o cartão
+/// fica com o nome do provedor, sem erro.
+async fn email_do_onedrive(token: &Value) -> Option<String> {
+    let acesso = token.get("access_token").and_then(Value::as_str)?;
+    let resposta = reqwest::Client::new()
+        .get("https://graph.microsoft.com/v1.0/me/drive")
+        .query(&[("$select", "owner")])
+        .bearer_auth(acesso)
+        .timeout(Duration::from_secs(20))
+        .send()
+        .await
+        .ok()?;
+    if !resposta.status().is_success() {
+        return None;
+    }
+    let corpo: Value = resposta.json().await.ok()?;
+    email_do_dono(&corpo)
+}
+
+/// `{"owner":{"user":{"email":"ana@outlook.com"}}}` → `Some("ana@outlook.com")`.
+///
+/// Conta de empresa costuma trazer só `userPrincipalName`; conta pessoal, só
+/// `email`. Sem `@` não é e-mail: melhor nada do que lixo no cartão.
+fn email_do_dono(corpo: &Value) -> Option<String> {
+    let dono = corpo.get("owner")?.get("user")?;
+    for chave in ["email", "userPrincipalName"] {
+        if let Some(valor) = dono.get(chave).and_then(Value::as_str) {
+            let valor = valor.trim();
+            if valor.contains('@') && !valor.chars().any(char::is_whitespace) {
+                return Some(valor.to_string());
+            }
+        }
+    }
+    None
+}
+
+/// Botão Cancelar da janela "aguardando autorização": o laço local desiste na
+/// hora, em vez de deixar a janela presa até o fim do prazo.
+#[tauri::command]
+pub fn cancel_authorization() {
+    crate::login_google::cancelar();
 }
 
 #[tauri::command]
@@ -2247,8 +2303,8 @@ pub fn open_url(url: String) -> AppResult<()> {
 #[cfg(test)]
 mod tests {
     use super::{
-        montar_relatorio, resposta_para, risco_de_apagar_tudo, tem_algo_em, versao_mais_nova,
-        ContextoRelatorio, LadoVazio,
+        email_do_dono, montar_relatorio, resposta_para, risco_de_apagar_tudo, tem_algo_em,
+        versao_mais_nova, ContextoRelatorio, LadoVazio,
     };
     use crate::models::{Account, ActivityEntry, Profile, Settings};
     use serde_json::json;
@@ -2445,6 +2501,20 @@ mod tests {
         assert_eq!(risco_de_apagar_tudo(false, true, true), None);
         // Caso normal: os dois lados com conteúdo.
         assert_eq!(risco_de_apagar_tudo(false, false, false), None);
+    }
+
+    #[test]
+    fn email_do_onedrive_vem_do_dono_do_drive() {
+        // Conta pessoal: `email`. Conta de empresa: `userPrincipalName`.
+        let pessoal = json!({ "owner": { "user": { "email": "ana@outlook.com" } } });
+        assert_eq!(email_do_dono(&pessoal), Some("ana@outlook.com".to_string()));
+        let empresa = json!({
+            "owner": { "user": { "email": "", "userPrincipalName": "ana@contoso.com" } }
+        });
+        assert_eq!(email_do_dono(&empresa), Some("ana@contoso.com".to_string()));
+        // Sem nada legível: o cartão segue com o nome do provedor.
+        assert_eq!(email_do_dono(&json!({ "owner": {} })), None);
+        assert_eq!(email_do_dono(&json!({})), None);
     }
 
     #[test]

@@ -270,8 +270,10 @@ const EN: Record<string, string> = {
     "This is the name shown in Nuvem Sync and in rclone. Any nickname works.",
   "A autorização acontece no navegador. O Nuvem Sync nunca vê sua senha.":
     "Authorization happens in your browser. Nuvem Sync never sees your password.",
-  "Termine a autorização na janela do navegador que o rclone abriu. Esta caixa fecha sozinha ao concluir.":
-    "Finish authorizing in the browser window rclone opened. This dialog closes by itself when done.",
+  "Aguardando a autorização no navegador — {tempo} de {prazo}.":
+    "Waiting for authorization in the browser — {tempo} of {prazo}.",
+  "Esta caixa fecha sozinha ao concluir. Se o navegador não abriu, clique em Cancelar e tente de novo.":
+    "This dialog closes by itself when done. If the browser did not open, click Cancel and try again.",
   "Aguardando autorização…": "Waiting for authorization…",
   "Conectar": "Connect",
   "No navegador, digite o caminho manualmente.": "In the browser, type the path manually.",

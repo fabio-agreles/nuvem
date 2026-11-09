@@ -650,6 +650,29 @@ function AddAccountModal({
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [decorrido, setDecorrido] = useState(0);
+
+  // Mesmo prazo do backend (`login_google::PRAZO_DO_NAVEGADOR`): dez minutos.
+  const prazo = 600;
+
+  // Contador da espera: sem ele a janela parecia travada quando o navegador
+  // ficava parado. O `tick` também deixa claro que o app continua vivo.
+  useEffect(() => {
+    if (!busy) {
+      setDecorrido(0);
+      return;
+    }
+    const inicio = Date.now();
+    const timer = setInterval(() => setDecorrido(Math.floor((Date.now() - inicio) / 1000)), 1000);
+    return () => clearInterval(timer);
+  }, [busy]);
+
+  const cancelar = () => {
+    // Desiste de verdade: o laço local da autorização para na hora.
+    void api.cancelAuthorization().catch(() => undefined);
+    setBusy(false);
+    onClose();
+  };
 
   const submit = async () => {
     setBusy(true);
@@ -669,7 +692,7 @@ function AddAccountModal({
       onClose={busy ? () => undefined : onClose}
       footer={
         <>
-          <button className="btn ghost" onClick={onClose} disabled={busy}>
+          <button className="btn ghost" onClick={busy ? cancelar : onClose}>
             {t("Cancelar")}
           </button>
           <button className="btn primary" onClick={() => void submit()} disabled={busy}>
@@ -730,11 +753,25 @@ function AddAccountModal({
       ) : null}
 
       {busy ? (
-        <p className="muted" style={{ fontSize: 12 }}>
-          {t(
-            "Termine a autorização na janela do navegador que o rclone abriu. Esta caixa fecha sozinha ao concluir.",
-          )}
-        </p>
+        <div className="banner info" style={{ alignItems: "flex-start" }}>
+          <Icon name="refresh" size={16} className="spin" />
+          <span>
+            {t("Aguardando a autorização no navegador — {tempo} de {prazo}.", {
+              tempo: `${String(Math.floor(decorrido / 60)).padStart(2, "0")}:${String(
+                decorrido % 60,
+              ).padStart(2, "0")}`,
+              prazo: `${String(Math.floor(prazo / 60)).padStart(2, "0")}:${String(
+                prazo % 60,
+              ).padStart(2, "0")}`,
+            })}
+            <br />
+            <span className="muted" style={{ fontSize: 12 }}>
+              {t(
+                "Esta caixa fecha sozinha ao concluir. Se o navegador não abriu, clique em Cancelar e tente de novo.",
+              )}
+            </span>
+          </span>
+        </div>
       ) : null}
     </Modal>
   );

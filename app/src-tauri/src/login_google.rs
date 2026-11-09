@@ -16,6 +16,7 @@
 
 use crate::error::{AppError, AppResult};
 use serde_json::{json, Value};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
@@ -29,7 +30,18 @@ const ESCOPO: &str = "https://www.googleapis.com/auth/drive";
 const PORTA_PREFERIDA: u16 = 53682;
 
 /// Quanto tempo esperamos a pessoa terminar no navegador.
-const PRAZO_DO_NAVEGADOR: Duration = Duration::from_secs(600);
+pub const PRAZO_DO_NAVEGADOR: Duration = Duration::from_secs(600);
+
+/// Pedido de cancelamento da janela “aguardando autorização”.
+///
+/// Só existe uma autorização por vez (a segunda conexão espera a trava do
+/// `connect_account`), então um sinal global basta: o laço local desiste na
+/// hora em vez de deixar a pessoa esperando até o prazo acabar.
+static CANCELAR: AtomicBool = AtomicBool::new(false);
+
+pub fn cancelar() {
+    CANCELAR.store(true, Ordering::SeqCst);
+}
 
 const URL_AUTORIZACAO: &str = "https://accounts.google.com/o/oauth2/auth";
 const URL_TOKEN: &str = "https://oauth2.googleapis.com/token";
@@ -67,6 +79,7 @@ fn motivo(erro: &reqwest::Error) -> String {
 /// Autoriza uma conta Google e devolve o token no formato que o `rclone.conf`
 /// guarda (o mesmo JSON que o `rclone authorize` produziria).
 pub async fn autorizar(client_id: &str, client_secret: &str) -> AppResult<Value> {
+    CANCELAR.store(false, Ordering::SeqCst);
     let estado = sorteio(16)?;
     let (ouvinte, porta) = abrir_porta().await?;
     let retorno = format!("http://127.0.0.1:{porta}/");
@@ -204,12 +217,30 @@ async fn esperar_codigo(ouvinte: TcpListener, estado: &str) -> AppResult<String>
         }
     };
 
-    match tokio::time::timeout(PRAZO_DO_NAVEGADOR, espera).await {
-        Ok(resultado) => resultado,
-        Err(_) => Err(falha(
-            "a autorização não terminou a tempo. Comece de novo e conclua no navegador.",
-            "the authorization did not finish in time. Start again and complete it in the browser.",
-        )),
+    // O prazo e o botão Cancelar param a espera pelo mesmo lugar: aqui. Sem
+    // isso, quem fechava o navegador ficava com a janela presa até o fim dos
+    // dez minutos.
+    let mut espera = Box::pin(espera);
+    let prazo = tokio::time::sleep(PRAZO_DO_NAVEGADOR);
+    tokio::pin!(prazo);
+    loop {
+        tokio::select! {
+            resultado = &mut espera => return resultado,
+            _ = &mut prazo => {
+                return Err(falha(
+                    "a autorização não terminou a tempo. Comece de novo e conclua no navegador.",
+                    "the authorization did not finish in time. Start again and complete it in the browser.",
+                ))
+            }
+            _ = tokio::time::sleep(Duration::from_millis(300)) => {
+                if CANCELAR.load(Ordering::SeqCst) {
+                    return Err(falha(
+                        "a autorização foi cancelada — nada foi alterado.",
+                        "the authorization was cancelled — nothing was changed.",
+                    ));
+                }
+            }
+        }
     }
 }
 

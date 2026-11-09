@@ -251,6 +251,18 @@ pub fn init(app: &mut App) -> tauri::Result<()> {
 mod tests {
     use super::{bytes, icone, Estado};
 
+    /// A bandeja é montada em `tray::init` — com menu, tema e estado. Um
+    /// `app.trayIcon` no `tauri.conf.json` faria o Tauri criar **outro** ícone:
+    /// no Windows apareciam dois na área de notificação.
+    #[test]
+    fn bandeja_e_criada_so_pelo_codigo() {
+        let conf = include_str!("../tauri.conf.json");
+        assert!(
+            !conf.contains("\"trayIcon\""),
+            "tire o bloco `trayIcon` do tauri.conf.json: ele cria um segundo ícone"
+        );
+    }
+
     /// Os doze PNGs viajam embutidos: se um deles quebrar (ou sumir do
     /// repositório), o `cargo test` avisa antes de o app abrir sem ícone.
     #[test]

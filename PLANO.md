@@ -217,6 +217,19 @@ Alternativas descartadas por ora:
   nome de exibição do projeto para "Nuvem Sync" (roteiro em
   `docs/verificacao-google.md` §1.5). Não reenviar a verificação antes do
   domínio: com `github.io` reprova outra vez.
+- ⏳ **Verificação de escopo restrito enviada (09/11, 13h20)** — formulário do
+  Centro de verificação preenchido com a justificativa de 986 caracteres (o campo
+  corta em 1.000), o vídeo do YouTube (não listado) e as respostas: **não** é uso
+  pessoal, **não** é interno, **não** é só desenvolvimento, **não** é plugin SMTP
+  do WordPress; as duas confirmações marcadas (requisitos + CASA condicional). O
+  painel mostrou **marca verificada** e **acesso a dados em análise**, com
+  checklist pendente em: página inicial, política de privacidade, funcionalidade,
+  diretrizes da marca, acesso adequado aos dados, escopos mínimos e outros
+  requisitos. Prazo informado pelo próprio Google: **4 a 6 semanas**, com primeiro
+  e-mail em **3 a 5 dias**. Não mexer em status de publicação (Em produção), tipo
+  de usuário (Externo), nome/logo, escopos nem domínio até a resposta. Conferido
+  no dia 09/11: TXT de verificação do domínio ainda publicado
+  (`google-site-verification=wBZU…`) e as quatro URLs do site respondendo 200.
 - ✅ **CI de verdade (08/11)** — até aqui o único workflow era o build de
   release; teste, clippy e tsc não rodavam em lugar nenhum antes da tag.
   `.github/workflows/checagem.yml` roda em push/PR: `npm run build` (tsc),

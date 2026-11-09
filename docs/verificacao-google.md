@@ -382,6 +382,13 @@ rclone reconecta sem mostrar nada. Duas saídas:
 
 ## 5. Depois de enviar
 
+**Enviado em 09/11/2026, 13h20.** O Centro de verificação passou a mostrar
+*marca verificada* e *acesso a dados em análise*, com checklist pendente em
+página inicial, política de privacidade, funcionalidade, diretrizes da marca,
+acesso adequado aos dados, escopos mínimos e outros requisitos. Prazo informado
+na tela: **4 a 6 semanas**, com o primeiro e-mail do time de Confiabilidade e
+Segurança em **3 a 5 dias**.
+
 - Acompanhe em *Verificação* → o status muda para "Em análise".
 - A verificação de marca costuma levar **2–3 dias úteis**; a de escopo restrito,
   **semanas**.

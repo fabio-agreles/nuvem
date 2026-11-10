@@ -43,6 +43,11 @@ pub fn cancelar() {
     CANCELAR.store(true, Ordering::SeqCst);
 }
 
+/// O laço da autorização da Microsoft usa o mesmo sinal de cancelamento.
+pub(crate) fn cancelada() -> bool {
+    CANCELAR.load(Ordering::SeqCst)
+}
+
 const URL_AUTORIZACAO: &str = "https://accounts.google.com/o/oauth2/auth";
 const URL_TOKEN: &str = "https://oauth2.googleapis.com/token";
 
@@ -53,7 +58,7 @@ const URL_CONTA: &str = "https://www.googleapis.com/drive/v3/about";
 
 /// Erro que segue o idioma do app: estas mensagens aparecem na janela de
 /// conectar conta, então precisam falar a mesma língua da interface.
-fn falha(portugues: &str, ingles: &str) -> AppError {
+pub(crate) fn falha(portugues: &str, ingles: &str) -> AppError {
     AppError::new(crate::idioma::escolhe(
         portugues.to_string(),
         ingles.to_string(),
@@ -62,7 +67,7 @@ fn falha(portugues: &str, ingles: &str) -> AppError {
 
 /// O `reqwest` esconde o motivo real (DNS, TLS, rede) na cadeia de `source`.
 /// Sem ela, uma falha de transporte vira só "error sending request for url".
-fn motivo(erro: &reqwest::Error) -> String {
+pub(crate) fn motivo(erro: &reqwest::Error) -> String {
     let mut texto = erro.to_string();
     let mut fonte = std::error::Error::source(erro);
     while let Some(causa) = fonte {
@@ -370,7 +375,7 @@ async fn trocar_codigo_em(
 }
 
 /// Lê o pedido HTTP até a linha em branco (o bastante para a primeira linha).
-async fn ler_pedido(fluxo: &mut tokio::net::TcpStream) -> Option<String> {
+pub(crate) async fn ler_pedido(fluxo: &mut tokio::net::TcpStream) -> Option<String> {
     let mut buffer = Vec::with_capacity(1024);
     let mut pedaco = [0u8; 1024];
     loop {
@@ -387,7 +392,7 @@ async fn ler_pedido(fluxo: &mut tokio::net::TcpStream) -> Option<String> {
 }
 
 /// Devolve a consulta (`?code=…&state=…`) da primeira linha do pedido.
-fn consulta_do_pedido(pedido: &str) -> Option<&str> {
+pub(crate) fn consulta_do_pedido(pedido: &str) -> Option<&str> {
     let primeira = pedido.lines().next()?;
     let mut partes = primeira.split_whitespace();
     let metodo = partes.next()?;
@@ -399,7 +404,7 @@ fn consulta_do_pedido(pedido: &str) -> Option<&str> {
 }
 
 /// Separa `a=1&b=2` em pares já decodificados.
-fn campos_da_consulta(consulta: &str) -> Vec<(String, String)> {
+pub(crate) fn campos_da_consulta(consulta: &str) -> Vec<(String, String)> {
     consulta
         .split('&')
         .filter(|par| !par.is_empty())
@@ -410,7 +415,7 @@ fn campos_da_consulta(consulta: &str) -> Vec<(String, String)> {
         .collect()
 }
 
-fn campo(campos: &[(String, String)], nome: &str) -> Option<String> {
+pub(crate) fn campo(campos: &[(String, String)], nome: &str) -> Option<String> {
     campos
         .iter()
         .find(|(chave, _)| chave == nome)
@@ -418,7 +423,7 @@ fn campo(campos: &[(String, String)], nome: &str) -> Option<String> {
         .filter(|valor| !valor.is_empty())
 }
 
-async fn responder(fluxo: &mut tokio::net::TcpStream, codigo: u16, corpo: &str) {
+pub(crate) async fn responder(fluxo: &mut tokio::net::TcpStream, codigo: u16, corpo: &str) {
     let motivo = match codigo {
         200 => "OK",
         400 => "Bad Request",
@@ -444,7 +449,7 @@ pub fn pagina_de_sucesso() -> String {
     pagina(titulo, texto, "#1f9d55")
 }
 
-fn pagina_de_erro(titulo_pt: &str, titulo_en: &str) -> String {
+pub(crate) fn pagina_de_erro(titulo_pt: &str, titulo_en: &str) -> String {
     let titulo = crate::idioma::escolhe(titulo_pt.to_string(), titulo_en.to_string());
     let texto = crate::idioma::texto(
         "Volte ao Nuvem Sync e tente de novo.",
@@ -515,7 +520,7 @@ fn pagina(titulo: &str, texto: &str, cor: &str) -> String {
 }
 
 /// Sorteio hexadecimal do `state` (evita CSRF na resposta do laço).
-fn sorteio(bytes: usize) -> AppResult<String> {
+pub(crate) fn sorteio(bytes: usize) -> AppResult<String> {
     let mut valores = vec![0u8; bytes];
     getrandom::fill(&mut valores).map_err(|erro| {
         falha(
@@ -573,7 +578,7 @@ pub fn codificar(texto: &str) -> String {
     saida
 }
 
-fn agora_em_segundos() -> u64 {
+pub(crate) fn agora_em_segundos() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|duracao| duracao.as_secs())

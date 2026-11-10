@@ -287,14 +287,22 @@ Alternativas descartadas por ora:
   no Graph (`/me/drive?$select=owner`, coberto pela permissão que o rclone já
   pede) e cai para `userPrincipalName` quando a conta é de empresa; sem nada
   legível, o cartão continua sem e-mail.
-- 📝 **Pendente: página final do OneDrive ainda é a do rclone (09/11)** — o item
-  (2) do relato. A página "Success! All done. Please go back to rclone." é HTML
-  embutido no binário do rclone; para ter a página do Nuvem Sync no OneDrive é
-  preciso fazer a autorização da Microsoft como já fazemos com o Google, e isso
-  exige um registro de aplicativo no Microsoft Entra (client_id + redirecionamento
-  `http://localhost:53682/`) — não dá para reaproveitar o par do Google.
-  Alternativa sem registro próprio: usar o client_id público do rclone (funciona,
-  mas é o aplicativo dele). Decisão pendente com o usuário.
+- ✅ **Autorização do OneDrive no próprio app (10/11, no código, sem publicar)** —
+  item (2) do relato, fechado pelo caminho A: registro próprio no Microsoft
+  Entra (`Nuvem Sync`, cliente público, `client_id`
+  `207c9f4b-9217-4761-a960-f36e8c5b0023`, redirecionamento
+  `http://localhost:53682/`, delegadas `Files.ReadWrite.All` + `User.Read`).
+  Novo `src/login_microsoft.rs` repete o desenho do Google (state sorteado, laço
+  em `localhost` nas duas famílias, página do Nuvem Sync, prazo de 10 min,
+  Cancelar), troca o código sem segredo e grava o token no formato do rclone
+  (`expiry` RFC 3339 a partir do `expires_in`). Sem PKCE de propósito — o rclone
+  também não usa e o laço é local. `connect_account` usa esse token e cria o
+  remote com `nonInteractive`; o `drive_id` passou a ser conferido, com erro
+  explícito quando falta. O e-mail do OneDrive vem do `/me` (`User.Read`) e cai
+  para o dono do drive (`Files.ReadWrite.All`) se a permissão não estiver lá.
+  Pré-checagem contra o AAD de verdade: o `client_id` responde com a página de
+  login (cliente inexistente responde `AADSTS700038`), então o registro está de
+  pé. 80 testes, clippy limpo. Detalhes em `docs/oauth-onedrive.md`.
 - ⏳ **Verificação de escopo restrito enviada (09/11, 13h20)** — formulário do
   Centro de verificação preenchido com a justificativa de 986 caracteres (o campo
   corta em 1.000), o vídeo do YouTube (não listado) e as respostas: **não** é uso

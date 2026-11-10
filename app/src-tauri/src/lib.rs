@@ -11,6 +11,7 @@ mod commands;
 mod error;
 mod idioma;
 mod login_google;
+mod login_microsoft;
 mod models;
 mod oauth;
 mod monitor;

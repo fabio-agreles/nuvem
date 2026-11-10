@@ -312,6 +312,7 @@ React + TypeScript (src/)
 Rust (src-tauri/src/)
   ├─ commands.rs   contas, perfis, sync, conflitos, ajustes
   ├─ login_google.rs  autorização do Google: laço local, página de retorno, token
+  ├─ login_microsoft.rs  o mesmo para o OneDrive (Entra, cliente público)
   ├─ monitor.rs    observa jobs e grava atividade
   ├─ rclone.rs     sobe/gerencia `rclone rcd` em porta loopback
   └─ state.rs      perfis, atividade e ajustes em JSON

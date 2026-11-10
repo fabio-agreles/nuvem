@@ -366,6 +366,17 @@ pub async fn connect_account(
         }
     }
 
+    // OneDrive pelo mesmo caminho: quem abre o navegador e recebe o retorno é o
+    // app, então a última página é a do Nuvem Sync (era a do rclone, “All done.
+    // Please go back to rclone.”). Com o token pronto, o remote é criado sem o
+    // fluxo interativo.
+    if provider == "onedrive" {
+        let token = crate::login_microsoft::autorizar().await?;
+        parametros["token"] = Value::String(token.to_string());
+        parametros["config_refresh_token"] = Value::String("false".to_string());
+        opcoes = json!({ "nonInteractive": true });
+    }
+
     state
         .rclone
         .call(
@@ -390,6 +401,20 @@ pub async fn connect_account(
         // "unable to get drive_id and drive_type".
         if let Err(error) = completar_onedrive(&state, &account_name).await {
             eprintln!("onedrive: não foi possível concluir a configuração: {error}");
+        }
+        // O `completar_onedrive` engole o erro (a conta pode ficar utilizável
+        // depois, na próxima sincronização). Aqui a checagem é explícita: sem
+        // `drive_id`, listar arquivos e sincronizar falham sempre.
+        let pronto = dump_da_configuracao(&state)
+            .await
+            .ok()
+            .and_then(|dump| dump.get(&account_name).cloned())
+            .map(|config| !config.get("drive_id").and_then(Value::as_str).unwrap_or_default().is_empty())
+            .unwrap_or(false);
+        if !pronto {
+            return Err(AppError::new(
+                "a conta foi autorizada, mas não foi possível descobrir qual drive usar. Remova a conta em Visão geral → Contas e conecte de novo.",
+            ));
         }
     }
 
@@ -1625,42 +1650,71 @@ pub async fn account_emails(state: State<'_, AppState>) -> AppResult<HashMap<Str
 
 /// E-mail de uma conta OneDrive.
 ///
-/// O `about` do rclone não traz nada disso; o dono do drive aparece no Graph
-/// (`/me/drive?$select=owner`), coberto pela permissão que o rclone já pede
-/// (`Files.ReadWrite.All`). Conta de empresa pode vir sem `email` — aí o cartão
-/// fica com o nome do provedor, sem erro.
+/// O `about` do rclone não traz nada disso. O caminho direto é o `/me` do
+/// Graph (`User.Read`); se a permissão não estiver lá, o plano B é o dono do
+/// drive (`Files.ReadWrite.All`, que o rclone já pede). Conta de empresa pode
+/// vir sem `mail` — por isso o `userPrincipalName` também serve.
 async fn email_do_onedrive(token: &Value) -> Option<String> {
     let acesso = token.get("access_token").and_then(Value::as_str)?;
-    let resposta = reqwest::Client::new()
-        .get("https://graph.microsoft.com/v1.0/me/drive")
-        .query(&[("$select", "owner")])
-        .bearer_auth(acesso)
-        .timeout(Duration::from_secs(20))
-        .send()
-        .await
-        .ok()?;
-    if !resposta.status().is_success() {
-        return None;
-    }
-    let corpo: Value = resposta.json().await.ok()?;
-    email_do_dono(&corpo)
-}
+    let cliente = reqwest::Client::new();
 
-/// `{"owner":{"user":{"email":"ana@outlook.com"}}}` → `Some("ana@outlook.com")`.
-///
-/// Conta de empresa costuma trazer só `userPrincipalName`; conta pessoal, só
-/// `email`. Sem `@` não é e-mail: melhor nada do que lixo no cartão.
-fn email_do_dono(corpo: &Value) -> Option<String> {
-    let dono = corpo.get("owner")?.get("user")?;
-    for chave in ["email", "userPrincipalName"] {
-        if let Some(valor) = dono.get(chave).and_then(Value::as_str) {
-            let valor = valor.trim();
-            if valor.contains('@') && !valor.chars().any(char::is_whitespace) {
-                return Some(valor.to_string());
-            }
+    // (endereço, campos do `$select`, o e-mail está no dono do drive?)
+    let pedidos = [
+        ("https://graph.microsoft.com/v1.0/me", "mail,userPrincipalName", false),
+        ("https://graph.microsoft.com/v1.0/me/drive", "owner", true),
+    ];
+
+    for (endereco, campos, dono) in pedidos {
+        let resposta = cliente
+            .get(endereco)
+            .query(&[("$select", campos)])
+            .bearer_auth(acesso)
+            .timeout(Duration::from_secs(20))
+            .send()
+            .await
+            .ok()?;
+        if !resposta.status().is_success() {
+            continue;
+        }
+        let Ok(corpo) = resposta.json::<Value>().await else {
+            continue;
+        };
+        let achado = if dono {
+            email_do_dono(&corpo)
+        } else {
+            email_do_usuario(&corpo)
+        };
+        if achado.is_some() {
+            return achado;
         }
     }
     None
+}
+
+/// `{"mail":"ana@outlook.com"}` (conta pessoal) ou
+/// `{"userPrincipalName":"ana@contoso.com"}` (conta de empresa).
+fn email_do_usuario(corpo: &Value) -> Option<String> {
+    ["mail", "userPrincipalName"]
+        .iter()
+        .find_map(|chave| corpo.get(*chave).and_then(Value::as_str).and_then(email_valido))
+}
+
+/// `{"owner":{"user":{"email":"ana@outlook.com"}}}` → `Some("ana@outlook.com")`.
+fn email_do_dono(corpo: &Value) -> Option<String> {
+    let dono = corpo.get("owner")?.get("user")?;
+    ["email", "userPrincipalName"]
+        .iter()
+        .find_map(|chave| dono.get(*chave).and_then(Value::as_str).and_then(email_valido))
+}
+
+/// Sem `@` não é e-mail: melhor nada do que lixo no cartão.
+fn email_valido(valor: &str) -> Option<String> {
+    let valor = valor.trim();
+    if valor.contains('@') && !valor.chars().any(char::is_whitespace) {
+        Some(valor.to_string())
+    } else {
+        None
+    }
 }
 
 /// Botão Cancelar da janela "aguardando autorização": o laço local desiste na
@@ -2303,8 +2357,8 @@ pub fn open_url(url: String) -> AppResult<()> {
 #[cfg(test)]
 mod tests {
     use super::{
-        email_do_dono, montar_relatorio, resposta_para, risco_de_apagar_tudo, tem_algo_em,
-        versao_mais_nova, ContextoRelatorio, LadoVazio,
+        email_do_dono, email_do_usuario, montar_relatorio, resposta_para, risco_de_apagar_tudo,
+        tem_algo_em, versao_mais_nova, ContextoRelatorio, LadoVazio,
     };
     use crate::models::{Account, ActivityEntry, Profile, Settings};
     use serde_json::json;
@@ -2504,15 +2558,24 @@ mod tests {
     }
 
     #[test]
-    fn email_do_onedrive_vem_do_dono_do_drive() {
-        // Conta pessoal: `email`. Conta de empresa: `userPrincipalName`.
-        let pessoal = json!({ "owner": { "user": { "email": "ana@outlook.com" } } });
-        assert_eq!(email_do_dono(&pessoal), Some("ana@outlook.com".to_string()));
-        let empresa = json!({
+    fn email_do_onedrive_vem_do_usuario_ou_do_dono_do_drive() {
+        // Caminho direto: `/me` (User.Read).
+        let pessoal = json!({ "mail": "ana@outlook.com", "userPrincipalName": "ana@outlook.com" });
+        assert_eq!(email_do_usuario(&pessoal), Some("ana@outlook.com".to_string()));
+        // Conta de empresa costuma trazer só `userPrincipalName`.
+        let empresa = json!({ "mail": null, "userPrincipalName": "ana@contoso.com" });
+        assert_eq!(email_do_usuario(&empresa), Some("ana@contoso.com".to_string()));
+
+        // Plano B: dono do drive (Files.ReadWrite.All).
+        let dono = json!({ "owner": { "user": { "email": "ana@outlook.com" } } });
+        assert_eq!(email_do_dono(&dono), Some("ana@outlook.com".to_string()));
+        let dono_empresa = json!({
             "owner": { "user": { "email": "", "userPrincipalName": "ana@contoso.com" } }
         });
-        assert_eq!(email_do_dono(&empresa), Some("ana@contoso.com".to_string()));
+        assert_eq!(email_do_dono(&dono_empresa), Some("ana@contoso.com".to_string()));
+
         // Sem nada legível: o cartão segue com o nome do provedor.
+        assert_eq!(email_do_usuario(&json!({})), None);
         assert_eq!(email_do_dono(&json!({ "owner": {} })), None);
         assert_eq!(email_do_dono(&json!({})), None);
     }

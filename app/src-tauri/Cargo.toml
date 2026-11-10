@@ -1,6 +1,6 @@
 [package]
 name = "nuvem"
-version = "1.6.2"
+version = "1.6.3"
 description = "Sincronização visual de Google Drive e OneDrive"
 authors = ["Nuvem contributors"]
 license = "MIT"

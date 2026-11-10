@@ -68,6 +68,19 @@
   </screenshots>
 
   <releases>
+    <release version="1.6.3" date="2026-11-10">
+      <description>
+        <p>
+          Correções do relato depois da 1.6.2: bandeja, janela de espera e OneDrive.
+        </p>
+        <ul>
+          <li>No Windows apareciam dois ícones na área de notificação: o aplicativo montava a bandeja e a configuração criava outra.</li>
+          <li>A janela de espera da autorização agora mostra o tempo decorrido e tem Cancelar que funciona, em vez de deixar a janela presa até o fim do prazo.</li>
+          <li>A autorização do OneDrive passou a ser feita pelo próprio Nuvem Sync: a última página é a do aplicativo, e não mais a do rclone.</li>
+          <li>O cartão Contas mostra o e-mail também nas contas OneDrive.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.6.2" date="2026-11-09">
       <description>
         <p>

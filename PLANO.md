@@ -272,8 +272,8 @@ Alternativas descartadas por ora:
   **Ressincronizar é seguro com um lado vazio**: com o computador cheio e a
   nuvem vazia, o resync sobe os arquivos; com a nuvem cheia e o computador
   vazio, baixa — conferido nos dois sentidos, não apaga o lado cheio.
-- 🔧 **Rodada de correções do Windows (09/11, no código, sem publicar)** — três
-  dos quatro pontos relatados depois da 1.6.2:
+- ✅ **Rodada de correções do Windows (09/11, publicada na 1.6.3)** — três dos
+  quatro pontos relatados depois da 1.6.2:
   (1) **dois ícones na área de notificação**: o `tauri.conf.json` tinha
   `app.trayIcon` *e* o `tray::init` montava a bandeja — no Windows apareciam as
   duas. O bloco do config saiu; teste novo (`bandeja_e_criada_so_pelo_codigo`)
@@ -287,7 +287,7 @@ Alternativas descartadas por ora:
   no Graph (`/me/drive?$select=owner`, coberto pela permissão que o rclone já
   pede) e cai para `userPrincipalName` quando a conta é de empresa; sem nada
   legível, o cartão continua sem e-mail.
-- ✅ **Autorização do OneDrive no próprio app (10/11, no código, sem publicar)** —
+- ✅ **Autorização do OneDrive no próprio app (10/11, publicada na 1.6.3)** —
   item (2) do relato, fechado pelo caminho A: registro próprio no Microsoft
   Entra (`Nuvem Sync`, cliente público, `client_id`
   `207c9f4b-9217-4761-a960-f36e8c5b0023`, redirecionamento
@@ -303,6 +303,22 @@ Alternativas descartadas por ora:
   Pré-checagem contra o AAD de verdade: o `client_id` responde com a página de
   login (cliente inexistente responde `AADSTS700038`), então o registro está de
   pé. 80 testes, clippy limpo. Detalhes em `docs/oauth-onedrive.md`.
+- ✅ **1.6.3 publicada (10/11, tag `v1.6.3`)** — fecha os quatro pontos do relato
+  pós-1.6.2: ícone único na bandeja, espera da autorização com contador e
+  Cancelar, OneDrive autorizado pelo próprio app (fim do "Success with rclone" e
+  da demora) e e-mail da conta OneDrive no cartão. Commit `94bd292`; `Checagem`
+  verde no `main`, `Pacotes` verde em 6 m 28 s na tag (`.deb` 33,8 MB, AppImage
+  108,9 MB, NSIS 25,0 MB) e `Flatpak (lint)` verde. Flatpak (23,5 MB) buildado
+  aqui com `scripts/build-flatpak.sh` e portátil Windows (32,0 MB) com
+  `scripts/build-windows.sh`; os dois subiram como assets — 5 no total, com
+  título próprio e `--latest`. Conferido por dentro dos pacotes: o `client_id`
+  `207c9f4b-9217-4761-a960-f36e8c5b0023`, `login.microsoftonline.com`,
+  `graph.microsoft.com/v1.0/me`, `cancel_authorization` e a dupla
+  `.path1,.path2` aparecem no `nuvem` do `.deb`, no `nuvem.exe` do NSIS e no
+  `Nuvem.exe` do portátil; `flatpak info app.nuvem.Nuvem` → 1.6.3. Cópia local
+  em `~/Downloads/nuvem-1.6.3/` (7 arquivos, `sha256sum -c` 5/5, zip de
+  214 MB). Falta o teste de campo no Windows — roteiro em
+  [`docs/roteiro-teste-windows.md`](docs/roteiro-teste-windows.md).
 - ⏳ **Verificação de escopo restrito enviada (09/11, 13h20)** — formulário do
   Centro de verificação preenchido com a justificativa de 986 caracteres (o campo
   corta em 1.000), o vídeo do YouTube (não listado) e as respostas: **não** é uso

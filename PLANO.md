@@ -343,7 +343,15 @@ Alternativas descartadas por ora:
   roteirado no mesmo arquivo, com narração em inglês. Ambiente do suplemento
   preparado em 11/11 (`docs/video-suplemento-exclusao.md`): pasta local e pasta
   `Nuvem-suplemento` no Drive com os mesmos três arquivos fictícios, para a
-  exclusão ser demonstrada nos dois sentidos sem tocar em arquivo real. Continua valendo: não mexer em status (Em produção), tipo de usuário,
+  exclusão ser demonstrada nos dois sentidos sem tocar em arquivo real.
+  Suplemento gravado em 11/11 (78 s, 1080p, duas exclusões refletidas nos dois
+  lados, com "1 removed" na atividade), narrado por síntese de voz
+  (`edge-tts`, `en-US-AndrewNeural`) porque não havia microfone, e publicado
+  **não listado** em <https://youtu.be/gkH5EeXWsj4> — capítulos conferidos contra
+  a gravação (0:26 e 0:46, não os 0:15/0:35 do rascunho). Resposta ao checklist
+  pronta para envio, com o link do vídeo e do suplemento, em
+  `~/Documentos/resposta-google-verificacao.txt`.
+ Continua valendo: não mexer em status (Em produção), tipo de usuário,
   nome/logo, escopos nem domínio durante a análise.
 - ⏳ **Verificação de escopo restrito enviada (09/11, 13h20)** — formulário do
   Centro de verificação preenchido com a justificativa de 986 caracteres (o campo

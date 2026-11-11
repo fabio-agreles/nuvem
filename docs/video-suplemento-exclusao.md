@@ -140,7 +140,7 @@ Source code:    https://github.com/fabio-agreles/nuvem (MIT)
    três e cada um precisa durar **10 s ou mais** (por isso 0:15–0:26 = 11 s, e
    não 0:16–0:22 = 6 s).
 
-4. Copie o link `https://youtu.be/…` e cole em
+4. Publicado em 11/11: **https://youtu.be/gkH5EeXWsj4** (78 s, não listado). O link já está na resposta; o passo seguinte era colar em
    [`resposta-google-verificacao.md`](resposta-google-verificacao.md), na linha
    `Supplementary clip on deletion:` (o resto da resposta já está pronto).
 

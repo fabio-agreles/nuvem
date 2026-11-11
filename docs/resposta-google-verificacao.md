@@ -74,7 +74,7 @@ Subject: `[Action Needed] Your Google APIs Verification Request`
 > Source code: https://github.com/fabio-agreles/nuvem
 > Downloads: https://github.com/fabio-agreles/nuvem/releases/latest
 > Demo video: https://youtu.be/eaBMDHnTEf4
-> Supplementary clip on deletion: <COLE AQUI O LINK DO SUPLEMENTO — ou apague esta linha>
+> Supplementary clip on deletion: https://youtu.be/gkH5EeXWsj4
 >
 > **Scope configuration & justification**
 >

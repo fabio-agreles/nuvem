@@ -78,19 +78,19 @@ O vídeo gravado cobre os dois sentidos e foi narrado por síntese de voz
 havia microfone disponível. A faixa original (sem fala) foi substituída pela
 narração alinhada à linha do tempo real, sem editar a imagem:
 
-| Tempo | Tela | Narração |
-| --- | --- | --- |
-| 0:00 | Overview “All up to date”, 1 pasta, conta `fabioagrelespessoal@gmail.com` | “This is Nuvem Sync, syncing a folder on my computer with a folder in my own Google Drive. Everything is up to date: three demo files, in both places.” |
-| 0:16 | Drive web: `Nuvem-suplemento` com os 3 arquivos | “Here is the Drive folder in the browser, with the same three files.” |
-| 0:22 | gerenciador de arquivos: `FolderTest/Nuvem-suplemento` com os 3 | “And here they are in the synced folder on my computer.” |
-| 0:30 | apaga `meeting-notes.txt` no computador | “I delete one of the three files on the computer.” |
-| 0:36 | atividade: “1 removed” + notificação do sistema | “The activity log records it: one file removed. And here is the Drive folder, reloaded — that file is gone from Google Drive as well.” |
-| 0:44 | Drive recarregado: 2 arquivos, `budget.csv` selecionado | (mesma frase) |
-| 0:49 | apaga `budget.csv` no Drive web | “Now the other direction. I delete this file in the Drive web interface.” |
-| 0:59 | atividade: “1 removed” de novo | “The app syncs again and removes it from the folder on my computer. One file removed again.” |
-| 1:04 | pasta local: só `example.md` | “Only one demo file is left, on the computer and in the Drive.” |
-| 1:08 | Drive: só `example.md` | (mesma frase) |
-| 1:10 | volta ao Overview, em dia | “Only the folders I added to the app are affected, and access can be revoked at any time on my Google Account page.” |
+| Tela | Narração (entra em) |
+| --- | --- |
+| 0:00 Overview “All up to date”, 1 pasta, conta `fabioagrelespessoal@gmail.com` | “This is Nuvem Sync, syncing a folder on my computer with a folder in my own Google Drive. Everything is up to date: three demo files, in both places.” (0:01) |
+| 0:16 Drive web: `Nuvem-suplemento` com os 3 arquivos | “Here is the Drive folder in the browser, with the same three files.” (0:16) |
+| 0:22 pasta local com os mesmos 3 arquivos | “And here they are in the synced folder on my computer.” (0:22) |
+| 0:26 diálogo “Excluir permanentemente”; 0:28 já são 2 arquivos | “I delete one of the three files on the computer.” (0:25) |
+| 0:36 atividade: “1 removed” + notificação do sistema | “The activity log records it: one file removed. And here is the Drive folder, reloaded — that file is gone from Google Drive as well.” (0:36) |
+| 0:44 Drive recarregado: 2 arquivos, `budget.csv` selecionado | (mesma frase, termina em 0:45) |
+| 0:46 menu de contexto → “Move to trash” | “Now the other direction. I delete this file in the Drive web interface.” (0:46) |
+| 0:57 atividade: “1 removed” de novo | “The app syncs again and removes it from the folder on my computer. One file removed again.” (0:58) |
+| 1:04 pasta local: só `example.md` | “Only one demo file is left, on the computer and in the Drive.” (1:05) |
+| 1:08 Drive: só `example.md` | (mesma frase) |
+| 1:10 Overview, em dia | “Only the folders I added to the app are affected, and access can be revoked at any time on my Google Account page.” (1:10) |
 
 Arquivos em `~/Vídeos/`:
 
@@ -117,22 +117,28 @@ diagnóstico, o terminal.
 
 1. YouTube → **Create → Upload video** → visibilidade **Unlisted**.
 2. Título: `Nuvem Sync — delete propagation (verification supplement)`.
-3. Descrição (colar):
+3. Descrição (colar — capítulos conferidos contra a gravação, não são
+   estimativa):
 
 ```
 Supplementary clip for the Google OAuth verification of Nuvem Sync.
-Deletion propagating in both directions between the local folder and Google Drive:
+Deletion propagating in both directions between the local folder and Google Drive.
 
-0:00  Folder up to date: 3 files on the computer and in Google Drive
-0:15  A file deleted on the computer disappears from Google Drive
-0:35  A file deleted in the Drive web UI disappears from the computer
-0:55  Only the folders added to the app are touched; access can be revoked anytime
+0:00  Folder up to date: three demo files on the computer and in Google Drive
+0:15  The same folder in the Drive web UI and on the computer
+0:26  A file deleted on the computer disappears from Google Drive
+0:46  A file deleted in the Drive web UI is removed from the computer
+1:04  Only the folders added to the app are touched; access can be revoked anytime
 
 Scope under review: https://www.googleapis.com/auth/drive
 Home page:      https://nuvem-sync.app.br/
 Privacy policy: https://nuvem-sync.app.br/privacidade.html
 Source code:    https://github.com/fabio-agreles/nuvem (MIT)
 ```
+
+   Capítulos do YouTube: o primeiro tem de ser `0:00`, são precisos pelo menos
+   três e cada um precisa durar **10 s ou mais** (por isso 0:15–0:26 = 11 s, e
+   não 0:16–0:22 = 6 s).
 
 4. Copie o link `https://youtu.be/…` e cole em
    [`resposta-google-verificacao.md`](resposta-google-verificacao.md), na linha

@@ -319,6 +319,23 @@ Alternativas descartadas por ora:
   em `~/Downloads/nuvem-1.6.3/` (7 arquivos, `sha256sum -c` 5/5, zip de
   214 MB). Falta o teste de campo no Windows — roteiro em
   [`docs/roteiro-teste-windows.md`](docs/roteiro-teste-windows.md).
+- 📩 **Primeiro e-mail do Google (10/11 20:13, lido em 11/11)** — não é
+  aprovação nem reprovação: é o checklist padrão (*[Action Needed] Your Google
+  APIs Verification Request*) que todo pedido de escopo restrito recebe, e o
+  pedido só anda depois de uma resposta direta ao endereço de resposta do
+  e-mail. Traz 21 itens em seis blocos (escopos, vídeo, acesso para teste,
+  política de privacidade, Uso Limitado, IA/ML, casos proibidos, Data
+  Portability e CASA). Resposta pronta, item por item, em
+  [`docs/resposta-google-verificacao.md`](docs/resposta-google-verificacao.md) —
+  falta só o link do vídeo e conferir nele dois pontos: escopo expandido na tela
+  de consentimento e **exclusão refletida no Drive** (o item *Source Account
+  Impact* pede isso quando o escopo permite apagar). Providência tomada no site
+  (no ar em `nuvem-sync.app.br/privacidade.html`): três seções que o checklist
+  nomeia — *Data Use*, *Data Transfer*, *Data Protection* —, retenção explícita
+  e o bloco de **Uso Limitado** com a frase afirmativa padrão do Google, mais a
+  declaração de que não há IA/ML; o resumo em inglês recebeu as mesmas cinco
+  seções. Continua valendo: não mexer em status (Em produção), tipo de usuário,
+  nome/logo, escopos nem domínio durante a análise.
 - ⏳ **Verificação de escopo restrito enviada (09/11, 13h20)** — formulário do
   Centro de verificação preenchido com a justificativa de 986 caracteres (o campo
   corta em 1.000), o vídeo do YouTube (não listado) e as respostas: **não** é uso

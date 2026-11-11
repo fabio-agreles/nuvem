@@ -36,7 +36,7 @@
 <body>
 <main>
   <h1>Política de privacidade do Nuvem Sync</h1>
-  <p class="data">Última atualização: 30 de outubro de 2026.</p>
+  <p class="data">Última atualização: 11 de novembro de 2026.</p>
 
   <p>O Nuvem Sync é um aplicativo de desktop que mantém pastas deste computador em
   sincronização bidirecional com o Google Drive e o OneDrive. <strong>Não existe
@@ -93,13 +93,55 @@
   </ul>
   <p>Não há telemetria, análise de uso, crash reporting remoto nem publicidade.</p>
 
+  <h2>Como os dados são usados</h2>
+  <p>Os dados do Google têm uma única finalidade: transferir os arquivos das
+  pastas que você escolheu entre o Drive e o seu computador, e mostrar no
+  aplicativo o nome, o e-mail e a cota da conta. Não há outra finalidade, não há
+  análise de uso e não há uso publicitário.</p>
+
+  <h2>Com quem os dados são compartilhados</h2>
+  <p><strong>Com ninguém.</strong> O Nuvem Sync não tem servidor e não envia seus
+  arquivos, seu token ou seu e-mail para terceiros. Só veem os dados: você, o
+  computador onde o aplicativo roda e o provedor que você conectou (Google ou
+  Microsoft) — este último porque é ele quem hospeda a sua pasta. Nada é vendido,
+  alugado ou cedido a corretores de dados, anunciantes ou qualquer outro
+  terceiro.</p>
+
+  <h2>Como os dados são protegidos</h2>
+  <ul>
+    <li>O token OAuth fica só no seu computador, em <code>rclone.conf</code>, com
+      permissão <code>0600</code> (só o seu usuário lê).</li>
+    <li>Todo o tráfego com o Google e a Microsoft vai por HTTPS, com verificação
+      de certificado.</li>
+    <li>Não existe servidor do Nuvem Sync, então não existe base de dados nossa
+      para vazar: o que não é coletado não pode ser perdido.</li>
+    <li>O código é aberto (licença MIT): qualquer pessoa pode conferir o que o
+      aplicativo faz com os dados.</li>
+  </ul>
+
+  <h2>Uso limitado dos dados do Google (Limited Use)</h2>
+  <p>O uso das informações recebidas das APIs do Google pelo Nuvem Sync está em
+  conformidade com a <a href="https://developers.google.com/terms/api-services-user-data-policy">Política
+  de Dados do Usuário dos Serviços de API do Google</a>, incluindo os requisitos
+  de Uso Limitado.</p>
+  <p>O Nuvem Sync não usa dados do Google para desenvolver, melhorar ou treinar
+  modelos de inteligência artificial ou de aprendizado de máquina, e não os
+  transfere para serviços de terceiros que façam isso — o aplicativo não usa
+  IA/ML em nenhuma função.</p>
+
   <h2>Relatório de diagnóstico</h2>
   <p>O relatório (Ajustes → Sobre → Salvar) é gerado <strong>localmente</strong> e
   só é enviado se você mesmo enviar. Ele contém versão do app, sistema, versão do
   rclone, nomes das contas e das pastas, ajustes e os últimos erros — nunca
   senhas, tokens ou o <code>client_secret</code> do OAuth.</p>
 
-  <h2>Como apagar seus dados</h2>
+  <h2>Por quanto tempo os dados ficam e como apagá-los</h2>
+  <p><strong>Retenção:</strong> nada é guardado em servidores nossos, porque não
+  temos nenhum. No seu computador, o token da conta fica até você desconectar a
+  conta no aplicativo; os ajustes e o histórico ficam até você desinstalar e
+  apagar as pastas de configuração; os arquivos sincronizados ficam na pasta
+  local e no Drive, e apagar de um lado apaga do outro, como em qualquer
+  sincronização.</p>
   <ol>
     <li><strong>Desconectar uma conta</strong> (Visão geral → Contas): apaga as
       credenciais dela do <code>rclone.conf</code> e o estado do bisync daquelas pastas.</li>
@@ -136,8 +178,31 @@
     solely to transfer the files in the folders you selected.</p>
     <p>Network requests go only to the Google and Microsoft APIs, and — if you
     press “Check for updates” — to <code>api.github.com</code>. There is no
-    telemetry, analytics, remote crash reporting or advertising. To delete your
-    data: disconnect the account in the app, remove
+    telemetry, analytics, remote crash reporting or advertising.</p>
+    <p><strong>Data use:</strong> Google user data is used for one purpose only —
+    transferring the files of the folders you selected between your Drive and
+    your computer, and showing your account name, e-mail and storage quota in the
+    app. No analytics, no advertising.</p>
+    <p><strong>Data transfer:</strong> nothing is shared with third parties. There
+    is no server of ours; data is never sold, rented or handed to data brokers,
+    advertisers or any other party.</p>
+    <p><strong>Data protection:</strong> the OAuth token stays on your machine in
+    <code>rclone.conf</code> with <code>0600</code> permissions, all traffic to
+    Google and Microsoft uses HTTPS with certificate validation, and there is no
+    server-side database of ours that could leak.</p>
+    <p><strong>Retention and deletion:</strong> nothing is retained on our side.
+    The account token stays on your computer until you disconnect the account in
+    the app; settings and activity history stay until you uninstall and remove
+    the configuration folders; synced files stay in your local folder and in your
+    Drive, and deleting one side deletes the other, as in any sync tool.</p>
+    <p><strong>Limited Use:</strong> Nuvem Sync's use and transfer to any other
+    app of information received from Google APIs will adhere to the
+    <a href="https://developers.google.com/terms/api-services-user-data-policy">Google
+    API Services User Data Policy</a>, including the Limited Use requirements.
+    Google user data is not used to develop, improve or train AI/ML models and is
+    not transferred to third-party AI/ML services; the app does not use AI/ML at
+    all.</p>
+    <p>To delete your data: disconnect the account in the app, remove
     <code>~/.config/app.nuvem.Nuvem</code> and <code>~/.config/rclone</code>, and
     revoke access at
     <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.

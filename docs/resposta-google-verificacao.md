@@ -10,19 +10,43 @@ escopo sensível/restrito recebe, e o pedido só anda depois de uma resposta.
 - Projeto: **Nuvem Sync** — project id `nuvem-513223`, project number
   `875036643376`.
 
-Antes de enviar, conferir dois pontos no vídeo que já está no ar (é onde o
-checklist costuma reprovar):
+## Estado do vídeo (conferido quadro a quadro em 11/11)
 
-- [ ] a tela de consentimento aparece com o escopo **totalmente legível** — se
-      estiver recolhido, é preciso clicar em "Mostrar todos os serviços" e o take
-      tem de mostrar a linha "Ver, editar, criar e excluir todos os seus arquivos
-      do Google Drive";
-- [ ] o vídeo mostra **uma alteração feita no app refletida na conta Google** e,
-      de preferência, **uma exclusão** também refletida (item *Source Account
-      Impact*: o escopo permite excluir, então ver a exclusão acontecendo no Drive
-      é o que eles procuram). O roteiro atual mostra envio e download; se não
-      houver exclusão, incluir um trecho de 20 s apagando um arquivo da pasta e
-      mostrando-o fora do Drive resolve.
+Baixei o vídeo (`https://youtu.be/eaBMDHnTEf4`, 3 min 41 s, não listado) e
+conferi o conteúdo nas marcações:
+
+| Momento | O que aparece | Item do checklist |
+| --- | --- | --- |
+| 0:22–0:40 | consentimento com o nome **Nuvem Sync**, a conta `fabioagrelespessoal@gmail.com` e o escopo legível: "See, edit, create, and delete all of your Google Drive files" | ✅ Consent Screen Visibility |
+| 0:42 | página do app "Nuvem Sync · Account connected" | ✅ fluxo completo |
+| 1:50–2:00 | atividade "Sync finished — 1 sent", pasta `Nuvem-demo` | ✅ Scope Functionality |
+| 2:20 | o mesmo documento (`teste1`) editado no **Drive web** | ✅ Source Account Impact (escrita) |
+| 2:40 | o arquivo editado aberto **localmente** (`teste1.docx` no LibreOffice) | ✅ sentido nuvem → computador |
+| 3:06 | `myaccount.google.com` listando o **Nuvem Sync** com "Delete all connections" | ✅ revogação |
+
+**Lacuna única:** não há nenhuma **exclusão** demonstrada. O item *Source Account
+Impact* só exige a prova quando o app demonstra apagar, e o vídeo não demonstra —
+mas o resumo do escopo na tela de consentimento diz "delete", então é o tipo de
+coisa que um revisor pede depois, e cada ida e volta custa semanas. Um
+**suplemento de 40 segundos** resolve e não invalida o vídeo principal:
+
+1. na pasta local, apague `demonstracao.txt` → atividade mostra a remoção →
+   recarregue o Drive web e mostre que o arquivo sumiu;
+2. no Drive web, apague `planilha-demo.csv` → atividade mostra a remoção →
+   mostre a pasta local sem ele;
+3. feche com "Access revoked / listed in the Google Account page" já coberto pelo
+   vídeo principal.
+
+Narração (inglês, take único, sem edição):
+
+> "Deletion propagates the same way. I just deleted this file on my computer —
+> here it is in the app's activity log, and here it is gone from my Google Drive
+> in the browser. Now the other direction: I delete this file in the Drive web
+> interface, and the app removes it from my local folder. Nothing else in my
+> Drive is touched — only the folders I added to the app."
+
+Título do suplemento: `Nuvem Sync — delete propagation (verification supplement)`,
+visibilidade **não listado**, e o link entra na resposta como *supplementary clip*.
 
 ---
 
@@ -49,7 +73,8 @@ Subject: `[Action Needed] Your Google APIs Verification Request`
 > Terms: https://nuvem-sync.app.br/termos.html
 > Source code: https://github.com/fabio-agreles/nuvem
 > Downloads: https://github.com/fabio-agreles/nuvem/releases/latest
-> Demo video: <COLE AQUI O LINK DO YOUTUBE NÃO LISTADO>
+> Demo video: https://youtu.be/eaBMDHnTEf4
+> Supplementary clip on deletion: <COLE AQUI O LINK DO SUPLEMENTO — ou apague esta linha>
 >
 > **Scope configuration & justification**
 >
@@ -73,17 +98,22 @@ Subject: `[Action Needed] Your Google APIs Verification Request`
 > - *Accessible hosting:* unlisted YouTube link above (works without sign-in).
 > - *Consent screen visibility:* the video shows the OAuth consent screen with the
 >   app name **Nuvem Sync** and the single Drive permission displayed in full
->   ("See, edit, create and delete all of your Google Drive files"), before
+>   ("See, edit, create, and delete all of your Google Drive files"), before
 >   clicking Allow.
 > - *Scope matching:* the demo shows exactly the scope configured in the console;
 >   the app requests no other scope at any point.
 > - *Scope functionality:* the video demonstrates the full cycle — an existing
->   Drive folder listed inside the app, a file created locally appearing in the
->   user's Drive in the browser, a change made in the Drive web UI coming back to
->   the computer, and a deletion propagated to the same account.
-> - *Source account impact:* every write and delete shown in the app is shown
->   reflected in the same Google account's Drive in the browser, side by side with
->   the app's activity log.
+>   Drive folder listed and selected inside the app, the first two-way sync, a file
+>   changed on the computer appearing in the user's Drive in the browser (activity
+>   log: "Sync finished — 1 sent"), a change made in the Drive web UI coming back
+>   down to the computer (the same document opened locally), and access revocation
+>   on the Google Account page. The supplementary clip shows deletion propagating
+>   in both directions.
+> - *Source account impact:* the write shown in the app is shown reflected in the
+>   same Google account's Drive in the browser, and the change made in the browser
+>   is shown reflected on the computer. Deletion — made on the computer and made in
+>   the Drive web UI — is shown reflected on the other side in the supplementary
+>   clip, with the app's activity log visible next to it.
 > - *Live apps:* the publishing status remains **In Production** and the scope set
 >   is unchanged — we added no new scopes while verification is pending. Because
 >   this is a desktop app that users install themselves, there is no production

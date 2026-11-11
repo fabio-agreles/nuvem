@@ -349,8 +349,24 @@ Alternativas descartadas por ora:
   (`edge-tts`, `en-US-AndrewNeural`) porque não havia microfone, e publicado
   **não listado** em <https://youtu.be/gkH5EeXWsj4> — capítulos conferidos contra
   a gravação (0:26 e 0:46, não os 0:15/0:35 do rascunho). Resposta ao checklist
-  pronta para envio, com o link do vídeo e do suplemento, em
-  `~/Documentos/resposta-google-verificacao.txt`.
+  pronta para envio, com o link do vídeo e do suplemento.
+- 📤 **Resposta ao checklist do Google enviada (11/11, 13h02)** — respondida a
+  mensagem de 10/11 (`api-oauth-dev-verification-reply+…@google.com`), assunto
+  mantido, texto de 169 linhas sem marcação (cópia em
+  `~/Documentos/resposta-google-verificacao.txt` e no repositório em
+  [`docs/resposta-google-verificacao.md`](docs/resposta-google-verificacao.md)).
+  Conteúdo: um escopo só e por que `drive.file` não serve, os dois vídeos (o
+  principal e o suplemento de exclusão), sete passos de teste para o revisor com
+  a troca de idioma para inglês, declaração de que não há login/telefone/cartão,
+  as cinco seções de privacidade apontando para a página atualizada em 11/11,
+  Uso Limitado, ausência de IA/ML, casos proibidos e Data Portability fora de
+  escopo, e a isenção de CASA (escopo restrito, nenhum servidor) com compromisso
+  de contratar avaliador se exigirem. Prazo informado pelo Google para a análise:
+  **4 a 6 semanas**, primeiro retorno em **3 a 5 dias**. Enquanto isso: não mexer
+  em status (Em produção), tipo de usuário (Externo), nome/logo, escopos nem
+  domínio; manter `Nuvem-suplemento` no Drive e a pasta local para eventuais
+  pedidos do revisor. Se não houver resposta até 14/11, responder de novo no mesmo
+  fio perguntando o andamento.
  Continua valendo: não mexer em status (Em produção), tipo de usuário,
   nome/logo, escopos nem domínio durante a análise.
 - ⏳ **Verificação de escopo restrito enviada (09/11, 13h20)** — formulário do

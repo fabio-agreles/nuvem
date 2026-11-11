@@ -340,7 +340,10 @@ Alternativas descartadas por ora:
   em 2:00, documento editado no Drive web em 2:20 e aberto localmente em 2:40,
   revogação em 3:06. Falta só uma coisa: **nenhuma exclusão demonstrada** (o item
   *Source Account Impact* pede isso quando o app apaga) — suplemento de 40 s
-  roteirado no mesmo arquivo, com narração em inglês. Continua valendo: não mexer em status (Em produção), tipo de usuário,
+  roteirado no mesmo arquivo, com narração em inglês. Ambiente do suplemento
+  preparado em 11/11 (`docs/video-suplemento-exclusao.md`): pasta local e pasta
+  `Nuvem-suplemento` no Drive com os mesmos três arquivos fictícios, para a
+  exclusão ser demonstrada nos dois sentidos sem tocar em arquivo real. Continua valendo: não mexer em status (Em produção), tipo de usuário,
   nome/logo, escopos nem domínio durante a análise.
 - ⏳ **Verificação de escopo restrito enviada (09/11, 13h20)** — formulário do
   Centro de verificação preenchido com a justificativa de 986 caracteres (o campo
